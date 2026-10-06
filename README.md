@@ -13,6 +13,8 @@ python tools/serve.py 8418
 
 Then open <http://localhost:8418/>. Add `?dev` to the URL for 4×/16×/64× sim-speed buttons and a +1M catnip cheat.
 
+Working on the code? Start with `CLAUDE.md` (rules and workflow) and `docs/HANDOFF.md` (current state, known issues, next steps).
+
 The game autosaves to `localStorage` every 30 s. You can export or import a save string in Settings ⚙.
 
 ## What's in this build (vertical slice +)
@@ -51,6 +53,7 @@ The game autosaves to `localStorage` every 30 s. You can export or import a save
 - **Swing techniques:** when Haste would exceed 4 swings/s, swings fold: half the swings, ×2 power and ×2 stamina per swing (so stamina per second is unchanged), plus ×1.1 power per fold as a milestone bonus. XP per swing scales with the fold. Each new technique is a "★ NEW!" beat, and the swings visibly get heavier.
 - **Local ore awareness:** miners always notice ore within 3 tiles of themselves. Without it, unsteered crews reached milestones ~10× slower than a laser-perfect player. With it, the gap is ~1.3–1.5× in time-to-milestone, which matches the GDD's 1.3–1.6× target.
 - **Crew size:** each Bunk Bed is hand-priced and gated by progress (`NYA.BUNKS` in `js/data/upgrades.js`): 2 slots ~5 min, 3 by 10 min, 4 needs Tier 2, 5 needs 3 Tier-2 perfect clears, 6 needs Tier 3, 7 needs 5 Tier-3 perfect clears, 8 needs Tier 4. That's ~3–5 miners through Tier 2 and 5–6 in Tier 3, where the GDD has ~12 over a season. Tier surveys cost less to match the smaller crew.
+- **Per-tier counter-pressures:** ore gets denser each tier but crumblier (HP per item ×0.88 per tier), so Carry keeps mattering. Sight = 3 + Headlamps − darkness (−1 every two tiers) sets how far miners notice ore on their own and how far fog reveals, so Headlamps are a long-tail upgrade instead of a 3-level cap. See `js/data/tiers.js`.
 - **Tanuki's schedule:** Tanuki visits every 25–40 sim-minutes (the GDD says 2–4 h) and each offer lasts 15 min, which suits a shorter slice. Event mines pay ×1.5 and don't count toward tier-unlock perfect clears.
 
 ## Balance harness (headless sims)

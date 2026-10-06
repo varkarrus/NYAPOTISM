@@ -1,0 +1,51 @@
+# NYAPOTISM! — working notes for Claude
+
+A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mining Co.md` (the GDD). The user, varkarrus, is the designer. They play each build on GitHub Pages (https://varkarrus.github.io/NYAPOTISM/) and send playtest feedback. Read `docs/HANDOFF.md` for current state and next steps, and `README.md` for the feature list.
+
+## Architecture rules (don't break these)
+
+- **No build step, no dependencies.** Plain `<script>` tags attach everything to `globalThis.NYA`, so the game also runs from `file://`.
+- **The simulation is DOM-free.** `js/core`, `js/data` and `js/sim` run unchanged in Node for the balance harness. Rendering (`js/render`), audio and UI (`js/ui`) only read sim state and its events.
+- **Adding a file:** put it in `index.html` in dependency order. If it's a data or sim file, also add it to the `require` lists in `tools/harness.js`, `tools/diag.js`, `tools/test_pump.js` and `tools/test_events.js`.
+- **Fixed timestep:** 20 ticks/s (`NYA.TICK`), and the renderer interpolates. Everything runs on sim time (cooldowns, research, Tanuki visits, Catterall), so Fast-Forward and dev speeds just run more ticks.
+- **Content is data-driven:**
+  - Upgrades: `def({...})` in `js/data/upgrades.js`, using `show`, `req`, `costs` or `base`/`growth`, `cur` (currency) and `fx`.
+  - Traits: `mods` keys in `js/data/traits.js`. New flag keys must also be added to the flag list in `NYA.buildStats` (`js/sim/catgirl.js`).
+  - Also data-driven: faxes (`check` functions), the Loom grid, Tanuki events, and tiers.
+- **Per-tier scaling lives in `js/data/tiers.js`:** `tierBase`, `tierHP`, `tierResist`, `tierXP`, `tierDensityP`, `tierCrumble`, `tierDarkness`. New tiers get these for free.
+- **Events:**
+  - Game → UI: `game.emit(type, data)`.
+  - Episode → renderer: `ep.ev({ t: ... })`. These are dropped when running headless.
+  - Any first-time system should call `game.novel(key, label, kind)`. That drives the "★ NEW! ★" ribbon and the harness novelty timeline.
+- **Saves:** `game.s` is serialized as JSON. `Game.deserialize` fills missing keys from `newState()`, so new state fields go in `newState()` and old saves migrate automatically. Read new lifetime counters as `s.life.x || 0`.
+
+## Design philosophy (from the user's feedback, keep following it)
+
+- **Every stat gets a per-tier counter-pressure instead of a hard cap.** Upgrades stay relevant in your current mine, and early mines become hilariously easy. This is how it maps:
+  - Power vs tile HP.
+  - Stamina and Grit vs swing resistance.
+  - Haste vs swing techniques: speed caps at 4 swings/s, then a fold gives half the swings, ×2.2 power and ×2 stamina per swing.
+  - Carry vs ore density.
+  - Headlamps vs darkness (Sight).
+  - Pace vs mine size and rough terrain (TODO).
+  - Focus vs decoy tiles (TODO).
+- **Crew size grows slowly.** Bunk Beds are hand-authored and progress-gated (`NYA.BUNKS`). The user wants about 3–5 miners through Tier 2.
+- **Animations must be readable.** Eyecatchers play picture-in-picture on a real-time clock and are never rushed or cut off. Pack-up time is a real sim cost: don't lengthen it for presentation.
+- **Novelty rhythm:** early on, a new system every few minutes. Mid-season gaps should stay under ~5–10 min (check the harness novelty timeline).
+- **Active play is a bonus, never a tax.** An unsteered crew should reach milestones about 1.3–1.6× slower than an attentive player, not 10×.
+- **Sound:** Music and SFX each have On / Mute when unfocused / Muted.
+- **Tone:** 80s anime comedy. Auntie's faxes are ALL CAPS and end with ♡. Tora barks with Kansai flavor ("Nyandeyanen!?"). Catgirls have cat ears and never human ears.
+
+## Workflow
+
+- **Dev server:** run `python tools/serve.py 8418` (it sends no-cache headers) and open `http://localhost:8418/?dev`. `?dev` adds 4×/16×/64× speed buttons and a +1M catnip cheat. `NYA.debug` exposes `game`, `ui`, `view`, `audio` and `save` in the console.
+- **After any sim or economy change, run the harness and compare against the targets in `docs/HANDOFF.md`:**
+  - `node tools/harness.js --minutes 150 --seed 1` gives the novelty timeline and checkpoints. Add `--quiet --json` for scripting, and check seeds 2–4 too.
+  - `node tools/harness.js --minutes 480 --seasons 7 --seed 4` runs a multi-season prestige check.
+  - `node tools/test_events.js` and `node tools/test_pump.js` cover the event mines and the Tier 4 pumps.
+  - `node tools/diag.js --minutes 30` shows where miner time goes.
+- **Syntax check:** run `node --check <file>` on everything you touch, since there is no compiler.
+- **In a cloud session with no browser:** rely on the harness and syntax checks, then ask the user to playtest on GitHub Pages after pushing. `tools/spritetest.html` draws every sprite, pose and eyecatcher on one page.
+- **Deploys:** pushing to `main` deploys via `.github/workflows/pages.yml`, which publishes only `index.html`, `css/` and `js/`.
+- **Line endings:** `.gitattributes` normalizes to LF in the repo. If you edit with Python on Windows, open files with `newline=''` so you don't convert line endings.
+- **Commits:** clear messages that explain the why. The user pushes from GitHub Desktop locally. In the cloud, push when asked.
