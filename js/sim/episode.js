@@ -981,10 +981,16 @@
 
     rating() {
       if (this.fullClear) return 'S';
-      const r = this.totalValue > 0 ? this.haul.value / this.totalValue : 0;
+      const r = this.extraction();
       return r >= 0.8 ? 'A' : r >= 0.6 ? 'B' : r >= 0.4 ? 'C' : 'D';
     }
-    extraction() { return this.totalValue > 0 ? Math.min(1, this.haul.value / this.totalValue) : 1; }
+    // Share of the mine's catnip items hauled. Counted in items, not value: Polisher/glow bonuses made the
+    // haul's value hit 100% with ore still in the ground. Only a real full clear reads 100%.
+    extraction() {
+      if (this.fullClear) return 1;
+      const r = this.totalItems > 0 ? this.haul.items / this.totalItems : 0;
+      return Math.min(0.99, r);
+    }
 
     // ---------------------------------------------------------------- player tools
     addMark(idx, drone) {

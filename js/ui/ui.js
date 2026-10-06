@@ -296,7 +296,7 @@
         <div class="ov-tally">
           <div class="ov-ep">EPISODE ${r.ep}${r.season > 1 ? ` <small>· SEASON ${r.season}</small>` : ''}</div>
           <div class="ov-title">“${esc(r.title)}”</div>
-          <div class="ov-stamps"><div class="rank r-${r.rating}">${r.rating}</div>${r.fullClear ? '<div class="perfect">PERFECT CLEAR!!</div>' : `<div class="pct">${Math.round(r.extraction * 100)}% extracted</div>`}</div>
+          <div class="ov-stamps"><div class="rank r-${r.rating}">${r.rating}</div>${r.fullClear ? '<div class="perfect">PERFECT CLEAR!!</div>' : `<div class="pct">${Math.floor(r.extraction * 100)}% extracted</div>`}</div>
           <div class="ov-ore">${q || '<span class="none">no ore… nyandeyanen</span>'}</div>
           <div class="ov-math" data-tip="formula">${fmt(r.oreValue)} ore × ${NYA.fmtMult(r.ref)} refinery${r.fullClear ? ` × <b class="pc">${NYA.fmtMult(r.clearMult)} perfect</b>` : ''}${r.glob > 1.0001 ? ` × ${NYA.fmtMult(r.glob)}` : ''} = <b class="gain">+${fmt(r.catnip)}</b> ${NIP}</div>
           ${extra.length ? `<div class="ov-extra">${extra.map(esc).join(' · ')}</div>` : ''}

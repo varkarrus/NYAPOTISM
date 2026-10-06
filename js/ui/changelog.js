@@ -12,6 +12,7 @@
         'Crit now works like Haste: past 40% crit chance, 30% of it focuses into ×1.65 Power (Claw Mastery, Razor Mastery, Diamond Claw…). Damage only ever goes up.',
         'Claw Sharpening is no longer capped at 8 levels, so crit keeps climbing and focusing.',
         'Fixed: the Barracks (and other tabs) no longer jump back up a few lines while you’re scrolled to the bottom.',
+        'Fixed: “% extracted” counts ore items, not ore value, and tops out at 99% unless you really perfect-clear. Upgrades that boost ore value used to push it to 100% with ore still left.',
       ],
     },
     {
