@@ -4,7 +4,7 @@ This picks up development of NYAPOTISM! after the first build sessions. `CLAUDE.
 
 ## Where things stand
 
-The vertical slice is playable and live on GitHub Pages:
+The vertical slice is playable and live on GitHub Pages. `main` is at https://varkarrus.github.io/NYAPOTISM/, and the newest other branch is at https://varkarrus.github.io/NYAPOTISM/dev/. The user is away from their computer for a few days and playtests on `/dev/`, so push playable work to the session branch and add a changelog entry (`js/ui/changelog.js`). The build includes:
 - Tiers 1–4, with grooved chains, tangles + Schrödinger's Box, and Dairy Depths pumping.
 - Traits, the R&D tree and MEWCLEAR, eight actives, standing orders, and Banked Time.
 - Skein prestige into the Quantum Loom.
