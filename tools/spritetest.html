@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Sprite test</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Mochiy+Pop+One&family=VT323&display=swap" rel="stylesheet">
+<style>body{background:#231836;color:#fff;font-family:sans-serif;margin:8px} canvas{background:#2d2045;display:block;margin:6px 0}</style></head>
+<body>
+<canvas id="a" width="1400" height="560"></canvas>
+<canvas id="b" width="1400" height="300"></canvas>
+<canvas id="c" width="1400" height="420"></canvas>
+<script src="../js/core/util.js"></script><script src="../js/data/tiers.js"></script><script src="../js/data/traits.js"></script>
+<script src="../js/data/content.js"></script><script src="../js/render/sprites.js"></script><script src="../js/render/eyecatch.js"></script>
+<script>
+const mode = new URLSearchParams(location.search).get('m') || 'all';
+const a = document.getElementById('a').getContext('2d');
+const hairs = ['bob','bangs','tendrils','buzz','velvet','undercut','hightight','slick','bun','ponytail','sideshave','twinbuns','braids'];
+const furs = NYA.FUR_KEYS;
+hairs.forEach((h,k)=>{ NYA.drawCatgirl(a, 60+k*104, 120, 110, {fur: furs[k%furs.length], hair:h, outfit: NYA.OUTFITS[k%8], hat:false}, {anim:'idle', t:0}); a.fillStyle='#fff'; a.font='12px sans-serif'; a.fillText(h+'/'+furs[k%furs.length], 20+k*104, 140); });
+const poses = ['idle','walk','mine','loaf','sleep','groom','smoke','box','cheer','flat'];
+poses.forEach((p,k)=>{ NYA.drawCatgirl(a, 70+k*130, 300, 120, {fur: furs[(k+3)%8], hair: hairs[(k*3)%13], outfit: NYA.OUTFITS[k%8], hat:true}, {anim:p, t:0.3, swing: p==='mine'?0.7:0, bag:2}); a.fillStyle='#fff'; a.fillText(p, 50+k*130, 320); });
+['tora','doc','paws','pochi','auntie','nyacolette'].forEach((n,k)=>{ NYA.drawCatgirl(a, 80+k*150, 520, 140, NYA.npcLook(n), {anim:'idle', t:0, noPick:true}); a.fillStyle='#fff'; a.fillText(n, 60+k*150, 545); });
+NYA.drawCatgirl(a, 1000, 520, 140, NYA.foremanLook, {anim:'idle', t:0}); a.fillText('foreman', 980, 545);
+NYA.drawCatgirl(a, 1150, 520, 140, {fur:'black',hair:'bob',outfit:'#ff8fb1',hat:true}, {anim:'idle', t:0, eyes:'pin', mouth:'none'}); a.fillText('catterall', 1130, 545);
+NYA.drawCatgirl(a, 1300, 520, 140, {fur:'tabby',hair:'undercut',outfit:'#7ad7f0',hat:true}, {anim:'walk', t:0, droop:1, eyes:'half', mouth:'flat'}); a.fillText('flopped', 1280, 545);
+const b = document.getElementById('b').getContext('2d');
+[1,2,3,4,5].forEach((q,k)=>{ const qi=NYA.qInfo(q); NYA.drawOreShape(b, qi.shape, 60+k*80, 60, 26, qi.color, '#1a1020'); });
+// portrait
+furs.forEach((f,k)=>{ const p = NYA.portrait('t'+k, {fur:f, hair:hairs[k], outfit:NYA.OUTFITS[k], hat:k%2===0}, 64); b.drawImage(p, 460+k*80, 30, 64, 64); });
+const c = document.getElementById('c').getContext('2d');
+const ids = NYA.EYECATCHERS.map(e=>e.id);
+let fr = 0;
+function eye(){ c.clearRect(0,0,1400,420); ids.slice(0,6).forEach((id,k)=>{ c.save(); c.translate((k%3)*460, Math.floor(k/3)*210); c.beginPath(); c.rect(0,0,450,200); c.clip(); NYA.drawEyecatch(c, 450, 200, id, fr%3, performance.now()/1000, {fur:'calico',hair:'twinbuns',outfit:'#ff8fb1',hat:true}); c.restore(); }); }
+eye(); setInterval(()=>{fr++; eye();}, 1500);
+</script></body></html>

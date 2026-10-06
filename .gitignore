@@ -1,0 +1,16 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.vscode/
+.idea/
+
+# Tooling caches
+node_modules/
+__pycache__/
+*.pyc
+
+# Local Claude Code settings (launch.json is shared, personal settings are not)
+.claude/settings.local.json
+.claude/worktrees/
