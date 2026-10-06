@@ -161,7 +161,7 @@
     unlock: 'active:sonar' });
   def({ id: 'hotbox', bld: 'lab', branch: 'Ordnance', name: 'Catnip Hotbox', max: 1, base: 6e4, timer: 25,
     show: g => g.s.maxTierReached >= 3,
-    desc: 'ACTIVE [5]: place on an open tile. Every catgirl still on shift rushes over for a puff (22% stamina each); sleepers keep sleeping. 5 min cooldown.', flavor: 'The single biggest "make or break" button for full clears.',
+    desc: 'ACTIVE [5]: place on an open tile. Every catgirl rushes over for a puff (22% stamina each, more with Blunt Pouch), waking anyone who flopped. 5 min cooldown.', flavor: 'The single biggest "make or break" button for full clears.',
     unlock: 'active:hotbox' });
   def({ id: 'treat', bld: 'lab', branch: 'Ordnance', name: 'Treat Bag', max: 1, base: 6000, timer: 10,
     show: g => g.s.maxTierReached >= 2 && g.s.lifetimeCatnip >= 4000,
@@ -261,7 +261,7 @@
     bomb: { name: 'Hairball Bomb', key: '2', icon: '💣', cd: 45, target: 'tile', desc: 'Heavy damage in a 3×3 area. Ore drops on the floor for pickup.' },
     tuna: { name: 'Tuna Time!', key: '3', icon: '🐟', cd: 90, target: 'none', desc: '+50% Haste for every miner for 10 s.' },
     sonar: { name: 'Whisker Sonar', key: '4', icon: '📡', cd: 30, target: 'tile', desc: 'Reveal the fog in a 7×7 area.' },
-    hotbox: { name: 'Catnip Hotbox', key: '5', icon: '📦', cd: 300, target: 'open', desc: 'Every catgirl still on shift rushes to the box and takes a puff (22% stamina, tolerance applies). Sleepers keep sleeping.' },
+    hotbox: { name: 'Catnip Hotbox', key: '5', icon: '📦', cd: 300, target: 'open', desc: 'Every catgirl rushes to the box and takes a puff (22% stamina, tolerance applies), waking anyone who flopped.' },
     treat: { name: 'Treat Bag', key: '6', icon: '🍬', cd: 180, target: 'miner', desc: 'One catgirl earns double XP for 1 minute.' },
     catterall: { name: 'Catterall', key: '7', icon: '👁️', cd: 1200, target: 'none', desc: '90 s of +50% Pace, Haste and max stamina, and 0% Whimsy. Lasts across episodes. Silent. Unsettling.' },
     mewclear: { name: 'THE MEWCLEAR OPTION', key: '9', icon: '☢️', cd: 3600, target: 'tile', desc: 'Clears a massive radius — including bedrock. Ore at the blast edge becomes Glowing Nip (+2 quality).' },

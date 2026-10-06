@@ -412,7 +412,8 @@
           const arrived = this.move(m, dt, this.speedOf(m), false);
           if (arrived) {
             m.state = 'smoke'; m.timer = 1.5;
-            this.restore(m, 0.22 * (this.cfg.bluntPotency || 1));
+            // 22% of max stamina at base, scaled by Blunt Pouch like the Blunt (was 22% × potency ≈ 6.6%)
+            this.restore(m, 0.22 * (this.cfg.bluntPotency || 0.3) / 0.3);
             this.ev({ t: 'puff', m: m.id });
           }
           return;
@@ -1100,14 +1101,15 @@
       if (!M.isOpen(idx) || this.homeDist[idx] < 0) return false;
       this.hotbox = { idx, until: this.t + 30 };
       for (const m of this.miners) {
-        // only the crew still on shift: sleepers and clocked-out miners stay put (the Catnip Blunt revives)
-        if (m.state === 'rescue' || m.state === 'out' || m.state === 'flop') continue;
+        if (m.state === 'rescue') continue;
         this.bfs(m.tile);
         if (this._dist[idx] < 0) continue;
         this.release(m);
         m.path = this.pathTo(idx, m.tile); m.pathI = 0;
         m.state = 'hotbox'; m.zoom = 1.5; m.zoomT = this.t + 30;
-        m.bored = false;
+        // wakes sleepers like a Blunt does: no longer flopped, clocked out or showing Zs
+        m.flopped = false; m.bored = false; m.clockOut = false;
+        if (m.emote === 'zzz') { m.emote = null; m.emoteT = 0; }
         if (this.fullClear) m.done = true;
       }
       this.ev({ t: 'hotbox', i: idx });

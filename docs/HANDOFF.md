@@ -33,7 +33,7 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Applicant board: 3 visible applicants, slots refill after episodes, one turns over every 2 episodes, paid "Post a new ad" refresh (×3 hire, doubles per ad, halves per turnover); transfer refund 40% → 25% | Hire-and-transfer loops let you fish for exact fur/aptitude rolls (user found it fishing for a second tuxedo) |
 | Blend: shows after the Skein (or Season 2+), costs 5M, hourly cooldown (`NYA.BLEND_COOLDOWN`) | Playtest: a ×0.5 roll during a first run stalled progress, and once-per-season felt stingy after paying to unlock it |
 | Treat Bag: 2× XP for 60 s on one catgirl (`cg.treatUntil`, `NYA.TREAT_TIME`) | User request |
-| Hotbox skips miners who are out/flopped; reviving clears the zzz emote | Bug: sleepers got up still showing Zs, mined one block and went home |
+| Hotbox puff is 22% × (potency / 0.30) (was 22% × potency ≈ 6.6%); waking clears flopped/clockOut/zzz | Bug: woken sleepers kept their Zs, mined one block on ~7% stamina and flopped again |
 | VHS: static CSS overlay instead of drop-shadow filters + blend mode on the canvas (38 → 60 fps in headless test) | Playtest: big framerate drop |
 | Mud edge textures (`mudEdge`) where mud meets plain floor | Playtest: mud read as a solid block |
 | Pack-Up Drills hand-priced (`costs`), Headlamps growth 8 → 25, Tier 4 survey 6e7 → 2e7 | Playtest: drills/headlamps too cheap late; T4 drifted late after the HP change |
