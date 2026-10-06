@@ -976,10 +976,10 @@
 
     // ------------------------------------------------------------ Catterall & Special Blend
     catterallActive() { return (this.s.catterall || 0) > this.s.simTime; }
-    blendAvailable() { return this.lvl('blend') > 0 && !(this.s.blend && (this.s.blend.active || this.s.blend.season === this.s.season)); }
+    blendAvailable() { const b = this.s.blend; return this.lvl('blend') > 0 && !(b && (b.active || this.s.simTime < (b.readyAt || 0))); }
     startBlend() {
       if (!this.blendAvailable()) return false;
-      this.s.blend = { active: 1, until: this.s.simTime + 600, pot: 0, season: this.s.season, lineT: 0 };
+      this.s.blend = { active: 1, until: this.s.simTime + NYA.BLEND_TIME, readyAt: this.s.simTime + NYA.BLEND_COOLDOWN, pot: 0, season: this.s.season, lineT: 0 };
       this.novel('blend', 'Tora’s Special Blend is brewing!', 'refinery');
       this.emit('blend', { phase: 'start', line: this.rng.pick(NYA.BLEND_LINES.start) });
       return true;

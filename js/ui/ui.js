@@ -495,7 +495,7 @@
       const affOf = bld => NYA.UPGRADES.filter(u => u.bld === bld && s.buildings[u.bld] && g.upgVisible(u)).map(u => { const c = g.canBuy(u.id); return u.id + (c.ok ? 1 : 0) + (c.busy ? 'b' : '') + g.lvl(u.id); }).join(',');
       const parts = [tab, s.season, Object.keys(s.buildings).join(), s.research ? s.research.id : ''];
       if (tab === 'office') parts.push(s.selectedTier, Object.keys(s.tierUnlocked).join(), s.skein.have, g.yarnPreview() >= 1, Object.keys(s.faxes).length, Object.keys(s.gallery).length, s.seasonLog.length, Math.floor(s.skein.pity * 1000), s.life.episodes);
-      else if (tab === 'refinery') parts.push(affOf('refinery'), Math.floor(Math.log10(1 + s.milk) * 4), s.blend ? (s.blend.active ? 1 : 0) + ':' + (s.blend.result ? 1 : 0) : '', g.blendAvailable(), Math.round(g.catnipMult() * 100));
+      else if (tab === 'refinery') parts.push(affOf('refinery'), Math.floor(Math.log10(1 + s.milk) * 4), s.blend ? (s.blend.active ? 1 : 0) + ':' + (s.blend.result ? 1 : 0) : '', g.blendAvailable(), s.blend && !s.blend.active ? Math.floor(((s.blend.readyAt || 0) - s.simTime) / 60) : '', Math.round(g.catnipMult() * 100));
       else if (tab === 'barracks') parts.push(affOf('barracks'), s.active.join(), s.reserve.join(), s.catnip >= g.hireCost(), g.levelCap(), g.lvl('resume'),
         s.board.apps.map(c => c ? c.id : 0).join(), s.board.turn, s.catnip >= g.adCost(),
         s.crew.map(c => c.level + ':' + c.traits.length + ':' + Math.floor(c.xp / Math.max(1, NYA.xpNeed(c.level)) * 10)).join());
@@ -571,7 +571,8 @@
         r.sf.style.width = (f * 100).toFixed(1) + '%';
         r.sf.className = 'sf ' + (f > 0.5 ? 'hi' : f > 0.2 ? 'mid' : 'lo');
         r.st.textContent = Math.ceil(Math.max(0, m.stamina)) + '/' + Math.round(m.maxSt);
-        const txt = m.state === 'distract' ? dk[m.dkind] || 'distracted' : m.state === 'out' ? (m.flopped ? 'zzz…' : ep.fullClear ? 'celebrating!' : 'clocked out') : names[m.state] || m.state;
+        const txt = m.state === 'distract' ? dk[m.dkind] || 'distracted' : m.state === 'out' ? (m.flopped ? 'zzz…' : ep.fullClear ? 'celebrating!' : 'clocked out') : names[m.state] || m.state
+          + ((m.cg.treatUntil || 0) > this.g.s.simTime ? ' · 🍬2× XP ' + Math.ceil(m.cg.treatUntil - this.g.s.simTime) + 's' : '');
         if (r.state.textContent !== txt) r.state.textContent = txt;
         const bag = `🎒<b class="${m.bag.length >= m.s.carry ? 'full' : ''}">${m.bag.length}</b>/${m.s.carry}`;
         if (r.bagHtml !== bag) { r.bag.innerHTML = bag; r.bagHtml = bag; }

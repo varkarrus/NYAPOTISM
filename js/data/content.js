@@ -86,6 +86,9 @@
   NYA.BOARD_TURN = 2;        // one applicant moves on every N episodes
   NYA.AD_MULT = 3;           // "post an ad" costs hire price × 3 × 2^(recent ads)
   NYA.TRANSFER_REFUND = 0.25;
+  NYA.TREAT_TIME = 60;        // Treat Bag: 2x XP for one catgirl for this many seconds
+  NYA.BLEND_TIME = 600;       // Tora's Special Blend brews for 10 min...
+  NYA.BLEND_COOLDOWN = 3600;  // ...and can be started again an hour after it began
 
   NYA.APTITUDES = [
     { g: 'C', mult: 0.75, w: 34 },

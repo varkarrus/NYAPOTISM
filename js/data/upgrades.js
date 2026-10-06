@@ -31,9 +31,10 @@
     desc: 'High-density tiles pay a bonus: +2% per density point above 1 (per rank).', flavor: 'Spins the ore really fast. Nobody knows why that helps.',
     fx: l => '+' + (2 * l) + '% per density' });
 
-  def({ id: 'blend', bld: 'refinery', name: 'Tora’s Special Blend', max: 1, base: 2.5e4,
-    show: g => g.s.maxTierReached >= 2 && g.s.lifetimeCatnip >= 1.5e4,
-    desc: 'Unlocks a once-per-season gamble: stake 50% of refinery output for 10 minutes, then Tora rolls a random ×0.5 to ×4 on the pot. Live commentary included.', flavor: 'Pure spectacle. Mathematically neutral-to-slightly-positive. Emotionally, a rollercoaster.',
+  // unlocks once the Skein is found (or from Season 2), when one bad roll can't stall a first run
+  def({ id: 'blend', bld: 'refinery', name: 'Tora’s Special Blend', max: 1, base: 5e6,
+    show: g => g.s.skein.have || g.s.season > 1,
+    desc: 'Unlocks an hourly gamble: stake 50% of refinery output for 10 minutes, then Tora rolls a random ×0.5 to ×4 on the pot. Live commentary included.', flavor: 'Pure spectacle. Mathematically neutral-to-slightly-positive. Emotionally, a rollercoaster.',
     fx: l => l ? 'Gamble unlocked' : '' });
 
   // ---------------- Refinery: Creamery (paid in MILK) ----------------
@@ -110,7 +111,8 @@
     show: g => g.s.episodes >= 3,
     desc: '+10% Pace (compounding).', flavor: 'Toe beans deserve support.',
     fx: l => 'Pace ×' + NYA.fmt(Math.pow(1.1, l)) });
-  def({ id: 'drills', bld: 'lab', branch: 'Logistics', name: 'Pack-Up Drills', max: 9, base: 40, growth: 2.3,
+  // hand-priced so the 9 drills spread across Tiers 1-4 instead of maxing out before Tier 3
+  def({ id: 'drills', bld: 'lab', branch: 'Logistics', name: 'Pack-Up Drills', max: 9, costs: [40, 300, 2500, 2e4, 2e5, 3e6, 5e7, 1e9, 3e10],
     show: g => g.s.episodes >= 4,
     desc: '−0.5 s Pack-Up Time between episodes (6 s → 1.5 s floor).', flavor: 'Sgt. Paws times them with an egg timer shaped like a fish.',
     fx: l => 'Pack-up ' + (6 - 0.5 * l).toFixed(1) + ' s' });
@@ -159,11 +161,11 @@
     unlock: 'active:sonar' });
   def({ id: 'hotbox', bld: 'lab', branch: 'Ordnance', name: 'Catnip Hotbox', max: 1, base: 6e4, timer: 25,
     show: g => g.s.maxTierReached >= 3,
-    desc: 'ACTIVE [5]: place on an open tile. Every catgirl rushes over for a puff (22% stamina each). 5 min cooldown.', flavor: 'The single biggest "make or break" button for full clears.',
+    desc: 'ACTIVE [5]: place on an open tile. Every catgirl still on shift rushes over for a puff (22% stamina each); sleepers keep sleeping. 5 min cooldown.', flavor: 'The single biggest "make or break" button for full clears.',
     unlock: 'active:hotbox' });
   def({ id: 'treat', bld: 'lab', branch: 'Ordnance', name: 'Treat Bag', max: 1, base: 6000, timer: 10,
     show: g => g.s.maxTierReached >= 2 && g.s.lifetimeCatnip >= 4000,
-    desc: 'ACTIVE [6]: instantly grant one catgirl half a level of XP. 3 min cooldown. Perfect for fishing a trait in the right mine.', flavor: 'Crinkle crinkle. Every head in the mine turns.',
+    desc: 'ACTIVE [6]: one catgirl earns double XP for 1 minute (it carries over between episodes). 3 min cooldown. Perfect for fishing a trait in the right mine.', flavor: 'Crinkle crinkle. Every head in the mine turns.',
     unlock: 'active:treat' });
   def({ id: 'catterall', bld: 'lab', branch: 'Ordnance', name: 'Catterall', max: 1, base: 1.5e6, timer: 30,
     show: g => g.s.maxTierReached >= 3,
@@ -184,7 +186,8 @@
     show: g => g.s.stats.marks >= 5 || g.s.episodes >= 5,
     desc: '+1 laser mark at a time.', flavor: 'AAA. Triple-A. Like the catnip, if Tora is to be believed.',
     fx: l => (3 + l) + ' marks' });
-  def({ id: 'headlamp', bld: 'lab', branch: 'Exploration', name: 'Headlamps', max: 20, base: 400, growth: 8,
+  // steep: darkness only grows every two tiers (nip value ×100), so each lamp should cost a couple of tiers' worth
+  def({ id: 'headlamp', bld: 'lab', branch: 'Exploration', name: 'Headlamps', max: 20, base: 400, growth: 25,
     show: g => g.s.lifetimeCatnip >= 300,
     desc: '+1 Sight. Miners notice ore one tile further away, and opened tiles reveal one tile further. Deeper mines are darker and eat Sight.',
     flavor: 'Mostly lights up the inside of the hard hat. Mostly.',
@@ -212,7 +215,7 @@
     desc: 'Unlocks Tier 3 — Yarnball Caverns. Tangles, air pockets… and Schrödinger’s Box.', flavor: 'Somewhere down there, something hums.',
     unlock: 'mine:3' });
 
-  def({ id: 'mine4', bld: 'lab', branch: 'Exploration', name: 'Survey: Dairy Depths', max: 1, base: 6e7, timer: 30,
+  def({ id: 'mine4', bld: 'lab', branch: 'Exploration', name: 'Survey: Dairy Depths', max: 1, base: 2e7, timer: 30,
     show: g => g.s.maxTierReached >= 3,
     req: g => (!g.s.skein.have && g.s.season === 1 ? 'Find the Skein first (Schrödinger\u2019s Box, Tier 3)' : g.fc(3) >= 10 ? null : 'Full-clear Yarnball Caverns 10 times (' + g.fc(3) + '/10)'),
     desc: 'Unlocks Tier 4 — Dairy Depths. Milk nodes, pumpjacks and pipes… and a new resource: MILK.', flavor: 'Doc Boom swears the cave is "lactating." Nobody asked her to elaborate.',
@@ -258,8 +261,8 @@
     bomb: { name: 'Hairball Bomb', key: '2', icon: '💣', cd: 45, target: 'tile', desc: 'Heavy damage in a 3×3 area. Ore drops on the floor for pickup.' },
     tuna: { name: 'Tuna Time!', key: '3', icon: '🐟', cd: 90, target: 'none', desc: '+50% Haste for every miner for 10 s.' },
     sonar: { name: 'Whisker Sonar', key: '4', icon: '📡', cd: 30, target: 'tile', desc: 'Reveal the fog in a 7×7 area.' },
-    hotbox: { name: 'Catnip Hotbox', key: '5', icon: '📦', cd: 300, target: 'open', desc: 'Every catgirl rushes to the box and takes a puff (22% stamina, tolerance applies).' },
-    treat: { name: 'Treat Bag', key: '6', icon: '🍬', cd: 180, target: 'miner', desc: 'Instantly grant one catgirl half a level of XP.' },
+    hotbox: { name: 'Catnip Hotbox', key: '5', icon: '📦', cd: 300, target: 'open', desc: 'Every catgirl still on shift rushes to the box and takes a puff (22% stamina, tolerance applies). Sleepers keep sleeping.' },
+    treat: { name: 'Treat Bag', key: '6', icon: '🍬', cd: 180, target: 'miner', desc: 'One catgirl earns double XP for 1 minute.' },
     catterall: { name: 'Catterall', key: '7', icon: '👁️', cd: 1200, target: 'none', desc: '90 s of +50% Pace, Haste and max stamina, and 0% Whimsy. Lasts across episodes. Silent. Unsettling.' },
     mewclear: { name: 'THE MEWCLEAR OPTION', key: '9', icon: '☢️', cd: 3600, target: 'tile', desc: 'Clears a massive radius — including bedrock. Ore at the blast edge becomes Glowing Nip (+2 quality).' },
   };

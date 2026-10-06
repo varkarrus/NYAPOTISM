@@ -446,8 +446,13 @@ textarea { width: 100%; background: #120b1c; color: var(--text); border: 1px sol
 .sc-ch { color: var(--gold); font-style: normal; font-weight: 800; margin-top: 4px; }
 
 /* VHS mode */
-body.vhs #mineWrap::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px); mix-blend-mode: multiply; }
-body.vhs #mineWrap canvas#mine { filter: saturate(1.2) contrast(1.05) drop-shadow(1px 0 0 rgba(255,0,80,.35)) drop-shadow(-1px 0 0 rgba(0,200,255,.35)); }
+/* Cheap on purpose: one static overlay layer, no blend modes and no filters on the per-frame canvas
+   (the old drop-shadow chromatic split re-filtered the whole mine every frame and tanked the framerate). */
+body.vhs #mineWrap::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 1px, transparent 1px 3px),
+    linear-gradient(90deg, rgba(255,0,80,.07), transparent 4%, transparent 96%, rgba(0,200,255,.07)),
+    radial-gradient(ellipse at center, transparent 60%, rgba(10,0,20,.35) 100%); }
 
 /* scrollbars */
 ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; } ::-webkit-scrollbar-track { background: transparent; }

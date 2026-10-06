@@ -18,7 +18,7 @@
   function makeTextures(pal, key) {
     const V = 4, out = {};
     const bevel = (x, light, dark) => { px(x, 0, 0, light, 16, 1); px(x, 0, 0, light, 1, 16); px(x, 0, 15, dark, 16, 1); px(x, 15, 0, dark, 1, 16); };
-    out.dirt = []; out.stone = []; out.hard = []; out.groove = []; out.bed = []; out.floor = []; out.fog = []; out.mud = []; out.rubble = []; out.rubbleLite = [];
+    out.dirt = []; out.stone = []; out.hard = []; out.groove = []; out.bed = []; out.floor = []; out.fog = []; out.mud = []; out.rubble = []; out.rubbleLite = []; out.mudEdge = [[], [], [], []];
     for (let v = 0; v < V; v++) {
       out.dirt.push(texCanvas((x, r) => {
         px(x, 0, 0, pal.dirt, 16, 16);
@@ -69,6 +69,18 @@
         }
         for (let k = 0; k < 3; k++) px(x, r.int(0, 15), r.int(0, 15), '#9c7650'); // footprints-ish flecks
       }, key + 'm' + v));
+      // jagged floor-coloured border for a mud side that touches plain ground (0 top, 1 right, 2 bottom, 3 left)
+      for (let side = 0; side < 4; side++) out.mudEdge[side].push(texCanvas((x, r) => {
+        let d = r.int(1, 3);
+        for (let i = 0; i < 16; i++) {
+          d = Math.max(1, Math.min(4, d + r.int(-1, 1)));
+          for (let k = 0; k <= d; k++) {
+            const col = k === d ? '#4a321e' : (r.chance(0.2) ? pal.floor2 : pal.floor);
+            const X = side === 1 ? 15 - k : side === 3 ? k : i, Y = side === 0 ? k : side === 2 ? 15 - k : i;
+            px(x, X, Y, col);
+          }
+        }
+      }, key + 'me' + side + v));
       const rubbleTex = (n, tag) => texCanvas((x, r) => {
         for (let k = 0; k < n; k++) {
           const a = r.int(0, 12), b = r.int(1, 13), w = r.int(2, 3), h = r.int(1, 2);
@@ -252,7 +264,7 @@
           case 'allloaf': if (this.banners) this.banners('allloaf'); break;
           case 'ninelives': if (m) this.pop(m.x + 0.5, m.y - 0.6, 'NINE LIVES!', '#ffd23f', true); this.sfx('levelup'); break;
           case 'menace': if (m) this.pop(m.x + 0.5, m.y - 0.6, '*pushes item into crevice* :3', '#ff9e7a', false); break;
-          case 'treat': if (m) this.pop(m.x + 0.5, m.y - 0.6, 'TREAT!', '#ff7eb6', true); this.sfx('treat'); break;
+          case 'treat': if (m) this.pop(m.x + 0.5, m.y - 0.6, '2× XP!', '#ff7eb6', true); this.sfx('treat'); break;
           case 'catterall': if (e.on && this.banners) this.banners('catterall'); if (this.audio) this.audio.duck(e.on); break;
           case 'tangle': this.burst(e.i, '#ff9ec4', 3, 1.5, 0.08); break;
           case 'rubble': this.burst(e.i, '#b8a890', 2, 1.2, 0.06); break;
@@ -316,6 +328,10 @@
           const ty = M.type[i];
           if (ty === T.OPEN || ty === T.BOX) {
             ctx.drawImage((M.mud[i] ? tex.mud : tex.floor)[v], X, Y, ts, ts);
+            if (M.mud[i]) { // soft edge wherever the mud meets plain open ground
+              const nb = [y > 0 ? i - M.w : -1, x < M.w - 1 ? i + 1 : -1, y < M.h - 1 ? i + M.w : -1, x > 0 ? i - 1 : -1];
+              for (let sd = 0; sd < 4; sd++) { const j = nb[sd]; if (j >= 0 && M.isOpen(j) && !M.mud[j] && M.revealed[j]) ctx.drawImage(tex.mudEdge[sd][v], X, Y, ts, ts); }
+            }
             if (M.rubble[i]) ctx.drawImage((M.rubble[i] > 1 ? tex.rubble : tex.rubbleLite)[v], X, Y, ts, ts);
             if (y > 0 && !M.isOpen(i - M.w) && M.type[i - M.w] !== T.BOX) { ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(X, Y, ts, ts * 0.22); }
             if (M.tangle[i]) this.drawTangle(ctx, X, Y, ts, i, M.tangle[i]);

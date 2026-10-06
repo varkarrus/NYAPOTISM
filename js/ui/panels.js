@@ -130,9 +130,9 @@
         const left = b.until - s.simTime;
         h += `<div class="blend active"><h3>🍲 Tora's Special Blend is brewing</h3><p>Pot: ${NIP}<b data-live="blendPot">${fmt(b.pot)}</b> · Ready in <b data-live="blendLeft">${NYA.fmtTime(left)}</b></p><p class="quip">50% of every haul goes in the pot. Payout is the pot × ×0.5 … ×4.</p></div>`;
       } else if (g.blendAvailable()) {
-        h += `<div class="blend"><h3>🍲 Tora's Special Blend</h3><p>Once per season: stake 50% of refinery output for 10 minutes, then Tora rolls ×0.5 to ×4 on the pot.</p><button class="big" data-act="blend">Start the Blend</button></div>`;
+        h += `<div class="blend"><h3>🍲 Tora's Special Blend</h3><p>Once an hour: stake 50% of refinery output for 10 minutes, then Tora rolls ×0.5 to ×4 on the pot.</p><button class="big" data-act="blend">Start the Blend</button></div>`;
       } else if (b && b.result) {
-        h += `<div class="blend done"><h3>🍲 This season's Blend</h3><p>Pot ${NIP}${fmt(b.result.pot)} × <b>${b.result.f}</b> = ${NIP}<b>${fmt(b.result.payout)}</b>. Next blend next season.</p></div>`;
+        h += `<div class="blend done"><h3>🍲 Last Blend</h3><p>Pot ${NIP}${fmt(b.result.pot)} × <b>${b.result.f}</b> = ${NIP}<b>${fmt(b.result.payout)}</b>. Next blend in <b>${NYA.fmtTime(Math.max(0, (b.readyAt || 0) - s.simTime))}</b>.</p></div>`;
       }
     }
     return h;

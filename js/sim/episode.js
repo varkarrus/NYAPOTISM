@@ -764,7 +764,8 @@
 
     giveXP(m, base) {
       if (m.ghost) return;
-      const amt = base * NYA.tierXP(this.tier) * (m.s.flags.xpMult || 1) * this.game.xpMult();
+      const treat = (m.cg.treatUntil || 0) > this.game.s.simTime ? 2 : 1;
+      const amt = base * NYA.tierXP(this.tier) * (m.s.flags.xpMult || 1) * this.game.xpMult() * treat;
       m.xp += amt;
       const lv = this.game.giveXP(m.cg, amt, this.def.key);
       if (lv) {
@@ -1032,6 +1033,7 @@
       this.restore(m, potency);
       this.release(m);
       m.flopped = false; m.bored = false; m.clockOut = false;
+      if (m.emote === 'zzz') { m.emote = null; m.emoteT = 0; } // awake now
       m.state = 'smoke'; m.timer = 0.8; m.path = []; m.pathI = 0;
       if (this.fullClear) m.done = true;
       this.emote(m, 'blunt', 1.5);
@@ -1067,7 +1069,7 @@
           m.baseMaxSt = m.maxSt;
           m.maxSt *= 1.5;
           m.stamina += 0.5 * m.baseMaxSt;
-          if (m.state === 'out' && m.flopped) { m.flopped = false; this.toIdle(m); }
+          if (m.state === 'out' && m.flopped) { m.flopped = false; if (m.emote === 'zzz') { m.emote = null; m.emoteT = 0; } this.toIdle(m); }
         } else if (m.baseMaxSt) {
           m.maxSt = m.baseMaxSt; m.baseMaxSt = 0;
           m.stamina = Math.min(m.stamina, m.maxSt);
@@ -1078,9 +1080,8 @@
     useTreat(id) {
       const m = this.minerById(id);
       if (!m) return false;
-      const amt = 0.5 * NYA.xpNeed(m.cg.level);
-      const lv = this.game.giveXP(m.cg, amt, this.def.key);
-      if (lv) { m.levelsGained += lv; this.refreshStats(m); this.ev({ t: 'levelup', m: m.id, level: m.cg.level }); }
+      // double XP for a minute of sim time; kept on the catgirl so it carries across episodes
+      m.cg.treatUntil = this.game.s.simTime + NYA.TREAT_TIME;
       this.emote(m, 'heart', 2);
       this.ev({ t: 'treat', m: m.id });
       return true;
@@ -1099,13 +1100,14 @@
       if (!M.isOpen(idx) || this.homeDist[idx] < 0) return false;
       this.hotbox = { idx, until: this.t + 30 };
       for (const m of this.miners) {
-        if (m.state === 'rescue') continue;
-        this.release(m);
+        // only the crew still on shift: sleepers and clocked-out miners stay put (the Catnip Blunt revives)
+        if (m.state === 'rescue' || m.state === 'out' || m.state === 'flop') continue;
         this.bfs(m.tile);
         if (this._dist[idx] < 0) continue;
+        this.release(m);
         m.path = this.pathTo(idx, m.tile); m.pathI = 0;
         m.state = 'hotbox'; m.zoom = 1.5; m.zoomT = this.t + 30;
-        m.flopped = false; m.bored = false;
+        m.bored = false;
         if (this.fullClear) m.done = true;
       }
       this.ev({ t: 'hotbox', i: idx });

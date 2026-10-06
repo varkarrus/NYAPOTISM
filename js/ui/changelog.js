@@ -5,6 +5,19 @@
 
   NYA.CHANGELOG = [
     {
+      title: 'Playtest fixes: Blend, Treat Bag, VHS, mud edges',
+      date: '2026-10-07',
+      items: [
+        'Tora’s Special Blend now unlocks once you find the Skein (or from Season 2), and you can run it once an hour instead of once a season.',
+        'Treat Bag: one catgirl earns double XP for 1 minute (carries across episodes) instead of an instant half-level. The crew rail shows the timer.',
+        'Catnip Hotbox no longer wakes sleeping or clocked-out miners (that’s the Blunt’s job), and revived miners lose their Zs.',
+        'VHS mode is much cheaper to draw: same scanline look, no more framerate drop.',
+        'Mud has ragged edges where it meets normal ground.',
+        'Pack-Up Drills are hand-priced across Tiers 1–4 (they used to max out before Tier 3). Headlamps get pricier much faster.',
+        'The Tier 4 survey is cheaper (20M, was 60M) to keep Dairy Depths on schedule after the tougher-mines change.',
+      ],
+    },
+    {
       title: 'Tougher new mines, cheaper pickaxes',
       date: '2026-10-07',
       items: [
