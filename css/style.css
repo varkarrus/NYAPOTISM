@@ -208,6 +208,15 @@ h3.sec small { font-family: var(--body); font-size: 11px; color: var(--muted); l
 .hire p { margin: 0 0 6px; font-size: 12.5px; }
 .poster { width: 92px; height: 92px; flex: none; border-radius: 6px; background: #fff3d6; color: #c2185b; font-family: var(--disp); text-align: center; display: grid; place-items: center; font-size: 15px; transform: rotate(-3deg); box-shadow: 3px 3px 0 rgba(0,0,0,.4); line-height: 1.1; }
 .poster small { font-family: var(--body); font-size: 10px; color: #6a4a6a; }
+.board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 4px; }
+.app { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 3px; font-size: 12px; }
+.app .por { width: 56px; height: 56px; }
+.app .blurb { font-size: 11px; color: var(--muted); font-style: italic; }
+.app button.big { margin-top: auto; padding: 6px 10px; font-size: 13px; width: 100%; }
+.app.empty { justify-content: center; border-style: dashed; color: var(--muted); }
+.app-wait { font-size: 26px; opacity: .6; }
+.app-star { font-size: 11px; font-weight: 800; color: var(--gold); }
+.apt-q { color: var(--muted); }
 .cg { display: flex; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 8px; margin-bottom: 6px; }
 .cg.reserve { opacity: .85; border-style: dashed; }
 .por canvas { border-radius: 10px; background: linear-gradient(#3a2858, #2a1d42); display: block; }

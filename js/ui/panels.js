@@ -160,7 +160,7 @@
       </div>
       <div class="cga">
         <button data-act="bench:${cg.id}">${where === 'active' ? 'Bench' : 'Activate'}</button>
-        <button class="ghost" data-act="transfer:${cg.id}" title="Transfer to Corporate (small refund)">Transfer</button>
+        <button class="ghost" data-act="transfer:${cg.id}" title="Transfer to Corporate (refunds ${Math.round(NYA.TRANSFER_REFUND * 100)}% of a hire, more if levelled)">Transfer</button>
       </div>
     </div>`;
   }
@@ -170,10 +170,24 @@
     const cost = g.hireCost();
     const room = s.active.length < g.crewCap() || s.reserve.length < g.reserveCap();
     let h = `<div class="phead">${npcHead('paws')}<div><h2>Barracks</h2><p class="quip">“LISTEN UP! DRINK WATER! TAKE A NAP! I LOVE YOU ALL!”</p></div></div>`;
+    const B = s.board, ad = g.adCost();
+    const untilTurn = NYA.BOARD_TURN - (B.turn % NYA.BOARD_TURN);
+    const appCard = (c, k) => {
+      if (!c) return `<div class="app empty"><div class="app-wait">📋</div><div class="ms">Next applicant arrives after this episode</div></div>`;
+      const apt = g.lvl('resume') ? `<span class="apt apt-${NYA.aptGrade(c)}">${NYA.aptGrade(c)}</span>` : `<span class="apt apt-q" title="Aptitude hidden. Résumé Reader (R&amp;D) reveals it.">?</span>`;
+      const star = g.applicantMatch(c) ? `<span class="app-star" title="Tuxedo Club would love her">★ Tuxedo Club match</span>` : '';
+      const leaving = k === 0 && B.apps.filter(Boolean).length === NYA.BOARD_SIZE ? `<div class="ms">Leaves in ${untilTurn} episode${untilTurn > 1 ? 's' : ''}</div>` : '';
+      return `<div class="app"><div class="por" data-apor="${k}"></div>
+        <div class="cgn">${esc(c.name)} ${apt}</div><div class="cgl">${esc(NYA.FURS[c.fur].name)} · ${esc(NYA.HAIR_NAMES[c.hair] || c.hair)}</div>
+        ${star}<div class="blurb">${esc(c.blurb)}</div>${leaving}
+        <button class="big" data-act="hire:${k}" ${s.catnip >= cost && room ? '' : 'disabled'}>Hire ${NIP}${fmt(cost)}</button></div>`;
+    };
     h += `<div class="hire"><div class="poster">NOW HIRING<br><small>catgirls w/ pickaxes</small></div>
       <div><p>Active <b>${s.active.length}/${g.crewCap()}</b> · Reserves <b>${s.reserve.length}/${g.reserveCap()}</b> · Level cap <b>${g.levelCap()}</b></p>
-      <button class="big" data-act="hire" ${s.catnip >= cost && room ? '' : 'disabled'}>Hire a recruit — ${NIP}${fmt(cost)}</button>
+      <p class="ms">Applicants come and go: one moves on every ${NYA.BOARD_TURN} episodes, and hired slots refill after each episode. Traits are a surprise.</p>
       ${!room ? '<div class="req">No room. Buy Bunk Beds or Reserve Lockers, or transfer someone.</div>' : ''}</div></div>`;
+    h += `<div class="board">${B.apps.map(appCard).join('')}</div>`;
+    h += `<div class="row"><button data-act="postad" ${s.catnip >= ad ? '' : 'disabled'} title="Replaces every applicant now. Price doubles per ad, halves each time an applicant moves on.">📰 Post a new ad — ${NIP}${fmt(ad)}</button></div>`;
     h += `<div class="grid">${upgList(g, u => u.bld === 'barracks')}</div>`;
     h += `<h3 class="sec">On Shift</h3>` + g.activeCrew().map(cg => crewCard(g, cg, 'active')).join('');
     const res = g.reserveCrew();

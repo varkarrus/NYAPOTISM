@@ -5,6 +5,17 @@
 
   NYA.CHANGELOG = [
     {
+      title: 'Applicant board',
+      date: '2026-10-06',
+      items: [
+        'Sgt. Paws now pins up 3 applicants in the Barracks. You see each one’s fur, hair and name before hiring. Aptitude shows once you have Résumé Reader; traits stay a surprise.',
+        'A hired slot refills after the next episode, and the longest-waiting applicant moves on every 2 episodes.',
+        '“Post a new ad” replaces the whole board right away. It costs 3× a hire, doubles with each ad, and halves each time an applicant moves on.',
+        'A ★ marks a tuxedo applicant when someone on your crew has Tuxedo Club.',
+        'Transfers now refund 25% of a hire (was 40%) and no longer bring in new applicants.',
+      ],
+    },
+    {
       title: 'Rough ground',
       date: '2026-10-06',
       items: [

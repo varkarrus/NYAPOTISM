@@ -85,7 +85,8 @@
           if (g.buy(v)) { this.audio.sfx(NYA.UPG[v].timer ? 'research' : 'buy'); this.renderPanel(true); this.flashEl(el); }
           else this.audio.sfx('deny');
           break;
-        case 'hire': { const cg = g.hire(); this.audio.sfx(cg ? 'buy' : 'deny'); this.renderPanel(true); break; }
+        case 'hire': { const cg = g.hire(v === undefined || v === '' ? undefined : +v); this.audio.sfx(cg ? 'buy' : 'deny'); this.renderPanel(true); break; }
+        case 'postad': { const ok = g.postAd(); this.audio.sfx(ok ? 'buy' : 'deny'); if (ok) this.toast('Sgt. Paws: “NEW FACES! I’M NOT CRYING, YOU’RE CRYING!”', 'paws'); this.renderPanel(true); break; }
         case 'bench': if (g.toggleActive(+v)) { this.audio.sfx('click'); this.renderPanel(true); } else { this.audio.sfx('deny'); this.toast('No free slot for that.', 'warn'); } break;
         case 'transfer': {
           const cg = g.crewById(+v);
@@ -496,6 +497,7 @@
       if (tab === 'office') parts.push(s.selectedTier, Object.keys(s.tierUnlocked).join(), s.skein.have, g.yarnPreview() >= 1, Object.keys(s.faxes).length, Object.keys(s.gallery).length, s.seasonLog.length, Math.floor(s.skein.pity * 1000), s.life.episodes);
       else if (tab === 'refinery') parts.push(affOf('refinery'), Math.floor(Math.log10(1 + s.milk) * 4), s.blend ? (s.blend.active ? 1 : 0) + ':' + (s.blend.result ? 1 : 0) : '', g.blendAvailable(), Math.round(g.catnipMult() * 100));
       else if (tab === 'barracks') parts.push(affOf('barracks'), s.active.join(), s.reserve.join(), s.catnip >= g.hireCost(), g.levelCap(), g.lvl('resume'),
+        s.board.apps.map(c => c ? c.id : 0).join(), s.board.turn, s.catnip >= g.adCost(),
         s.crew.map(c => c.level + ':' + c.traits.length + ':' + Math.floor(c.xp / Math.max(1, NYA.xpNeed(c.level)) * 10)).join());
       else if (tab === 'lab') parts.push(affOf('lab'));
       else if (tab === 'pochi') parts.push(affOf('pochi'), s.orders.join(), g.runningOrders().join(), NYA.ORDER_ORDER.map(id => g.orderAvailable(id) ? 1 : 0).join(''));
@@ -516,6 +518,10 @@
       this.paintNpcs(p);
       p.querySelectorAll('[data-por]').forEach(el => {
         const cg = this.g.crewById(+el.dataset.por);
+        if (cg) el.appendChild(NYA.portrait('cg' + cg.id, { fur: cg.fur, hair: cg.hair, outfit: cg.outfit, hat: false }, 56));
+      });
+      p.querySelectorAll('[data-apor]').forEach(el => {
+        const cg = this.g.s.board.apps[+el.dataset.apor];
         if (cg) el.appendChild(NYA.portrait('cg' + cg.id, { fur: cg.fur, hair: cg.hair, outfit: cg.outfit, hat: false }, 56));
       });
     }

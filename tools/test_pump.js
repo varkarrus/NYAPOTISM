@@ -7,7 +7,7 @@ const g = new NYA.Game({ headless: true, seed: 'pumptest' });
 g.newGame();
 g.s.catnip = 1e15; Object.assign(g.s.buildings, { lab: 1, barracks: 1, pochi: 1 });
 for (let k = 0; k < 40; k++) for (const id of ['bunk', 'pick', 'snacks', 'grit', 'boots', 'grip', 'bags', 'refinery']) g.buy(id);
-for (let k = 0; k < 9; k++) g.hire();
+for (let k = 0; k < 9; k++) { g.fillBoard(false); g.hire(); } // refill the applicant board between test hires
 g.s.tierUnlocked[4] = 1; g.selectTier(4);
 const junc = process.argv[2] === 'junctions';
 if (junc) g.s.upg.junctions = 1;

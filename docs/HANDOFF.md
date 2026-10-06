@@ -30,6 +30,7 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Yarn exponent nodes cost 40/600, Catnip Cable-Knit cost ×4/rank, Skein Stripe ×1.5 | Yarn ran away from Season 4 on (up to 44K/season) |
 | Title card shows a changelog (`js/ui/changelog.js`) and how far the build goes; `/dev/` Pages build | User is away from their computer and playtests by URL |
 | Four Ears?! eyecatcher: human ears drawn outside the head; gallery keeps one look per replay | Ears were hidden inside the head; the gallery re-rolled the catgirl every frame |
+| Applicant board: 3 visible applicants, slots refill after episodes, one turns over every 2 episodes, paid "Post a new ad" refresh (×3 hire, doubles per ad, halves per turnover); transfer refund 40% → 25% | Hire-and-transfer loops let you fish for exact fur/aptitude rolls (user found it fishing for a second tuxedo) |
 | Rough ground from Tier 2: mud patches (×0.5 walk speed) and rubble from broken rock (×0.65, trampled after 2 crossings). New Mud Puppy trait ignores both | Pace needed a per-tier counter-pressure. Pacing targets unchanged in the harness |
 
 ### Pacing targets vs current sims (active bot)

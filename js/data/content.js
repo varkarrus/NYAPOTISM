@@ -81,6 +81,12 @@
     'Unclear if she’s on shift or just visiting.',
   ];
 
+  // Sgt. Paws's applicant board (see Game.boardEpisodeEnd)
+  NYA.BOARD_SIZE = 3;        // applicants on the board
+  NYA.BOARD_TURN = 2;        // one applicant moves on every N episodes
+  NYA.AD_MULT = 3;           // "post an ad" costs hire price × 3 × 2^(recent ads)
+  NYA.TRANSFER_REFUND = 0.25;
+
   NYA.APTITUDES = [
     { g: 'C', mult: 0.75, w: 34 },
     { g: 'B', mult: 0.9, w: 36 },
@@ -246,6 +252,7 @@
     tier3: 'YARNBALL CAVERNS. IF YOU SEE A BOX THAT HUMS, OPEN IT. IF IT DOESN’T HUM, ALSO OPEN IT. ♡',
     skein: 'YOU FOUND IT. GOOD. WHEN YOU’RE READY, PULL THE THREAD. EVERYTHING RESETS. NOT EVERYTHING. YOU’LL SEE. ♡',
     season2: 'WELCOME BACK. YOU DON’T REMEMBER ME. I REMEMBER YOU. KNIT SOMETHING NICE. ♡',
+    ad: 'HIRING FAIR!! BRING SNACKS. DO NOT HIRE ANYONE WHO BRINGS THEIR OWN SNACKS. SUSPICIOUS. ♡',
     montage: 'IT’S TRAINING MONTAGE TIME. I’VE ALREADY PICKED THE SONG. ♡',
     mewclear: 'I HEARD ABOUT THE WARHEAD. I AM NOT ANGRY. I AM IMPRESSED AND ALSO A LITTLE ANGRY. ♡',
   };

@@ -8,7 +8,7 @@ g.newGame();
 Object.assign(g.s.buildings, { lab: 1, barracks: 1, pochi: 1 });
 g.s.catnip = 1e9;
 for (let k = 0; k < 10; k++) for (const id of ['bunk', 'pick', 'snacks', 'grit', 'boots', 'grip', 'bags', 'refinery']) g.buy(id);
-for (let k = 0; k < 6; k++) g.hire();
+for (let k = 0; k < 6; k++) { g.fillBoard(false); g.hire(); } // refill the applicant board between test hires
 g.s.maxTierReached = 2; g.s.tierUnlocked[2] = 1;
 let last = null;
 g.on((t, d) => { if (t === 'episodeEnd') last = d; });

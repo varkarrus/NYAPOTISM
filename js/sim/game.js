@@ -27,6 +27,7 @@
       mine: {}, lifeMine: {},
       crew: [], active: [], reserve: [],
       hires: 0,
+      board: { apps: [null, null, null], ads: 0, turn: 0, init: 0 }, // Sgt. Paws's applicant board
       act: {},
       orders: [],
       faxes: {},
@@ -60,7 +61,9 @@
       this.faxT = 0;
       this._faxBonus = null;
       this.awaitT = 0;
-      if (this.s.crew.length) NYA.setNextCatgirlId(Math.max(...this.s.crew.map(c => c.id)) + 1);
+      const ids = this.s.crew.map(c => c.id).concat(this.s.board.apps.filter(Boolean).map(c => c.id));
+      if (ids.length) NYA.setNextCatgirlId(Math.max(...ids) + 1);
+      this.openBoard();
       NYA.settingsRef.sci = !!this.s.settings.sci;
     }
 
@@ -404,17 +407,79 @@
       }
     }
 
+    // ------------------------------------------------------------ applicant board
+    // Three visible applicants instead of a blind roll. Hiring leaves the slot empty until the
+    // next episode ends; one applicant also moves on every BOARD_TURN episodes. Posting an ad
+    // replaces the whole board right away, at a price that doubles per ad and halves per turnover.
+    newApplicant() {
+      const used = {};
+      for (const c of this.s.crew) used[c.name] = 1;
+      for (const c of this.s.board.apps) if (c) used[c.name] = 1;
+      return NYA.makeCatgirl(this.rng, { usedNames: used, ep: this.s.episodeNum });
+    }
+    openBoard() { // first fill, once the Barracks exist (also covers saves from before the board)
+      const B = this.s.board;
+      if (B.init || !this.s.buildings.barracks) return;
+      B.init = 1;
+      this.fillBoard(false);
+    }
+    fillBoard(all) {
+      const B = this.s.board;
+      for (let k = 0; k < NYA.BOARD_SIZE; k++) if (all || !B.apps[k]) B.apps[k] = this.newApplicant();
+    }
+    boardEpisodeEnd() {
+      const B = this.s.board;
+      if (!this.s.buildings.barracks) return;
+      B.turn++;
+      if (B.turn % NYA.BOARD_TURN === 0) {
+        // the longest-waiting applicant takes another job
+        B.apps.shift(); B.apps.push(null);
+        B.ads = Math.max(0, B.ads - 1);
+      }
+      this.fillBoard(false);
+    }
+    adCost() { return Math.ceil(this.hireCost() * NYA.AD_MULT * Math.pow(2, this.s.board.ads)); }
+    postAd() {
+      const cost = this.adCost();
+      if (this.s.catnip < cost) return false;
+      this.s.catnip -= cost;
+      this.s.board.ads++;
+      this.s.life.ads = (this.s.life.ads || 0) + 1;
+      this.fillBoard(true);
+      if (this.novel('ad', 'Hiring fair! Post an ad to refresh the applicant board', 'crew')) this.fax('ad', NYA.STORY_FAX.ad);
+      this.emit('ad', {});
+      return true;
+    }
+    // Does this applicant suit someone already on the crew? (e.g. a tuxedo for the Tuxedo Club)
+    applicantMatch(cg) {
+      return cg.fur === 'tuxedo' && this.s.crew.some(c => c.traits.indexOf('tuxedo_club') >= 0);
+    }
+    // Auto-hire and the bot take the best visible applicant (aptitude only if Résumé Reader shows it).
+    bestApplicant() {
+      const apps = this.s.board.apps;
+      let best = -1, score = -1;
+      for (let k = 0; k < apps.length; k++) {
+        const c = apps[k];
+        if (!c) continue;
+        const sc = (this.lvl('resume') ? c.apt * 10 : 0) + (this.applicantMatch(c) ? 5 : 0);
+        if (sc > score) { score = sc; best = k; }
+      }
+      return best;
+    }
+
     // ------------------------------------------------------------ roster
-    hire() {
+    hire(slot) {
       const cost = this.hireCost();
       if (this.s.catnip < cost) return null;
       const roomActive = this.s.active.length < this.crewCap();
       const roomRes = this.s.reserve.length < this.reserveCap();
       if (!roomActive && !roomRes) return null;
+      const B = this.s.board;
+      if (slot === undefined || slot < 0) slot = this.bestApplicant();
+      const cg = B.apps[slot];
+      if (!cg) return null;
+      B.apps[slot] = null;
       this.s.catnip -= cost;
-      const used = {};
-      for (const c of this.s.crew) used[c.name] = 1;
-      const cg = NYA.makeCatgirl(this.rng, { usedNames: used, ep: this.s.episodeNum });
       if (this.loom('ta_fresh')) {
         cg.level = 3;
         const tid = NYA.rollTrait(this.rng, cg.traits, 'burrow');
@@ -435,7 +500,7 @@
       this.s.crew = this.s.crew.filter(c => c.id !== id);
       this.s.active = this.s.active.filter(x => x !== id);
       this.s.reserve = this.s.reserve.filter(x => x !== id);
-      const refund = Math.ceil(this.hireCost() * 0.4 * (1 + 0.2 * (cg.level - 1)));
+      const refund = Math.ceil(this.hireCost() * NYA.TRANSFER_REFUND * (1 + 0.2 * (cg.level - 1)));
       this.s.catnip += refund;
       this.s.life.transfers++;
       if (!this.s.active.length && this.s.reserve.length) this.s.active.push(this.s.reserve.shift());
@@ -648,6 +713,7 @@
       let blendCut = 0;
       if (s.blend && s.blend.active) { blendCut = catnip * 0.5; catnip -= blendCut; s.blend.pot += blendCut; }
       s.catnip += catnip;
+      this.boardEpisodeEnd();
       const milk = ep.haul.milk;
       if (milk > 0) {
         s.milk += milk; s.life.milk = (s.life.milk || 0) + milk;
@@ -786,6 +852,7 @@
       }
       if (!B.barracks && s.lifetimeCatnip >= 25) {
         B.barracks = 1; this.novel('bld:barracks', 'The Barracks open! Sgt. Paws is already crying', 'building');
+        this.openBoard();
         this.fax('barracks', NYA.STORY_FAX.barracks);
       }
       if (!B.pochi && (s.stats.fullClears >= 1 || this.loom('nm_desk'))) {
@@ -856,6 +923,7 @@
       s.mine = {};
       s.crew = kept; s.active = []; s.reserve = [];
       s.hires = 0;
+      s.board = { apps: [null, null, null], ads: 0, turn: 0, init: 0 };
       s.act = {};
       s.skein = { have: 0, pity: 0, empties: 0 };
       s.stats = newSeasonStats();
