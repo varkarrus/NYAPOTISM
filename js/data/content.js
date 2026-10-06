@@ -136,7 +136,7 @@
     ],
     tora_motherlode: [
       'FIFTY?! Density FIFTY?! Somebody hold my harisen, I’m gonna— *faints*',
-      'THE MOTHER-NYAN-LODE!? In MY refinery!? I need to sit down. I need to lie down.',
+      'THE MEOWTHERLODE!? In MY refinery!? I need to sit down. I need to lie down.',
     ],
     doc_research: [
       'Good news! It works. Bad news! I don’t know *why* it works.',
@@ -194,7 +194,7 @@
       'Every Last Leaf! A Flawless Shift!',
       'Not One Crumb Left! The Crew Weeps With Joy!',
     ],
-    motherlode: ['THE MOTHER-NYAN-LODE!! {name} Strikes It Rich!', 'Density Fifty?! Tora Faints!!'],
+    motherlode: ['THE MEOWTHERLODE!! {name} Strikes It Rich!', 'Density Fifty?! Tora Faints!!'],
     chain: ['Domino Danger! {chain} Stones Fall at Once!', 'Crack! Crack! CRACK! The Great Chain Break!'],
     box: ['Open the Box! Schrödinger’s Gambit!', 'The Humming Box! {name} Peeks Inside!'],
     skein: ['The Skein!! Time Itself Unravels!!', 'A Thread Through Time! The Foreman’s Choice!'],
@@ -219,7 +219,7 @@
       'Next time: an episode so dramatic, it’s mostly digging!',
       'Next time: Inspector Pochi glares through a window. Ominously!',
     ],
-    motherlode: ['Next time: can Tora recover from THE MOTHER-NYAN-LODE? Doctors say no.'],
+    motherlode: ['Next time: can Tora recover from THE MEOWTHERLODE? Doctors say no.'],
     perfect: ['Next time: can the crew do it again?! The pressure! The glory! The snacks!'],
     low: ['Next time: Tora files a formal complaint. Nyandeyanen.', 'Next time: the crew tries again! Harder! Possibly!'],
     skein: ['Next time: the Skein hums on the Foreman’s desk. What will she do?!'],

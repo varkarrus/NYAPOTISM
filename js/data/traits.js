@@ -12,6 +12,7 @@
 
   // kind: pos | mixed | neg
   // mines: weight multipliers keyed by mine key — "mine-flavored rolls"
+  // tier: can't roll until you've ever reached that tier (no naming tangles, boxes or milk before you've seen them)
   NYA.TRAITS = [
     // --- Mining
     { id: 'chunky', name: 'Chunky', kind: 'mixed', rarity: 'common', desc: '+30% Power, −15% Pace.', flavor: 'A thicc queen.', mods: { powerMult: 1.3, paceMult: 0.85 } },
@@ -30,9 +31,9 @@
     { id: 'tunnel_vision', name: 'Tunnel Vision', kind: 'mixed', rarity: 'uncommon', desc: '+4 Focus, ignores laser marks entirely.', flavor: 'Has a plan. Will not be sharing it.', mods: { focusAdd: 4, ignoreLaser: 1 } },
     { id: 'box_obsessed', name: 'Box Obsessed', kind: 'neg', rarity: 'common', desc: 'Stops to sit in any dead-end nook for 5 seconds. Every time.', flavor: 'If it fits, she sits. It always fits.', mods: { boxSitter: 1 } },
     { id: 'zoomies_3am', name: 'Zoomies at 3AM', kind: 'pos', rarity: 'uncommon', desc: 'Random bursts of +100% Pace.', flavor: 'It is always 3AM somewhere.', mods: { zoomies3am: 1 } },
-    { id: 'mud_puppy', name: 'Mud Puppy', kind: 'pos', rarity: 'uncommon', desc: 'Mud and rubble don’t slow her; she stomps rubble flat.', flavor: 'Splashes in every puddle. On purpose. With joy.', mods: { mudPuppy: 1 }, mines: { quarry: 3, dairy: 3 } },
+    { id: 'mud_puppy', tier: 2, name: 'Mud Puppy', kind: 'pos', rarity: 'uncommon', desc: 'Mud and rubble don’t slow her; she stomps rubble flat.', flavor: 'Splashes in every puddle. On purpose. With joy.', mods: { mudPuppy: 1 }, mines: { quarry: 3, dairy: 3 } },
     { id: 'sure_footed', name: 'Sure-Footed', kind: 'pos', rarity: 'common', desc: '+20% Pace.', flavor: 'Always lands on her feet. Usually on purpose.', mods: { paceMult: 1.2 }, mines: { yarn: 2 } },
-    { id: 'yarn_wrangler', name: 'Yarn Wrangler', kind: 'pos', rarity: 'uncommon', desc: 'Tangles don’t slow her; she cuts them clean.', flavor: 'Has fought yarn before. Yarn lost.', mods: { yarnWrangler: 1 }, mines: { yarn: 6 } },
+    { id: 'yarn_wrangler', tier: 3, name: 'Yarn Wrangler', kind: 'pos', rarity: 'uncommon', desc: 'Tangles don’t slow her; she cuts them clean.', flavor: 'Has fought yarn before. Yarn lost.', mods: { yarnWrangler: 1 }, mines: { yarn: 6 } },
     { id: 'ball_of_energy', name: 'Ball of Energy', kind: 'mixed', rarity: 'common', desc: '+20% Haste, +60% Whimsy.', flavor: 'Bounces. Constantly. Even asleep.', mods: { hasteMult: 1.2, whimsyMult: 1.6 }, mines: { yarn: 3 } },
     { id: 'space_cadet', name: 'Space Cadet', kind: 'neg', rarity: 'common', desc: '+100% Whimsy.', flavor: 'Is she mining or staring at the wall? Yes.', mods: { whimsyMult: 2 } },
 
@@ -59,11 +60,11 @@
     { id: 'perfectionist', name: 'Perfectionist', kind: 'pos', rarity: 'uncommon', desc: '+10% Power in mines where your crew has an S rank.', flavor: 'An A is just a failed S.', mods: { perfectionist: 1 } },
 
     // --- Dairy
-    { id: 'lactose_tolerant', name: 'Lactose Tolerant', kind: 'pos', rarity: 'uncommon', desc: 'Pumps she operates run 30% faster, and she loves to volunteer.', flavor: 'Drinks it straight from the pipe. Nobody stops her.', mods: { lactose: 1 }, mines: { dairy: 7 } },
-    { id: 'milk_mustache', name: 'Milk Mustache', kind: 'mixed', rarity: 'common', desc: '+20% Stamina, −10% Haste.', flavor: 'Has not noticed. Nobody will tell her.', mods: { staminaMult: 1.2, hasteMult: 0.9 }, mines: { dairy: 4 } },
+    { id: 'lactose_tolerant', tier: 4, name: 'Lactose Tolerant', kind: 'pos', rarity: 'uncommon', desc: 'Pumps she operates run 30% faster, and she loves to volunteer.', flavor: 'Drinks it straight from the pipe. Nobody stops her.', mods: { lactose: 1 }, mines: { dairy: 7 } },
+    { id: 'milk_mustache', tier: 4, name: 'Milk Mustache', kind: 'mixed', rarity: 'common', desc: '+20% Stamina, −10% Haste.', flavor: 'Has not noticed. Nobody will tell her.', mods: { staminaMult: 1.2, hasteMult: 0.9 }, mines: { dairy: 4 } },
 
     // --- Box
-    { id: 'box_whisperer', name: 'Box Whisperer', kind: 'pos', rarity: 'rare', desc: '+3% Schrödinger’s Box chance per episode while she’s on shift.', flavor: 'Hears a hum nobody else hears.', mods: { boxWhisperer: 0.03 }, mines: { yarn: 5 } },
+    { id: 'box_whisperer', tier: 3, name: 'Box Whisperer', kind: 'pos', rarity: 'rare', desc: '+3% Schrödinger’s Box chance per episode while she’s on shift.', flavor: 'Hears a hum nobody else hears.', mods: { boxWhisperer: 0.03 }, mines: { yarn: 5 } },
 
     // --- Legendary
     { id: 'nine_lives', name: 'Nine-Lives Energy', kind: 'pos', rarity: 'legendary', desc: 'Once per shift, a flop instantly restores 100% stamina.', flavor: 'Has died zero times. Plans to use all nine anyway.', mods: { nineLives: 1 } },
@@ -77,18 +78,19 @@
   NYA.TRAIT_LEVELS = [3, 8, 15, 25, 40];
 
   // Roll a trait for a catgirl in a given mine. Kinds 55/25/20, rarity-weighted, mine-flavored.
-  NYA.rollTrait = function (rng, owned, mineKey, luck) {
+  NYA.rollTrait = function (rng, owned, mineKey, luck, maxTier) {
+    const known = t => !t.tier || (maxTier || 1) >= t.tier;
     const kind = rng.weighted([['pos', 55 + (luck || 0)], ['mixed', 25], ['neg', Math.max(5, 20 - (luck || 0))]]);
     const pool = [];
     for (const t of NYA.TRAITS) {
-      if (owned.indexOf(t.id) >= 0) continue;
+      if (owned.indexOf(t.id) >= 0 || !known(t)) continue;
       if (t.kind !== kind) continue;
       let w = NYA.RARITY[t.rarity].w;
       if (t.mines && mineKey && t.mines[mineKey]) w *= t.mines[mineKey];
       pool.push([t.id, w]);
     }
     if (!pool.length) {
-      for (const t of NYA.TRAITS) if (owned.indexOf(t.id) < 0) pool.push([t.id, NYA.RARITY[t.rarity].w]);
+      for (const t of NYA.TRAITS) if (owned.indexOf(t.id) < 0 && known(t)) pool.push([t.id, NYA.RARITY[t.rarity].w]);
     }
     return pool.length ? rng.weighted(pool) : null;
   };

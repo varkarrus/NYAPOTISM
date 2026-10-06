@@ -32,6 +32,9 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Four Ears?! eyecatcher: human ears drawn outside the head; gallery keeps one look per replay | Ears were hidden inside the head; the gallery re-rolled the catgirl every frame |
 | Applicant board: 3 visible applicants, slots refill after episodes, one turns over every 2 episodes, paid "Post a new ad" refresh (×3 hire, doubles per ad, halves per turnover); transfer refund 40% → 25% | Hire-and-transfer loops let you fish for exact fur/aptitude rolls (user found it fishing for a second tuxedo) |
 | Tier 4 survey: no Skein gate (just 10 T3 perfect clears); spoiler-free changelog/frontier/req text; `tools/skeinrace.js` checks the Skein still comes first (8/8 seeds, 5–16 min ahead) | User: Dairy Depths should be reachable first run, the Skein should usually come first, and it must never be named before it's found |
+| Mother-Nyan-Lode renamed MEOWTHERLODE in all player text | User request |
+| Traits can carry `tier: N` and only roll once lifetime max tier ≥ N (Mud Puppy 2, Yarn Wrangler/Box Whisperer 3, Lactose Tolerant/Milk Mustache 4) | Playtest: rolled Yarn Wrangler before seeing tangles and Lactose Tolerant before seeing milk |
+| Box chance T3 1% → 5%, T4 5% → 8%; pity +0.005 → +0.01 per boxless episode | After the tougher-tier change, the first box took 19–26 T3 episodes; the Skein now lands at ~63–99 min (mostly 69–81) and before the T4 survey in 12/12 seeds |
 | Blend: shows after the Skein (or Season 2+), costs 5M, hourly cooldown (`NYA.BLEND_COOLDOWN`) | Playtest: a ×0.5 roll during a first run stalled progress, and once-per-season felt stingy after paying to unlock it |
 | Treat Bag: 2× XP for 60 s on one catgirl (`cg.treatUntil`, `NYA.TREAT_TIME`) | User request |
 | Hotbox puff is 22% × (potency / 0.30) (was 22% × potency ≈ 6.6%); waking clears flopped/clockOut/zzz | Bug: woken sleepers kept their Zs, mined one block on ~7% stamina and flopped again |

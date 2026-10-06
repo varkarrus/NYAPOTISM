@@ -482,7 +482,7 @@
       this.s.catnip -= cost;
       if (this.loom('ta_fresh')) {
         cg.level = 3;
-        const tid = NYA.rollTrait(this.rng, cg.traits, 'burrow');
+        const tid = NYA.rollTrait(this.rng, cg.traits, 'burrow', 0, Math.max(this.s.maxTierReached, this.s.life.maxTier || 0));
         if (tid) { cg.traits.push(tid); cg.traitMines.push('burrow'); }
       }
       this.s.crew.push(cg);
@@ -530,7 +530,7 @@
         cg.level++;
         gained++;
         if (NYA.TRAIT_LEVELS.indexOf(cg.level) >= 0) {
-          const tid = NYA.rollTrait(this.rng, cg.traits, mineKey);
+          const tid = NYA.rollTrait(this.rng, cg.traits, mineKey, 0, Math.max(this.s.maxTierReached, this.s.life.maxTier || 0));
           if (tid) {
             cg.traits.push(tid); cg.traitMines.push(mineKey);
             this.s.life.traits++;
@@ -578,7 +578,7 @@
         let p = (NYA.BOX_CHANCE[t] || 0.005) + 0.02 * this.loom('sk_box') + this.s.skein.pity;
         for (const cg of this.activeCrew()) if (cg.traits.indexOf('box_whisperer') >= 0) p += 0.03;
         if (this.rng.chance(p)) { box = true; this.s.skein.pity = 0; }
-        else this.s.skein.pity += this.loom('sk_hum') ? 0.01 : 0.005;
+        else this.s.skein.pity += this.loom('sk_hum') ? 0.02 : 0.01;
       }
       const crew = this.activeCrew();
       for (const cg of crew) cg.episodes++;
@@ -676,7 +676,7 @@
 
     onMotherlode(ep) {
       this.s.life.motherlodes++;
-      this.novel('motherlode', 'THE MOTHER-NYAN-LODE!!', 'event');
+      this.novel('motherlode', 'THE MEOWTHERLODE!!', 'event');
       this.emit('motherlode', { ep });
     }
     onBoxOpened(ep, m) {

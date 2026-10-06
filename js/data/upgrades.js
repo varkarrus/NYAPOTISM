@@ -196,7 +196,7 @@
     show: g => g.s.stats.fullClears >= 1,
     desc: '+15% Full-Clear Bonus multiplier (×1.25 → ×2.0).', flavor: 'An A is just a failed S.',
     fx: l => 'Full clear ×' + (1.25 + 0.15 * l).toFixed(2) });
-  def({ id: 'radar', bld: 'lab', branch: 'Exploration', name: 'Motherlode Radar', max: 5, base: 900, growth: 3,
+  def({ id: 'radar', bld: 'lab', branch: 'Exploration', name: 'Meowtherlode Radar', max: 5, base: 900, growth: 3,
     show: g => g.s.lifetimeCatnip >= 500,
     desc: '+1.5% chance per mine that one catnip tile rolls an absurd density (30–50).', flavor: 'Beeps near big catnip. Also near Tora.',
     fx: l => (2 + 1.5 * l).toFixed(1) + '% / mine' });

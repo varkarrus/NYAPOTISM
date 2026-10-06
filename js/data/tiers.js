@@ -113,6 +113,6 @@
   NYA.MAX_TIER = 4;
 
   // Schrödinger's Box base chance per episode by tier (GDD §14.1)
-  NYA.BOX_CHANCE = { 3: 0.01, 4: 0.05, 5: 0.15, 6: 0.35 };
+  NYA.BOX_CHANCE = { 3: 0.05, 4: 0.08, 5: 0.15, 6: 0.35 };
   NYA.PIPE_HALF = 12; // flow = rate / (1 + pipeLength / 12)  (GDD §9.2)
 })(globalThis.NYA = globalThis.NYA || {});

@@ -428,7 +428,7 @@
         const hp = M.maxHp[i] ? ` · HP <b>${fmt(Math.max(0, M.hp[i]))}</b>/${fmt(M.maxHp[i])}` : '';
         if (ty === T.ORE) {
           const left = M.dens[i] - M.dropped[i], q = M.q[i] + (M.glow[i] ? 2 : 0), qi = NYA.qInfo(q);
-          html = `<b>Catnip Ore</b>${i === M.motherlode ? ' <b style="color:#ff7eb6">MOTHERLODE</b>' : ''}${M.glow[i] ? ' <b style="color:#b4ff78">GLOWING</b>' : ''} · density <b>${left}</b> · quality <b style="color:${qi.color}">${q} ${qi.label}</b> · ≈${fmt(left * ep.itemValue({ q, d: M.dens[i] }))} ore value${hp}`;
+          html = `<b>Catnip Ore</b>${i === M.motherlode ? ' <b style="color:#ff7eb6">MEOWTHERLODE</b>' : ''}${M.glow[i] ? ' <b style="color:#b4ff78">GLOWING</b>' : ''} · density <b>${left}</b> · quality <b style="color:${qi.color}">${q} ${qi.label}</b> · ≈${fmt(left * ep.itemValue({ q, d: M.dens[i] }))} ore value${hp}`;
         } else if (ty === T.BOX) html = `<b>Schrödinger’s Box</b> — it hums.${hp}`;
         else if (ty === T.OPEN) {
           const bits = [];
@@ -688,7 +688,7 @@
     }
     banner(k, d) {
       const B = {
-        motherlode: ['THE MOTHER-NYAN-LODE', 'Tora (off-screen): “NYANDEYANEN!?”', 'pink'],
+        motherlode: ['THE MEOWTHERLODE', 'Tora (off-screen): “NYANDEYANEN!?”', 'pink'],
         fullclear: ['FULL CLEAR!', 'every last leaf', 'gold'],
         skein: ['THE SKEIN', 'a thread through time hums in her paws…', 'mono'],
         tuna: ['TUNA TIME!', '+50% Haste', 'blue'],

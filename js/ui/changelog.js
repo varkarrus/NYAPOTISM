@@ -9,6 +9,9 @@
       title: 'Dairy Depths gate, fewer spoilers',
       date: '2026-10-07',
       items: [
+        'The Mother-Nyan-Lode is now the MEOWTHERLODE (and Meowtherlode Radar).',
+        'Traits that name a mine’s special feature only roll once you’ve reached that mine: Mud Puppy (Tier 2), Yarn Wrangler and Box Whisperer (Tier 3), Lactose Tolerant and Milk Mustache (Tier 4).',
+        'Schrödinger’s Box turns up more reliably in Yarnball Caverns (5% base, was 1%, and the chance grows twice as fast while you wait).',
         'The Dairy Depths survey now only needs 10 perfect clears of Yarnball Caverns, so you can reach Tier 4 in your first run.',
         'Removed spoilers from the survey text, this changelog and the dev-save list.',
       ],

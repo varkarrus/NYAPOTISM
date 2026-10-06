@@ -10,7 +10,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
 - **Fixed timestep:** 20 ticks/s (`NYA.TICK`), and the renderer interpolates. Everything runs on sim time (cooldowns, research, Tanuki visits, Catterall), so Fast-Forward and dev speeds just run more ticks.
 - **Content is data-driven:**
   - Upgrades: `def({...})` in `js/data/upgrades.js`, using `show`, `req`, `costs` or `base`/`growth`, `cur` (currency) and `fx`.
-  - Traits: `mods` keys in `js/data/traits.js`. New flag keys must also be added to the flag list in `NYA.buildStats` (`js/sim/catgirl.js`).
+  - Traits: `mods` keys in `js/data/traits.js`. New flag keys must also be added to the flag list in `NYA.buildStats` (`js/sim/catgirl.js`). Give a trait `tier: N` if its text names a mine-specific system, so it can't roll before the player has seen that mine.
   - Also data-driven: faxes (`check` functions), the Loom grid, Tanuki events, and tiers.
 - **Per-tier scaling lives in `js/data/tiers.js`:** `tierBase`, `tierHP`, `tierResist`, `tierXP`, `tierDensityP`, `tierCrumble`, `tierDarkness`. New tiers get these for free.
 - **Events:**
