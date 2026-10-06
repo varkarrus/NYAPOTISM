@@ -1,4 +1,4 @@
-# Publishes ONLY the playable game (index.html, css/, js/) to GitHub Pages, as two builds on one site:
+# Publishes ONLY the playable game (index.html, css/, js/, img/) to GitHub Pages, as two builds on one site:
 #   /       the main branch (stable)
 #   /dev/   the most recently updated other branch (latest dev changes, e.g. a cloud session's branch)
 # Pushing either kind of branch rebuilds both, so neither ever wipes the other.
@@ -38,7 +38,8 @@ jobs:
           set -e
           build() { # build <ref> <outdir>
             mkdir -p "$2"
-            git archive "$1" index.html css js | tar -x -C "$2"
+            # img/ is optional so branches from before it existed still build
+            git archive "$1" index.html css js $(git ls-tree --name-only "$1" img) | tar -x -C "$2"
             sha=$(git rev-parse --short "$1")
             date=$(git log -1 --format=%cd --date=format:'%Y-%m-%d %H:%M' "$1")
             printf 'globalThis.NYA = globalThis.NYA || {};\nNYA.BUILD = { sha: "%s", branch: "%s", date: "%s" };\n' "$sha" "${1#origin/}" "$date" > "$2/js/build.js"
