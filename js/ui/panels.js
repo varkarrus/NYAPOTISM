@@ -152,7 +152,7 @@
       <div class="por" data-por="${cg.id}"></div>
       <div class="cgi">
         <div class="cgn">${esc(cg.name)} <small>${esc(cg.family)}</small> ${apt} ${cg.anchored ? '<span class="anchor" title="Timeline-anchored">⚓</span>' : ''}</div>
-        <div class="cgl">Lv ${cg.level}${capped ? ' <b class="cap">CAP</b>' : ''} · ${esc(NYA.FURS[cg.fur].name)} · ${esc(NYA.HAIR_NAMES[cg.hair] || cg.hair)}</div>
+        <div class="cgl">Lv ${cg.level}${capped ? ' <b class="cap">CAP</b>' : ''} · ${esc(NYA.lookLabel(cg))}</div>
         <div class="xpbar"><div style="width:${Math.min(100, 100 * cg.xp / need)}%"></div></div>
         <div class="traits">${traits || '<span class="none">No traits yet' + (nextT ? ' — first at Lv ' + nextT : '') + '</span>'}</div>
         <div class="blurb">${esc(cg.blurb)}</div>
@@ -180,7 +180,7 @@
       const star = g.applicantMatch(c) ? `<span class="app-star" title="Tuxedo Club would love her">★ Tuxedo Club match</span>` : '';
       const leaving = k === 0 && B.apps.filter(Boolean).length === NYA.BOARD_SIZE ? `<div class="ms">Leaves in ${untilTurn} episode${untilTurn > 1 ? 's' : ''}</div>` : '';
       return `<div class="app"><div class="por" data-apor="${k}"></div>
-        <div class="cgn">${esc(c.name)} ${apt}</div><div class="cgl">${esc(NYA.FURS[c.fur].name)} · ${esc(NYA.HAIR_NAMES[c.hair] || c.hair)}</div>
+        <div class="cgn">${esc(c.name)} ${apt}</div><div class="cgl">${esc(NYA.lookLabel(c))}</div>
         ${star}<div class="blurb">${esc(c.blurb)}</div>${leaving}
         <button class="big" data-act="hire:${k}" ${s.catnip >= cost && room ? '' : 'disabled'}>Hire ${NIP}${fmt(cost)}</button></div>`;
     };

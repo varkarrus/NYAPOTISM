@@ -60,7 +60,7 @@
     ctx.beginPath();
     ctx.moveTo(3.2, -26.5); ctx.lineTo(tipX, tipY); ctx.lineTo(8.6, -22.2); ctx.closePath();
     ctx.fillStyle = fur.ear; ctx.fill();
-    ctx.lineWidth = 0.7; ctx.strokeStyle = shade(fur.ear, -0.35); ctx.stroke();
+    ctx.lineWidth = 0.7; ctx.strokeStyle = shade(fur.ear, fur.sphynx ? -0.22 : -0.35); ctx.stroke(); // softer edge on bare skin
     ctx.beginPath();
     ctx.moveTo(4.5, -25.6); ctx.lineTo(tipX - 0.4, tipY + 2.4); ctx.lineTo(7.6, -23.2); ctx.closePath();
     ctx.fillStyle = PINK; ctx.fill();
