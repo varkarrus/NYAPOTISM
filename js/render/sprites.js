@@ -52,7 +52,6 @@
       ctx.beginPath();
       ctx.moveTo(6.8, -27.2); ctx.quadraticCurveTo(14.8, -27.5, 14, -17); ctx.quadraticCurveTo(13.2, -13.4, 11, -15); ctx.quadraticCurveTo(10.6, -21, 7.8, -23.8); ctx.closePath();
       ctx.fillStyle = shade(fur.ear, -0.18); ctx.fill();
-      ctx.lineWidth = 0.6; ctx.strokeStyle = shade(fur.ear, -0.45); ctx.stroke();
       ctx.restore();
       return;
     }
@@ -60,7 +59,6 @@
     ctx.beginPath();
     ctx.moveTo(3.2, -26.5); ctx.lineTo(tipX, tipY); ctx.lineTo(8.6, -22.2); ctx.closePath();
     ctx.fillStyle = fur.ear; ctx.fill();
-    ctx.lineWidth = 0.7; ctx.strokeStyle = shade(fur.ear, fur.sphynx ? -0.22 : -0.35); ctx.stroke(); // softer edge on bare skin
     ctx.beginPath();
     ctx.moveTo(4.5, -25.6); ctx.lineTo(tipX - 0.4, tipY + 2.4); ctx.lineTo(7.6, -23.2); ctx.closePath();
     ctx.fillStyle = PINK; ctx.fill();
@@ -261,7 +259,45 @@
 
   // ---------------------------------------------------------------- main
   // pose: { anim, t, face, swing (0..1), eyes, mouth, hat, lamp, droop, prop }
+  // Every catgirl gets one thick outline around her whole silhouette (no internal outlines): draw her to an
+  // offscreen canvas, stamp a dark copy of that silhouette around her, then draw her on top.
+  const OUTLINE = INK, BOX_W = 52, BOX_H = 50, ANCHOR_Y = 42; // sprite units (size / 34)
+  const pool = new Map();
+  function scratch(w, h) {
+    const key = Math.ceil(w / 32) + 'x' + Math.ceil(h / 32);
+    let p = pool.get(key);
+    if (!p) {
+      if (pool.size > 24) pool.clear();
+      const mk = () => { const c = document.createElement('canvas'); c.width = Math.ceil(w / 32) * 32; c.height = Math.ceil(h / 32) * 32; return c; };
+      p = { a: mk(), b: mk() }; pool.set(key, p);
+    }
+    return p;
+  }
   NYA.drawCatgirl = function (ctx, x, footY, size, look, pose) {
+    pose = pose || {};
+    if (typeof document === 'undefined' || pose.noOutline) return drawCatgirlRaw(ctx, x, footY, size, look, pose);
+    const u = size / 34;
+    const m = ctx.getTransform ? ctx.getTransform() : { a: 1, b: 0 };
+    const k = Math.max(1, Math.hypot(m.a, m.b)); // device pixels per canvas unit, so the sprite stays crisp
+    const W = BOX_W * u * k, H = BOX_H * u * k;
+    if (W < 4 || H < 4) return;
+    const { a, b } = scratch(W, H);
+    const ca = a.getContext('2d'), cb = b.getContext('2d');
+    ca.setTransform(1, 0, 0, 1, 0, 0); ca.clearRect(0, 0, a.width, a.height);
+    ca.setTransform(k, 0, 0, k, 0, 0);
+    drawCatgirlRaw(ca, BOX_W * u / 2, ANCHOR_Y * u, size, look, Object.assign({}, pose, { noShadow: true }));
+    cb.setTransform(1, 0, 0, 1, 0, 0); cb.clearRect(0, 0, b.width, b.height);
+    cb.globalCompositeOperation = 'source-over'; cb.drawImage(a, 0, 0);
+    cb.globalCompositeOperation = 'source-in'; cb.fillStyle = OUTLINE; cb.fillRect(0, 0, b.width, b.height);
+    cb.globalCompositeOperation = 'source-over';
+    // shadow under her feet, then the outline stamps, then the sprite
+    if (!pose.noShadow) { ctx.save(); ctx.translate(x, footY); ctx.scale(u, u); ellipse(ctx, 0, 0, 8.5, 2.2, 'rgba(0,0,0,0.28)'); ctx.restore(); }
+    const ox = x - BOX_W * u / 2, oy = footY - ANCHOR_Y * u, sw = a.width / k, sh = a.height / k;
+    const t = Math.max(1 / k, u * 0.85);
+    for (let i = 0; i < 12; i++) { const ang = i * Math.PI / 6; ctx.drawImage(b, ox + Math.cos(ang) * t, oy + Math.sin(ang) * t, sw, sh); }
+    ctx.drawImage(a, ox, oy, sw, sh);
+  };
+  function drawCatgirlRaw(ctx, x, footY, size, look, pose) {
     pose = pose || {};
     const u = size / 34;
     const t = pose.t || 0;

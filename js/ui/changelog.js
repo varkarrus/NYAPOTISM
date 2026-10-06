@@ -6,6 +6,13 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Outlined catgirls',
+      date: '2026-10-08',
+      items: [
+        'Every catgirl now has one thick dark outline around her whole silhouette, and the thin outlines inside it (like around the ears) are gone. Easier to spot in the mine, and Sphynx ears no longer look grey.',
+      ],
+    },
+    {
       title: 'Crit focus, Barracks scroll fix',
       date: '2026-10-07',
       items: [
