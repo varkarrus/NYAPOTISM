@@ -178,7 +178,9 @@ Hiring happens at the Barracks via a recruitment poster. Cost is small and scale
 - Fur pattern (tabby, calico, tuxedo, siamese, tortie, orange, black, white). Cosmetic, but some traits reference it.
 - A one-line personality blurb from a big table ("Claims she's never loafed. Is loafing right now.").
 - **No traits.** Traits are earned, not rolled at the door.
-- A hidden **Aptitude** grade (C to S) affecting stat growth per level. Hidden until you buy the *Résumé Reader* research, at which point the rehire-and-fire loop gets a real optimization target.
+- A hidden **Aptitude** grade (C, B, A, S, and with the Loom's *Star Search* knot, SS, SSS and beyond; see §14.3) affecting stat growth per level. Hidden until you buy the *Résumé Reader* research.
+
+Recruits come from **Sgt. Paws's applicant board**: three visible applicants (fur, hair, name; aptitude once Résumé Reader is bought). A hired slot refills after the next episode, the longest-waiting applicant moves on every two episodes, and a paid "Post a new ad" refreshes the whole board. This replaced blind hire-and-fire rerolling.
 
 The real cost of a catgirl is time: levelling her up and seeing what she becomes.
 
@@ -668,6 +670,25 @@ Yarn is spent at the **Quantum Loom**, which appears in HQ after the first prest
 - **Skein Tuning:** Schrödinger's Box chance, yarn gain exponent (0.4 → 0.45 → 0.5).
 
 The early-game rows are intentionally huge. A second-season player with ×3 catnip, three starting crew slots, and a pre-built Refinery Mk III should rocket through Tier 1 in two minutes, which is exactly the feeling that makes prestige satisfying.
+
+**Star Search** (repeatable knot, late Loom). Each rank adds **+5%** to a per-applicant "promotion" roll: when an applicant is generated, roll once; on a success her Aptitude goes up one grade (C → B → A → S → SS → SSS → …) and you **roll again**, so promotions chain. With chance *p* per roll, she gains at least *n* grades with probability *p*ⁿ, and gains *p* / (1 − *p*) grades on average:
+
+| Star Search ranks | p | ≥1 grade | ≥3 grades | Average bonus grades |
+| --- | --- | --- | --- | --- |
+| 1 | 5% | 5% | 0.01% | 0.05 |
+| 6 | 30% | 30% | 2.7% | 0.43 |
+| 10 | 50% | 50% | 12.5% | 1 |
+| 16 | 80% | 80% | 51% | 4 |
+| 18 | 90% | 90% | 73% | 9 |
+| 19 | 95% | 95% | 86% | 19 |
+
+Early ranks are a rare jackpot ("an SS applicant?!"). At 90%+ the board is routinely full of SSSSSSSSS girls, which is the late-game fantasy. Notes for building it:
+
+- Cap the chance below 100% (e.g. 95%) or every roll would chain forever.
+- Grades past S keep scaling stat growth, e.g. ×1.2 per extra S on top of S's ×1.35, so long strings stay meaningful without breaking the per-tier counter-pressures.
+- Display gets compact past SSS: "S×7" on cards, with the full SSSSSSS in the tooltip for the comedy.
+- It rolls at applicant generation, so it pairs with the applicant board, ad refreshes and Résumé Reader (which reveals the jackpot before you hire). A ★ or a sparkle on promoted applicants sells the moment.
+- Tora or Sgt. Paws should react to a 5+ chain. Auntie fax at the first SSSSS: "WHERE DID YOU FIND HER. DON'T TELL ME. ♡"
 
 **Spin-off unlocks** also live here as expensive standalone knots: Farm, Fishing Pier, Alchemy Lab. That's where the "yarn unlocks new game mechanics" promise is delivered.
 

@@ -71,7 +71,7 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 
 1. ~~Pace vs terrain~~ — done (`NYA.tierMud`, `NYA.tierRubble` in `js/data/tiers.js`, `terrainSlow` in `js/sim/episode.js`). Possible follow-ups: let pathfinding avoid mud when a detour is short, and feed trampled rubble into Robovacs later.
 2. **OVAs (GDD §15).** Challenge seasons unlocked after Season 5. Each has three difficulty releases (VHS / Laserdisc / Director's Cut) and a permanent reward. Most limiters are just flags on existing systems (One Cat Army, Lights Out, No Laser Zone, Budget Cuts, Nine to Five, Monday). This is the next novelty source for Season 5+.
-3. **Loom Pattern 2**, unlocked when Pattern 1 is complete.
+3. **Loom Pattern 2**, unlocked when Pattern 1 is complete. Good home for **Star Search** (GDD §14.3): a repeatable knot giving applicants a chaining +5%/rank aptitude promotion roll (SS, SSS, …).
 4. **Tiers 5–6 (GDD §9.2), built on the per-tier scaling framework:**
    - Sushi Grotto: flooding water that applies a wet penalty.
    - Mousehole Maze: mice, nests and cheese, with manual turrets and later Turret-chan.
