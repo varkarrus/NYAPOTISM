@@ -42,7 +42,7 @@
     ctx.restore();
   }
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-  const randLook = () => ({ fur: pick(NYA.FUR_KEYS), hair: pick(['bob', 'buzz', 'ponytail', 'undercut', 'twinbuns', 'velvet', 'bun']), outfit: pick(NYA.OUTFITS), hat: true });
+  const randLook = () => { const fur = pick(NYA.FUR_KEYS); return { fur, hair: NYA.FURS[fur].sphynx ? 'bald' : pick(['bob', 'buzz', 'ponytail', 'undercut', 'twinbuns', 'velvet', 'bun']), outfit: pick(NYA.OUTFITS), hat: true }; };
 
   const EYE = {
     box(ctx, W, H, f, t, L) {
@@ -191,7 +191,8 @@
   };
   function randLookSeed(k) {
     const r = new NYA.RNG('look' + k);
-    return { fur: r.pick(NYA.FUR_KEYS), hair: r.pick(['bob', 'buzz', 'ponytail', 'undercut', 'twinbuns', 'velvet', 'bun']), outfit: r.pick(NYA.OUTFITS), hat: true };
+    const fur = r.pick(NYA.FUR_KEYS);
+    return { fur, hair: NYA.FURS[fur].sphynx ? 'bald' : r.pick(['bob', 'buzz', 'ponytail', 'undercut', 'twinbuns', 'velvet', 'bun']), outfit: r.pick(NYA.OUTFITS), hat: true };
   }
 
   NYA.randEyeLook = randLook;

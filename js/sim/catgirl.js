@@ -46,12 +46,13 @@
     let name = rng.pick(NYA.FIRST_NAMES);
     for (let k = 0; k < 8 && used[name]; k++) name = rng.pick(NYA.FIRST_NAMES);
     const apt = opts.apt !== undefined ? opts.apt : rng.weighted(NYA.APTITUDES.map((a, i) => [i, a.w]));
+    const fur = opts.fur || NYA.rollFur(rng);
     return {
       id: nextId++,
       name: opts.name || name,
       family: rng.pick(NYA.FAMILY_NAMES),
-      fur: opts.fur || rng.pick(NYA.FUR_KEYS),
-      hair: opts.hair || rng.weighted(NYA.HAIRSTYLES),
+      fur,
+      hair: (NYA.FURS[fur] && NYA.FURS[fur].sphynx) ? 'bald' : opts.hair || NYA.rollHair(rng, fur),
       outfit: rng.pick(NYA.OUTFITS),
       blurb: opts.blurb || rng.pick(NYA.BLURBS),
       apt,

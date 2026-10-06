@@ -115,6 +115,11 @@
     ctx.fillStyle = c;
     const cap = (ext) => { ctx.beginPath(); ctx.arc(0, -20.5, 9 + (ext || 0), Math.PI * 1.02, Math.PI * 1.98); ctx.closePath(); ctx.fill(); };
     switch (style) {
+      case 'bald': // Sphynx: no hair at all, just a couple of forehead wrinkles
+        if (!hat) { ctx.strokeStyle = shade(fur.hair, -0.22); ctx.lineWidth = 0.45; ctx.lineCap = 'round';
+          for (const y of [-25.2, -24.1]) { ctx.beginPath(); ctx.moveTo(-2.4, y); ctx.quadraticCurveTo(0, y - 0.6, 2.4, y); ctx.stroke(); } }
+        else { ctx.strokeStyle = shade(fur.hair, -0.22); ctx.lineWidth = 0.45; ctx.beginPath(); ctx.moveTo(-2, -24.6); ctx.quadraticCurveTo(0, -25.1, 2, -24.6); ctx.stroke(); }
+        break;
       case 'buzz': case 'velvet': {
         ctx.fillStyle = style === 'velvet' ? shade(c, 0.05) : shade(c, 0.12);
         ctx.beginPath(); ctx.arc(0, -20.5, 8.7, Math.PI * 1.05, Math.PI * 1.95); ctx.lineTo(6.5, -24.5); ctx.quadraticCurveTo(0, -26.3, -6.5, -24.5); ctx.closePath(); ctx.fill();

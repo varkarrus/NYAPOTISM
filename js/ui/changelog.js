@@ -6,9 +6,11 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
-      title: 'Head-start fix',
+      title: 'Sphynx catgirls, fog lasers, head-start fix',
       date: '2026-10-07',
       items: [
+        'New rare breed: Sphynx (about 3% of applicants). Completely bald, skin-coloured ears and tail, a couple of forehead wrinkles.',
+        'You can now laser any fog tile, even if it’s secretly open air or bedrock. The crew digs toward it, and the mark clears itself once the tile is revealed and turns out to be unmineable.',
         'Fixed: head-start bonuses (like pre-built Bunk Beds) now apply the moment you get them, not one cycle later. Saves that already have them get them on load.',
       ],
     },

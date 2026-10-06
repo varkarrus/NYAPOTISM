@@ -22,8 +22,13 @@
     tuxedo: { name: 'Tuxedo', hair: '#26212e', hair2: '#f6f0ea', ear: '#26212e', tail: '#26212e', tux: true },
     siamese: { name: 'Siamese', hair: '#efe1c8', hair2: '#5a4033', ear: '#5a4033', tail: '#5a4033', points: true },
     tortie: { name: 'Tortie', hair: '#3a2a26', hair2: '#c9662f', ear: '#c9662f', tail: '#3a2a26', patches: ['#c9662f', '#8a3f1e'] },
+    // rare: no fur at all. Always bald (it takes the hairstyle slot too), skin-coloured ears and tail.
+    sphynx: { name: 'Sphynx', hair: '#f2c4b0', hair2: '#e0a894', ear: '#f2bfa9', tail: '#f2c4b0', sphynx: true, w: 0.25 },
   };
   NYA.FUR_KEYS = Object.keys(NYA.FURS);
+  // fur roll: every pattern weight 1 except the rare ones (Sphynx ≈ 3% of recruits)
+  NYA.rollFur = rng => rng.weighted(NYA.FUR_KEYS.map(k => [k, NYA.FURS[k].w || 1]));
+  NYA.rollHair = (rng, fur) => (NYA.FURS[fur] && NYA.FURS[fur].sphynx ? 'bald' : rng.weighted(NYA.HAIRSTYLES));
 
   // Hairstyles (GDD §20.3): the classic three are allowed but kept in the minority.
   NYA.HAIRSTYLES = [
@@ -32,6 +37,7 @@
     ['bun', 4], ['ponytail', 4], ['sideshave', 3], ['twinbuns', 3], ['braids', 2],
   ];
   NYA.HAIR_NAMES = {
+    bald: 'Bald (Sphynx)',
     bob: 'Chunky bob', bangs: 'Very long bangs', tendrils: 'Convenient tendrils', buzz: 'Buzzcut', velvet: 'Velvet buzz',
     undercut: 'Undercut', hightight: 'High-and-tight', slick: 'Slicked back', bun: 'Tight bun', ponytail: 'High ponytail',
     sideshave: 'Side shave', twinbuns: 'Twin buns', braids: 'Twin braids',

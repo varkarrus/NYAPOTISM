@@ -73,7 +73,8 @@
       const crew = this.cfg.crew;
       const lvl = crew.length ? Math.round(crew.reduce((a, c) => a + c.level, 0) / crew.length) : 1;
       for (let k = 0; k < n; k++) {
-        const ghost = { id: -(k + 1), name: 'Ghost #' + (k + 1), family: '', fur: this.rng.pick(NYA.FUR_KEYS), hair: this.rng.weighted(NYA.HAIRSTYLES),
+        const gfur = NYA.rollFur(this.rng);
+        const ghost = { id: -(k + 1), name: 'Ghost #' + (k + 1), family: '', fur: gfur, hair: NYA.rollHair(this.rng, gfur),
           outfit: '#c9e3ff', apt: 1, level: lvl, xp: 0, traits: [], ghost: true };
         const m = this.makeMiner(ghost, this.miners.length);
         m.ghost = true;
@@ -162,8 +163,8 @@
       const M = this.mine;
       if (M.revealed[i]) return;
       M.revealed[i] = 1;
-      if (M.type[i] === T.BEDROCK && this.marks.length) {
-        for (let k = this.marks.length - 1; k >= 0; k--) if (this.marks[k].idx === i) this.marks.splice(k, 1);
+      if (this.marks.length && !M.isMineable(i) && M.type[i] !== T.MILK) { // fog mark turned out to be bedrock or open air
+        for (let k = this.marks.length - 1; k >= 0; k--) if (this.marks[k].idx === i) { this.marks.splice(k, 1); this.ev({ t: 'unmark', i }); }
       }
       if (i === M.motherlode && !this.motherlodeSeen) {
         this.motherlodeSeen = true; this.st.motherlode = true;
@@ -573,7 +574,7 @@
       if (!f.ignoreLaser) {
         for (const mk of this.marks) {
           if (this.isFront[mk.idx]) { cands.push(mk.idx); markSet.add(mk.idx); }
-          else if (!M.isOpen(mk.idx)) {
+          else if (!M.isOpen(mk.idx) || !M.revealed[mk.idx]) {
             farMarks.push(mk);
             // nearest frontier tile toward the far mark
             let best = -1, bd = 1e9;
@@ -989,8 +990,9 @@
     addMark(idx, drone) {
       const M = this.mine;
       if (idx < 0 || idx >= this.n) return false;
+      // fog tiles can always be marked (no peeking at what's under them); reveal() clears the mark if it's not mineable
       if (M.revealed[idx] && !M.isMineable(idx) && M.type[idx] !== T.MILK) return false;
-      if (M.isOpen(idx)) return false;
+      if (M.revealed[idx] && M.isOpen(idx)) return false;
       if (this.marks.some(k => k.idx === idx)) return false;
       this.marks.push({ idx, t0: this.t, drone: !!drone });
       const max = drone ? 0 : (this.cfg.laserMax || 3);

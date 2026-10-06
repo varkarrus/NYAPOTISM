@@ -239,6 +239,7 @@
             else { this.pop(M.x(e.i) + 0.5, M.y(e.i), 'Tangled Thread…', '#c9a8ff', true); this.sfx('empty'); }
             break;
           case 'fullclear': this.sfx('fullclear'); if (this.banners) this.banners('fullclear'); break;
+          case 'unmark': this.rings.push({ i: e.i, life: 0.5, max: 0.5, col: '#9b93a8', r0: 0.3, r1: 1.0 }); break;
           case 'mark': this.sfx(e.drone ? 'drone' : 'laser'); this.rings.push({ i: e.i, life: 0.4, max: 0.4, col: e.drone ? '#7af0e0' : '#ff3b5c', r0: 1.2, r1: 0.3 }); break;
           case 'bombthrow': this.bombsVis.push({ i: e.i, t: 0, dur: 0.55 }); this.sfx('throw'); break;
           case 'boom':
