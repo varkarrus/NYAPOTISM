@@ -6,6 +6,13 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Loaf fix',
+      date: '2026-10-08',
+      items: [
+        'Loafing catgirls no longer melt into one blob: the head now sits properly under the hard hat, with a soft shadow where it rests on the body. Hard hats also cast a little shadow on the hair.',
+      ],
+    },
+    {
       title: 'OVAs: challenge episodes',
       date: '2026-10-08',
       items: [

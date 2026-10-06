@@ -228,7 +228,9 @@
   }
 
   function drawHat(ctx, t, lampOn) {
-    // hard hat sits between the ears
+    // hard hat sits between the ears; a shadow under the brim separates it from hair and face
+    ctx.fillStyle = 'rgba(42,31,51,0.28)';
+    rrect(ctx, -7.6, -23.9, 15.2, 1.3, 0.6); ctx.fill();
     ctx.fillStyle = '#ffcf3f';
     ctx.beginPath(); ctx.arc(0, -25, 6.6, Math.PI, 0); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#e8a91f';
@@ -401,10 +403,15 @@
     // tail wrapped around
     ctx.strokeStyle = fur.tail; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(-8, -3); ctx.quadraticCurveTo(-4, 1.5, 4, 0.5); ctx.stroke();
-    ellipse(ctx, 0, -6, 9.5, 6 + breathe, out);
+    // body: darker underside so the loaf reads as a rounded lump
+    ellipse(ctx, 0, -6, 9.5, 6 + breathe, shade(out, -0.22));
+    ellipse(ctx, 0, -6.8, 9.1, 5.1 + breathe, out);
     ellipse(ctx, 0, -8.5, 8, 3, shade(out, 0.15));
-    ellipse(ctx, 0, -13, 7.2, 6.8, SKIN);
-    ctx.save(); ctx.translate(0, 7.5); ctx.scale(0.82, 0.82);
+    // the head uses the standing sprite's coordinates (centre −20.2), so face, hair, ears and hat line up on it
+    ctx.save(); ctx.translate(0, 4.4); ctx.scale(0.82, 0.82);
+    ellipse(ctx, 0, -18.4, 8.9, 7.9, shade(out, -0.38)); // contact shadow where the head rests on the body
+    hairBack(ctx, look.hair, fur, t);
+    ellipse(ctx, 0, -20.2, 8.6, 8.2, SKIN);
     drawFace(ctx, 'closed', anim === 'sleep' ? 'flat' : 'cat', look);
     hairFront(ctx, look.hair, fur, look.hat !== false);
     drawEar(ctx, -1, fur, 0.3, look.dog); drawEar(ctx, 1, fur, 0.3, look.dog);
