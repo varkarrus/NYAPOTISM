@@ -382,6 +382,7 @@
       const ms = ep.miners.slice().sort((a, b) => a.y - b.y);
       const outSlots = {};
       for (const m of ms) this.drawMiner(ctx, m, alpha, ts, t, ep, outSlots);
+      if (ep.darkness > 0) this.drawDarkness(ctx, M, ts, alpha, ep);
 
       // bombs in flight
       for (let k = this.bombsVis.length - 1; k >= 0; k--) {
@@ -534,6 +535,30 @@
         const sx = X + ts * (0.25 + ((i * 13) % 50) / 100), sy = Y + ts * 0.3;
         ctx.fillRect(sx - ts * 0.08, sy, ts * 0.16, ts * 0.03); ctx.fillRect(sx - ts * 0.015, sy - ts * 0.065, ts * 0.03, ts * 0.16);
       }
+    }
+
+    // Deeper mines are darker: a dim layer with headlamp light pools around each miner.
+    drawDarkness(ctx, M, ts, alpha, ep) {
+      const W = M.w * ts, H = M.h * ts;
+      const oc = this.darkCv || (this.darkCv = document.createElement('canvas'));
+      const dpr = this.dpr;
+      if (oc.width !== Math.ceil(W * dpr) || oc.height !== Math.ceil(H * dpr)) { oc.width = Math.ceil(W * dpr); oc.height = Math.ceil(H * dpr); }
+      const o = oc.getContext('2d');
+      o.setTransform(dpr, 0, 0, dpr, 0, 0);
+      o.globalCompositeOperation = 'source-over';
+      o.clearRect(0, 0, W, H);
+      o.fillStyle = `rgba(4,2,10,${Math.min(0.6, 0.24 * ep.darkness)})`;
+      o.fillRect(0, 0, W, H);
+      o.globalCompositeOperation = 'destination-out';
+      const R = (ep.noticeRange + 1.2) * ts;
+      const hole = (x, y, r) => {
+        const g = o.createRadialGradient(x, y, r * 0.15, x, y, r);
+        g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.6, 'rgba(0,0,0,0.75)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        o.fillStyle = g; o.fillRect(x - r, y - r, r * 2, r * 2);
+      };
+      for (const m of ep.miners) hole((NYA.lerp(m.px, m.x, alpha) + 0.5) * ts, (NYA.lerp(m.py, m.y, alpha) + 0.5) * ts, R);
+      hole((M.x(M.elev) + 0.5) * ts, (M.y(M.elev) + 0.5) * ts, 2.5 * ts);
+      ctx.drawImage(oc, 0, 0, oc.width, oc.height, 0, 0, W, H);
     }
 
     drawMilkNode(ctx, X, Y, ts, i, t) {

@@ -389,7 +389,7 @@
         const left = ep.resLeft;
         const est = ep.haul.value * g.refineryMult() * g.catnipMult();
         const marks = ep.marks.filter(m => !m.drone).length;
-        this.el.hud.innerHTML = `<span>⏱ ${NYA.fmtTime(ep.t)}</span><span>Ore tiles left <b>${left}</b></span><span>Haul <b>${ep.haul.items}</b> items ≈ ${NIP}<b>${fmt(est)}</b></span>${ep.def.quirk === 'milk' ? `<span>🥛 <b>${fmt(ep.haul.milk)}</b></span>` : ''}<span class="lz">🔴 ${marks}/${g.laserMax()}</span>${ep.catterall ? '<span class="catt">CATTERALL</span>' : ''}${ep.t < ep.tunaUntil ? '<span class="tuna">TUNA TIME!</span>' : ''}${g.s.research ? `<span>🔨 ${esc(NYA.UPG[g.s.research.id].name)} ${Math.round(100 * (1 - g.s.research.left / g.s.research.total))}%</span>` : ''}`;
+        this.el.hud.innerHTML = `<span>⏱ ${NYA.fmtTime(ep.t)}</span><span>Ore tiles left <b>${left}</b></span><span>Haul <b>${ep.haul.items}</b> items ≈ ${NIP}<b>${fmt(est)}</b></span>${ep.def.quirk === 'milk' ? `<span>🥛 <b>${fmt(ep.haul.milk)}</b></span>` : ''}<span class="lz">🔴 ${marks}/${g.laserMax()}</span><span data-tip="sight">👁 Sight <b>${ep.noticeRange}</b>${ep.darkness ? ` <small>(darkness −${ep.darkness})</small>` : ''}</span>${ep.catterall ? '<span class="catt">CATTERALL</span>' : ''}${ep.t < ep.tunaUntil ? '<span class="tuna">TUNA TIME!</span>' : ''}${g.s.research ? `<span>🔨 ${esc(NYA.UPG[g.s.research.id].name)} ${Math.round(100 * (1 - g.s.research.left / g.s.research.total))}%</span>` : ''}`;
       }
       this.updateTileInfo();
       this.updateCrewLive();
@@ -853,6 +853,7 @@
       if (k === 'formula') return `<b>Refining</b><br>Each item's value = tier base (×10 per tier) × quality${g.lvl('polisher') ? '^' + g.polishExp() : ''}${g.lvl('centrifuge') ? ' × centrifuge bonus' : ''}.<br>Catnip = ore value × Refinery (×1.5 per Mark) × Full-Clear Bonus (perfect clears only) × global multipliers (faxes, yarn).`;
       if (k === 'catnip') return `<b>Catnip</b><br>Global multiplier ${NYA.fmtMult(g.catnipMult())}<br>${g.catnipMultParts().map(p => esc(p[0]) + ' ' + NYA.fmtMult(p[1])).join('<br>') || 'Earn faxes and yarn to grow it.'}<br>Season total: ${fmt(g.s.seasonCatnip)}`;
       if (k === 'snd') { const m = g.s.settings[a + 'Mode'] || 'on'; return `<b>${a === 'music' ? 'Music' : 'Sound effects'}: ${SND_LABEL[m]}</b><br>Click to cycle: On → Mute when unfocused → Muted.<br><small>Volume lives in Settings ⚙.</small>`; }
+      if (k === 'sight') { const ep = g.episode; return `<b>Sight</b> = ${NYA.BASE_SIGHT} base + ${g.lvl('headlamp')} Headlamps − ${ep ? ep.darkness : 0} darkness = <b>${ep ? ep.noticeRange : '?'}</b><br>Miners notice ore within this many tiles on their own, even with a short attention span. Opened tiles reveal fog ${ep ? ep.revealR : 1} tile(s) around them.<br><small>Deeper mines are darker: −1 Sight every two tiers. Buy Headlamps in the R&D Lab.</small>`; }
       if (k === 'milk') return `<b>Milk</b><br>Pumped from milk nodes in the Dairy Depths. Spend it at the Refinery's Creamery.<br><small>Pump flow = rate ÷ (1 + pipe length ÷ ${NYA.PIPE_HALF}). Short pipes pump faster.</small>`;
       if (k === 'bank') return `<b>Catnap Bank</b><br>Offline time is banked at ${Math.round(g.bankEff() * 100)}% efficiency. Spend it as Fast-Forward (${g.ffSpeed()}×). Press <kbd>F</kbd>.`;
       return '';

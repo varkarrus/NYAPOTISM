@@ -828,7 +828,7 @@
     yarnMult() {
       let m = 1 + this.faxBonus().yarn;
       if (this.loom('sk_mult')) m *= 1.5;
-      if (this.loomRowDone(4)) m *= 2;
+      if (this.loomRowDone(4)) m *= 1.5;
       return m;
     }
     yarnPreview() {

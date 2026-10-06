@@ -18,7 +18,7 @@
       { id: 'hs_maps', name: 'Old Survey Maps', cost: 25, desc: 'Start with the Scratching Post Quarry surveyed. Yarnball Caverns needs only 2 Quarry full clears.' },
     ],
     [
-      { id: 'km_catnip', name: 'Catnip Cable-Knit', cost: 1, growth: 3, max: 30, desc: 'Catnip ×2 per rank.', fx: l => 'Catnip ×' + NYA.fmt(Math.pow(2, l)) },
+      { id: 'km_catnip', name: 'Catnip Cable-Knit', cost: 1, growth: 4, max: 30, desc: 'Catnip ×2 per rank.', fx: l => 'Catnip ×' + NYA.fmt(Math.pow(2, l)) },
       { id: 'km_xp', name: 'Purl of Wisdom', cost: 2, growth: 3, max: 30, desc: 'XP ×2 per rank.', fx: l => 'XP ×' + NYA.fmt(Math.pow(2, l)) },
       { id: 'km_power', name: 'Muscle Mittens', cost: 4, growth: 3.5, max: 30, desc: 'Power ×1.5 per rank.', fx: l => 'Power ×' + NYA.fmt(Math.pow(1.5, l)) },
       { id: 'km_stamina', name: 'Cozy Scarf', cost: 8, growth: 3.5, max: 30, desc: 'Stamina ×1.5 per rank.', fx: l => 'Stamina ×' + NYA.fmt(Math.pow(1.5, l)) },
@@ -40,10 +40,10 @@
     ],
     [
       { id: 'sk_box', name: 'Box Magnet', cost: 2, desc: '+2% Schrödinger’s Box chance per episode.' },
-      { id: 'sk_exp1', name: 'Looser Weave', cost: 7, desc: 'Yarn exponent 0.40 → 0.45.' },
+      { id: 'sk_exp1', name: 'Looser Weave', cost: 40, desc: 'Yarn exponent 0.40 → 0.45.' },
       { id: 'sk_mult', name: 'Double Knit', cost: 14, desc: 'Yarn ×1.5.' },
       { id: 'sk_hum', name: 'Quantum Hum', cost: 25, desc: 'Box pity grows 1%/episode (was 0.5%), and boxes can appear in Tier 2 at half chance.' },
-      { id: 'sk_exp2', name: 'Loosest Weave', cost: 60, desc: 'Yarn exponent → 0.50.' },
+      { id: 'sk_exp2', name: 'Loosest Weave', cost: 600, desc: 'Yarn exponent → 0.50.' },
     ],
   ];
 
@@ -52,7 +52,7 @@
     { name: 'Multiplier Stripe', desc: 'Catnip ×3.' },
     { name: 'Anchor Stripe', desc: 'Anchored catgirls get +25% all stats.' },
     { name: 'Mechanics Stripe', desc: 'Fast-Forward runs at 5×.' },
-    { name: 'Skein Stripe', desc: 'Yarn ×2.' },
+    { name: 'Skein Stripe', desc: 'Yarn ×1.5.' },
   ];
   NYA.LOOM_COL_STRIPES = [
     { name: 'Cast-On Stripe', desc: 'Catnip ×1.5.' },

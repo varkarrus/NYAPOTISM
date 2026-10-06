@@ -22,10 +22,11 @@
     return out;
   }
 
-  function rollDensity(rng, bonus) {
+  function rollDensity(rng, bonus, tier) {
+    tier = tier || 1;
     let d = 1;
-    const p = 0.3 + (bonus || 0);
-    while (d < 12 && rng.next() < p) d++;
+    const p = Math.min(0.92, NYA.tierDensityP(tier) + (bonus || 0)), cap = NYA.tierDensityCap(tier);
+    while (d < cap && rng.next() < p) d++;
     return d;
   }
   function rollQuality(rng) {
@@ -160,7 +161,7 @@
         for (const [dx, dy] of shape) {
           const i = this.idx(cx + dx, cy + dy);
           if (!solidOK(i)) continue;
-          type[i] = T.ORE; this.q[i] = baseQ; this.dens[i] = rollDensity(rng); this.cluster[i] = starId;
+          type[i] = T.ORE; this.q[i] = baseQ; this.dens[i] = rollDensity(rng, 0, this.tier); this.cluster[i] = starId;
           ore++; made++;
         }
         if (made) starId++;
@@ -179,7 +180,7 @@
           let q = rng.chance(0.7) ? baseQ : rollQuality(rng);
           if (opts.qualityBonus && rng.chance(opts.qualityBonus)) q++;
           this.q[t] = Math.min(9, q);
-          this.dens[t] = rollDensity(rng, opts.densityBonus);
+          this.dens[t] = rollDensity(rng, opts.densityBonus, this.tier);
           ore++;
           for (const nb of this.nbrs(t)) if (solidOK(nb)) frontier.push(nb);
         }
@@ -276,7 +277,7 @@
       for (let i = 0; i < n; i++) {
         const t = type[i];
         let hp = 0;
-        if (t === T.ORE) hp = NYA.ORE_LAYER_HP * tHP * this.dens[i];
+        if (t === T.ORE) hp = NYA.ORE_LAYER_HP * tHP * NYA.tierCrumble(this.tier) * this.dens[i];
         else if (NYA.BASE_HP[t]) hp = NYA.BASE_HP[t] * tHP;
         this.hp[i] = this.maxHp[i] = hp;
       }

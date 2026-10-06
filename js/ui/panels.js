@@ -83,7 +83,7 @@
         <div class="mt">T${t}</div>
         <div class="mi"><b>${esc(d.name)}</b> <span class="sz">${d.w}×${d.h}</span>
         <div class="desc">${esc(d.blurb)}</div>
-        <div class="ms">Purrmit: ${d.purrmit ? NIP + fmt(d.purrmit) : 'free'} · Episodes ${ms.eps} · Perfect ${ms.fc} · Best ${NIP}${fmt(ms.best || 0)}</div></div>
+        <div class="ms">Purrmit: ${d.purrmit ? NIP + fmt(d.purrmit) : 'free'} · Episodes ${ms.eps} · Perfect ${ms.fc} · Best ${NIP}${fmt(ms.best || 0)}${NYA.tierDarkness(t) ? ` · 🌑 Darkness ${NYA.tierDarkness(t)}` : ''}</div></div>
         ${sel ? '<div class="selbadge">SELECTED</div>' : ''}
       </div>`;
     }

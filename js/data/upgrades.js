@@ -184,10 +184,11 @@
     show: g => g.s.stats.marks >= 5 || g.s.episodes >= 5,
     desc: '+1 laser mark at a time.', flavor: 'AAA. Triple-A. Like the catnip, if Tora is to be believed.',
     fx: l => (3 + l) + ' marks' });
-  def({ id: 'headlamp', bld: 'lab', branch: 'Exploration', name: 'Headlamps', max: 3, base: 500, growth: 6,
+  def({ id: 'headlamp', bld: 'lab', branch: 'Exploration', name: 'Headlamps', max: 20, base: 400, growth: 8,
     show: g => g.s.lifetimeCatnip >= 300,
-    desc: '+1 fog reveal radius around every opened tile.', flavor: 'Mostly lights up the inside of the hard hat. Mostly.',
-    fx: l => 'Reveal +' + l });
+    desc: '+1 Sight. Miners notice ore one tile further away, and opened tiles reveal one tile further. Deeper mines are darker and eat Sight.',
+    flavor: 'Mostly lights up the inside of the hard hat. Mostly.',
+    fx: l => 'Sight ' + (NYA.BASE_SIGHT + l) + ' (before darkness)' });
   def({ id: 'perfection', bld: 'lab', branch: 'Exploration', name: 'Perfectionism', max: 5, base: 160, growth: 3.2,
     show: g => g.s.stats.fullClears >= 1,
     desc: '+15% Full-Clear Bonus multiplier (×1.25 → ×2.0).', flavor: 'An A is just a failed S.',

@@ -17,6 +17,18 @@
   NYA.tierResist = t => Math.pow(1.6, t - 1);     // stamina per swing
   NYA.tierXP = t => Math.pow(2.5, t - 1);         // XP per swing / item
 
+  // Counter-pressures: every stat faces something that grows each tier, so upgrading it keeps
+  // mattering in your current mine while early mines become trivial (see docs/HANDOFF.md).
+  // Carry <- density: deeper ore is denser (more items per tile)...
+  NYA.tierDensityP = t => Math.min(0.85, 0.3 + 0.06 * (t - 1)); // geometric "one more layer" chance
+  NYA.tierDensityCap = t => 10 + 2 * t;
+  // ...but crumblier: HP per item shrinks with depth, so density costs bag space more than time.
+  NYA.tierCrumble = t => Math.pow(0.88, t - 1);
+  // Headlamps <- darkness: Sight = BASE_SIGHT + headlamps - darkness.
+  NYA.BASE_SIGHT = 3;
+  NYA.tierDarkness = t => Math.floor((t - 1) / 2);   // T1-2: 0, T3-4: 1, T5-6: 2, ...
+  NYA.MAX_NOTICE = 8; NYA.MAX_REVEAL = 6;
+
   // Quality shapes & colors (never color alone — GDD §3.3)
   NYA.QUALITY = [
     null,

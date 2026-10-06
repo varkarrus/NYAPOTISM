@@ -50,6 +50,11 @@
       this.tierBase = NYA.tierBase(this.tier);
       this.resist = NYA.tierResist(this.tier);
       this.motherlodeSeen = false; this.boxSeen = false;
+      // Sight: how far miners notice ore on their own, and how far opened tiles reveal fog
+      this.darkness = NYA.tierDarkness(this.tier);
+      this.sight = NYA.BASE_SIGHT + (cfg.headlamp || 0) - this.darkness;
+      this.noticeRange = Math.max(1, Math.min(NYA.MAX_NOTICE, this.sight));
+      this.revealR = Math.max(1, Math.min(NYA.MAX_REVEAL, 1 + (cfg.headlamp || 0) - this.darkness));
       this.droneT = 2;
       this.fieldDirty = true;
       this.recomputeField();
@@ -167,7 +172,7 @@
     }
 
     revealAround(i) {
-      const M = this.mine, r = 1 + (this.cfg.headlamp || 0);
+      const M = this.mine, r = this.revealR || 1;
       const x0 = M.x(i), y0 = M.y(i);
       for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
         if (Math.abs(dx) + Math.abs(dy) > r) continue;
@@ -534,12 +539,13 @@
       if (fr.length) {
         const local = [];
         const mx = M.x(m.tile), my = M.y(m.tile);
-        for (const i of fr) if (Math.abs(M.x(i) - mx) + Math.abs(M.y(i) - my) <= 6) local.push(i);
+        const localR = Math.max(6, this.noticeRange);
+        for (const i of fr) if (Math.abs(M.x(i) - mx) + Math.abs(M.y(i) - my) <= localR) local.push(i);
         for (let k = 0; k < K; k++) cands.push(local.length && rng.chance(0.6) ? rng.pick(local) : rng.pick(fr));
         // local awareness: ore right next to her is hard to miss, even with a short attention span
         for (const i of local) {
           const ty = M.type[i];
-          if ((ty === T.ORE || ty === T.BOX) && Math.abs(M.x(i) - mx) + Math.abs(M.y(i) - my) <= 3) cands.push(i);
+          if ((ty === T.ORE || ty === T.BOX) && Math.abs(M.x(i) - mx) + Math.abs(M.y(i) - my) <= this.noticeRange) cands.push(i);
         }
       }
       const markSet = new Set();
