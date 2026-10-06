@@ -239,7 +239,7 @@
           this.titleCard(d);
           this.renderTools();
           break;
-        case 'episodeEnd': this.buildOverlay(d); break;
+        case 'episodeEnd': this.buildOverlay(d); this.queueEyecatch(d.eye, d.ep); break;
         case 'fax': this.showFax(d); break;
         case 'novel': this.showNovel(d); break;
         case 'trait': this.traitQueue.push(d); this.nextTrait(); break;
@@ -301,7 +301,6 @@
           <div class="ov-crew">${crew}</div>
           <div class="ov-tora"><span class="npc" data-npc="tora"></span><div class="bubble">${esc(r.tora)}</div></div>
         </div>
-        <div class="ov-eye"><canvas id="eyeCv" width="640" height="360"></canvas></div>
         <div class="ov-prev"><div class="nt">NEXT TIME ON <b>NYAPOTISM!</b></div><div class="nl">${esc(r.preview)}</div>
           <div class="await"><button class="big" data-act="next">▶ NEXT EPISODE <small>[N]</small></button><div class="cd" data-live="awaitCd"></div></div></div>`;
       this.el.overlay.querySelectorAll('canvas.qshape').forEach(c => {
@@ -321,35 +320,56 @@
       let stage = 'tally';
       if (g.phase === 'packup' && g.packup) {
         const f = g.packup.t / g.packup.total;
-        const long = g.packup.total >= 3;
-        if (hide) stage = 'mini';
-        else if (!long) stage = f < 0.7 ? 'tally' : 'prev';
-        else stage = f < 0.55 ? 'tally' : f < 0.82 ? 'eye' : 'prev';
+        stage = hide ? 'mini' : f < 0.65 ? 'tally' : 'prev';
       } else if (g.phase === 'await') {
-        stage = hide ? 'mini await' : (this.eyeT < 2.4 && this.overlayFor && !this.eyeShown ? 'eye await' : 'prev await');
+        stage = hide ? 'mini await' : 'prev await';
         const cd = ov.querySelector('[data-live="awaitCd"]');
         if (cd) cd.textContent = `auto-continues in ${Math.ceil(g.awaitT)}… (file Auto-Repeat with Pochi to skip)`;
       }
-      if (stage.startsWith('eye')) {
-        this.eyeT += rdt;
-        const cv = document.getElementById('eyeCv');
-        if (cv) {
-          const dur = g.phase === 'packup' ? Math.max(0.9, g.packup.total * 0.27) : 2.4;
-          const fr = Math.min(2, Math.floor(this.eyeT / (dur / 3)));
-          if (fr !== this.eyeFrame || true) {
-            const ctx = cv.getContext('2d');
-            const crew = g.activeCrew();
-            const L = crew.length ? crew[(this.overlayFor.ep) % crew.length] : null;
-            NYA.drawEyecatch(ctx, cv.width, cv.height, this.overlayFor.eye, fr, performance.now() / 1000, L ? { fur: L.fur, hair: L.hair, outfit: L.outfit, hat: true } : null);
-            if (fr !== this.eyeFrame && fr === 0) this.audio.sfx('eyecatch');
-            this.eyeFrame = fr;
-          }
-        }
-        if (g.phase === 'await' && this.eyeT >= 2.4) this.eyeShown = true;
-      } else this.eyeFrame = -1;
-      if (g.phase === 'packup') this.eyeShown = false;
       const cls = 'show stage-' + stage.split(' ').join(' stage-');
       if (ov.className !== cls) ov.className = cls;
+    }
+
+    // ---------------------------------------------------------------- eyecatcher picture-in-picture
+    // Plays on its own real-time clock (1.8 s per frame) so it is never rushed or cut off by
+    // the episode flow. A new one never interrupts a playing one; rare ones wait their turn.
+    queueEyecatch(id, ep) {
+      if (!id || this.g.s.settings.hideAnims) return;
+      const rare = (NYA.EYECATCHERS.find(e => e.id === id) || {}).rare;
+      if (this.eyePlay) {
+        if (rare || !this.eyePending) this.eyePending = { id, ep, at: performance.now() };
+        return;
+      }
+      this.startEyecatch(id, ep);
+    }
+    startEyecatch(id, ep) {
+      const crew = this.g.activeCrew();
+      const L = crew.length ? crew[(ep || 0) % crew.length] : null;
+      this.eyePlay = { id, t: 0, fr: -1, look: L ? { fur: L.fur, hair: L.hair, outfit: L.outfit, hat: true } : null };
+      const el = document.getElementById('eyePip');
+      el.className = 'show';
+      el.onpointerdown = () => { this.eyePending = null; this.endEyecatch(); };
+      this.g.markEyecatcher(id);
+    }
+    endEyecatch() {
+      const el = document.getElementById('eyePip');
+      if (el) { el.className = 'show out'; setTimeout(() => { if (!this.eyePlay) el.className = ''; }, 300); }
+      this.eyePlay = null;
+    }
+    updateEyecatch(rdt) {
+      const P = this.eyePlay;
+      if (!P) {
+        const q = this.eyePending;
+        if (q && performance.now() - q.at < 30000 && !this.g.s.settings.hideAnims) { this.eyePending = null; this.startEyecatch(q.id, q.ep); }
+        return;
+      }
+      P.t += rdt;
+      const PER = 1.8;
+      const fr = Math.floor(P.t / PER);
+      if (fr >= 3) { this.endEyecatch(); return; }
+      if (fr !== P.fr) { P.fr = fr; if (fr === 0) this.audio.sfx('eyecatch'); }
+      const cv = document.querySelector('#eyePip canvas');
+      if (cv) NYA.drawEyecatch(cv.getContext('2d'), cv.width, cv.height, P.id, fr, performance.now() / 1000, P.look);
     }
 
     // ---------------------------------------------------------------- frame updates
@@ -375,6 +395,7 @@
       this.updateCrewLive();
       this.updateActivesLive();
       this.updateOverlay(rdt);
+      this.updateEyecatch(rdt);
       this.slowT -= rdt;
       if (this.slowT <= 0) { this.slowT = 0.25; this.slow(); }
       // warhead anim

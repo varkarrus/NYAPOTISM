@@ -6,7 +6,8 @@
     'Matcha', 'Daifuku', 'Dango', 'Kuri', 'Hana', 'Miso', 'Tama', 'Sora', 'Mugi', 'Koharu', 'Pocky', 'Caramel', 'Toast',
     'Waffle', 'Pickles', 'Noodle', 'Bean', 'Nugget', 'Cocoa', 'Taiyaki', 'Senbei', 'Ramune', 'Kiwi', 'Peaches', 'Butter',
     'Cinnamon', 'Marble', 'Soba', 'Udon', 'Gyoza', 'Purin', 'Shiro', 'Kuro', 'Kohaku', 'Ikura', 'Natto', 'Wasabi', 'Onigiri',
-    'Sprinkles', 'Truffle', 'Clementine', 'Jellybean', 'Kabocha', 'Anko', 'Monaka', 'Sakuraba', 'Yokan', 'Chai', 'Latte'];
+    'Sprinkles', 'Truffle', 'Clementine', 'Jellybean', 'Kabocha', 'Anko', 'Monaka', 'Sakuraba', 'Yokan', 'Chai', 'Latte',
+    'Ceviche', 'Sashimi'];
   NYA.FAMILY_NAMES = ['Nekomaru', 'Tabbygawa', 'Whiskerton', 'Purrington', 'Nekozawa', 'Mikeyama', 'Meowmura', 'Nyanbara',
     'Pawsley', 'Clawford', 'Furugawa', 'Koneko', 'Shimashima', 'Hachiware', 'Nyamamoto', 'Kittenhouse', 'Mewberry',
     'Fluffington', 'Biscuitbottom', 'Tamamura', 'Kurobuchi', 'Nekoda', 'Sunbeam', 'Mittensworth', 'Scratchley', 'Nyanzaki'];

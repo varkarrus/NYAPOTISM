@@ -275,7 +275,6 @@ h3.sec small { font-family: var(--body); font-size: 11px; color: var(--muted); l
 #overlay.show { display: flex; }
 #overlay > div { display: none; }
 #overlay.stage-tally .ov-tally, #overlay.stage-mini .ov-tally { display: block; }
-#overlay.stage-eye .ov-eye { display: block; }
 #overlay.stage-prev .ov-prev { display: block; }
 #overlay.stage-mini { background: transparent; backdrop-filter: none; align-items: flex-end; }
 #overlay.stage-mini .ov-tally { transform: scale(.75); transform-origin: bottom; }
@@ -306,8 +305,14 @@ h3.sec small { font-family: var(--body); font-size: 11px; color: var(--muted); l
 .ov-tora { display: flex; align-items: center; gap: 10px; }
 .ov-tora .npc canvas { width: 52px; height: 52px; }
 .bubble { position: relative; background: #fff; border: 2px solid #2a1f33; border-radius: 12px; padding: 6px 10px; font-weight: 700; font-size: 13px; }
-.ov-eye canvas { width: min(640px, 90%); border-radius: 12px; display: block; margin: auto; box-shadow: 0 0 0 4px #fff, 0 0 40px rgba(255,255,255,.3); }
-.ov-eye { width: 100%; text-align: center; }
+#eyePip { position: absolute; left: 10px; bottom: 10px; width: clamp(200px, 36%, 420px); aspect-ratio: 16 / 9; z-index: 7; display: none; cursor: pointer;
+  border-radius: 10px; overflow: hidden; box-shadow: 0 0 0 3px #fff, 0 0 0 6px #c2185b, 0 8px 28px rgba(0,0,0,.6); transform-origin: bottom left; }
+#eyePip.show { display: block; animation: pipin .35s ease-out; }
+#eyePip.out { animation: pipout .3s ease-in forwards; }
+#eyePip canvas { width: 100%; height: 100%; display: block; }
+#eyePip .eye-tag { position: absolute; right: 6px; top: 5px; font-family: var(--dot); font-size: 13px; color: #fff; background: rgba(0,0,0,.45); padding: 0 5px; border-radius: 4px; letter-spacing: 1px; }
+@keyframes pipin { from { transform: scale(.2) rotate(-6deg); opacity: 0; } 70% { transform: scale(1.04) rotate(1deg); } }
+@keyframes pipout { to { transform: scale(.2) rotate(6deg); opacity: 0; } }
 .ov-prev { text-align: center; padding: 20px; }
 .ov-prev .nt { font-family: var(--dot); font-size: 26px; color: var(--teal); letter-spacing: 3px; }
 .ov-prev .nt b { font-family: var(--disp); color: var(--gold); font-weight: 400; }

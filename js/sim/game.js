@@ -742,8 +742,14 @@
       const pool = NYA.EYECATCHERS.map(e => [e.id, e.rare ? 1.5 : 10]).filter(e => e[0] !== this.s.lastEyecatch);
       const id = rng.weighted(pool);
       this.s.lastEyecatch = id;
-      if (!this.s.gallery[id]) { this.s.gallery[id] = 1; if (NYA.EYECATCHERS.find(e => e.id === id).rare) this.novel('eye:' + id, 'Rare eyecatcher: ' + NYA.EYECATCHERS.find(e => e.id === id).name, 'gallery'); }
       return id;
+    }
+    // called by the UI when an eyecatcher actually plays, so the gallery only holds what you saw
+    markEyecatcher(id) {
+      if (this.s.gallery[id]) return;
+      this.s.gallery[id] = 1;
+      const e = NYA.EYECATCHERS.find(x => x.id === id);
+      if (e && e.rare) this.novel('eye:' + id, 'Rare eyecatcher: ' + e.name, 'gallery');
     }
 
     nextEpisode() {
