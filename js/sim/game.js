@@ -64,6 +64,7 @@
       const ids = this.s.crew.map(c => c.id).concat(this.s.board.apps.filter(Boolean).map(c => c.id));
       if (ids.length) NYA.setNextCatgirlId(Math.max(...ids) + 1);
       this.openBoard();
+      if (this.s.season > 1) this.applyHeadStarts(); // floors only; fixes saves that bought head starts mid-season
       NYA.settingsRef.sci = !!this.s.settings.sci;
     }
 
@@ -930,13 +931,7 @@
       s.buildings = { office: 1, refinery: 1, loom: 1 };
       s.pendingEvent = null;
       if (s.tanuki) s.tanuki.nextAt = s.simTime + 5 * 60;
-      // head starts
-      if (this.loom('hs_bunks')) s.upg.bunk = 2;
-      if (this.loomRowDone(0)) s.upg.bunk = (s.upg.bunk || 0) + 1;
-      if (this.loom('hs_refinery')) s.upg.refinery = 3;
-      if (this.loom('hs_lab')) { s.upg.blunt = 1; s.upg.bomb = 1; s.upg.spray = 1; s.upg.drills = 4; }
-      if (this.loom('hs_maps')) { s.upg.mine2 = 1; s.tierUnlocked[2] = 1; }
-      if (this.loom('nm_desk')) s.buildings.pochi = 1;
+      this.applyHeadStarts();
       if (s.life.episodes) { s.buildings.lab = 1; s.buildings.barracks = 1; }
       for (const c of kept) { if (s.active.length < this.crewCap()) s.active.push(c.id); else s.reserve.push(c.id); }
       if (!s.crew.length) {
@@ -956,6 +951,19 @@
       this.startEpisode();
       return gain;
     }
+    // Head-start knots set a floor on this season's upgrades. Applied at every unravel, and right away
+    // when bought: yarn only arrives at an unravel, so buying them always happens mid-season.
+    applyHeadStarts() {
+      const s = this.s, up = (id, lv) => { if ((s.upg[id] || 0) < lv) s.upg[id] = lv; };
+      up('bunk', (this.loom('hs_bunks') ? 2 : 0) + (this.loomRowDone(0) ? 1 : 0));
+      if (this.loom('hs_refinery')) up('refinery', 3);
+      if (this.loom('hs_lab')) { up('blunt', 1); up('bomb', 1); up('spray', 1); up('drills', 4); }
+      if (this.loom('hs_maps')) { up('mine2', 1); s.tierUnlocked[2] = 1; }
+      if (this.loom('nm_desk')) s.buildings.pochi = 1;
+      // new bunks: move reserves up into the free active slots
+      while (s.active.length < this.crewCap() && s.reserve.length) s.active.push(s.reserve.shift());
+      this.syncActives();
+    }
     loomBuy(id) {
       const n = NYA.LOOM_NODE[id];
       if (!n) return false;
@@ -966,10 +974,17 @@
       this.s.yarn -= cost;
       this.s.loom[id] = l + 1;
       this._faxBonus = null;
+      const row0Was = this.loomRowDone(0) && !(NYA.LOOM[0].some(n => n.id === id) && l === 0);
+      this.applyHeadStarts();
+      if (id === 'hs_cash' && l === 0) this.s.catnip += 300;
+      if (!row0Was && this.loomRowDone(0)) { // Head Start Stripe's free recruit, right now too
+        const cg = NYA.makeCatgirl(this.rng, { ep: this.s.episodeNum });
+        if (this.s.active.length < this.crewCap()) { this.s.crew.push(cg); this.s.active.push(cg.id); }
+        else if (this.s.reserve.length < this.reserveCap()) { this.s.crew.push(cg); this.s.reserve.push(cg.id); }
+      }
       if (l === 0) this.novel('loom:' + id, 'Loom: ' + n.name, 'loom');
       for (let r = 0; r < 5; r++) if (this.loomRowDone(r)) this.novel('stripe:r' + r, NYA.LOOM_ROW_STRIPES[r].name + '!', 'loom');
       for (let c = 0; c < 5; c++) if (this.loomColDone(c)) this.novel('stripe:c' + c, NYA.LOOM_COL_STRIPES[c].name + '!', 'loom');
-      if (id === 'nm_desk' && !this.s.buildings.pochi) this.s.buildings.pochi = 1;
       this.emit('loom', { id });
       return true;
     }

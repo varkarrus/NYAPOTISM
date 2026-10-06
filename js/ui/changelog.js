@@ -6,6 +6,13 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Head-start fix',
+      date: '2026-10-07',
+      items: [
+        'Fixed: head-start bonuses (like pre-built Bunk Beds) now apply the moment you get them, not one cycle later. Saves that already have them get them on load.',
+      ],
+    },
+    {
       title: 'Dairy Depths gate, fewer spoilers',
       date: '2026-10-07',
       items: [
