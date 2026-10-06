@@ -46,7 +46,7 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Tier 4 (needs the Skein) | after the Skein | 100–112 min |
 | Crew size | 3 at Tier 1, 3–4 at Tier 2, 5–6 at Tier 3, 7–8 at Tier 4 | on target |
 | Season 1 | 90–150 min | ~1h25–1h30 (the bot unravels 25 min after the Skein) |
-| Stay-vs-jump income at a tier unlock | ~1× (new mine held back by Power/Grit) | median ~2× (T2 0.8–4, T3 2–3, T4 1–2.7); measure with a stay/jump script like the one described in the T-HP commit |
+| Stay-vs-jump income at a tier unlock | ~1× (new mine held back by Power/Grit) | median ~2× (T2 0.8–4, T3 2–3, T4 1–2.7); `node tools/tierjump.js <seed>` |
 | Yarn per season | ~×3 growth | S2 ~50, S4 ~100–400, S5 ~600–1300 |
 
 ## Known issues / watch list

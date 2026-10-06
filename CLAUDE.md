@@ -44,6 +44,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - `node tools/harness.js --minutes 480 --seasons 7 --seed 4` runs a multi-season prestige check.
   - `node tools/test_events.js` and `node tools/test_pump.js` cover the event mines and the Tier 4 pumps.
   - `node tools/diag.js --minutes 30` shows where miner time goes.
+  - `node tools/tierjump.js 1` compares staying vs jumping at each tier unlock (target ~1–2×).
 - **Syntax check:** run `node --check <file>` on everything you touch, since there is no compiler.
 - **In a cloud session with no browser:** rely on the harness and syntax checks, then ask the user to playtest on GitHub Pages after pushing. `tools/spritetest.html` draws every sprite, pose and eyecatcher on one page.
 - **Deploys:** `.github/workflows/pages.yml` publishes only `index.html`, `css/` and `js/`, as two builds on one Pages site. `main` goes to the root URL, and the most recently pushed other branch goes to `/dev/` (https://varkarrus.github.io/NYAPOTISM/dev/). A push to any branch rebuilds both. The dev build uses its own save key (`nyapotism.save.dev`) and copies the main save the first time.
