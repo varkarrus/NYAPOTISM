@@ -46,6 +46,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - `node tools/diag.js --minutes 30` shows where miner time goes.
 - **Syntax check:** run `node --check <file>` on everything you touch, since there is no compiler.
 - **In a cloud session with no browser:** rely on the harness and syntax checks, then ask the user to playtest on GitHub Pages after pushing. `tools/spritetest.html` draws every sprite, pose and eyecatcher on one page.
-- **Deploys:** pushing to `main` deploys via `.github/workflows/pages.yml`, which publishes only `index.html`, `css/` and `js/`.
+- **Deploys:** `.github/workflows/pages.yml` publishes only `index.html`, `css/` and `js/`, as two builds on one Pages site. `main` goes to the root URL, and the most recently pushed other branch goes to `/dev/` (https://varkarrus.github.io/NYAPOTISM/dev/). A push to any branch rebuilds both. The dev build uses its own save key (`nyapotism.save.dev`) and copies the main save the first time.
+- **Changelog:** whenever you push something playable, add an entry at the top of `NYA.CHANGELOG` in `js/ui/changelog.js`, and update `NYA.FRONTIER` if the content frontier moved. Both show on the title card at every load.
 - **Line endings:** `.gitattributes` normalizes to LF in the repo. If you edit with Python on Windows, open files with `newline=''` so you don't convert line endings.
 - **Commits:** clear messages that explain the why. The user pushes from GitHub Desktop locally. In the cloud, push when asked.

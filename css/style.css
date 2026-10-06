@@ -416,6 +416,11 @@ textarea { width: 100%; background: #120b1c; color: var(--text); border: 1px sol
 @keyframes wob { 50% { transform: rotate(-2deg) scale(1.03); } }
 .tc-sub { color: var(--teal); letter-spacing: 4px; margin-bottom: 12px; }
 .tc-fax { background: #fffdf5; color: #2a1f33; font-family: var(--dot); font-size: 20px; padding: 10px; margin: 10px auto; width: 80%; transform: rotate(-1.5deg); box-shadow: 3px 3px 0 rgba(0,0,0,.4); }
+.tc-news { text-align: left; margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 6px; font-size: 13px; }
+.tc-news ul { margin: 4px 0 8px; padding-left: 20px; } .tc-news li { margin-bottom: 3px; line-height: 1.35; }
+.tc-build { text-align: center; font-family: var(--dot); font-size: 15px; color: var(--muted); }
+.tc-dev { background: var(--gold); color: #1a1020; border-radius: 6px; padding: 0 6px; }
+.tc-log summary { cursor: pointer; margin: 4px 0; } .tc-log small { color: var(--muted); }
 .season-card { text-align: center; }
 .sc-top { font-family: var(--dot); font-size: 22px; color: var(--teal); letter-spacing: 6px; }
 .sc-big { font-family: var(--disp); font-size: 60px; color: var(--gold); text-shadow: 4px 4px 0 #c2185b; }

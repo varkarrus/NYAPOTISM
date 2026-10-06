@@ -1,11 +1,17 @@
-# Publishes ONLY the playable game (index.html, css/, js/) to GitHub Pages.
+# Publishes ONLY the playable game (index.html, css/, js/) to GitHub Pages, as two builds on one site:
+#   /       the main branch (stable)
+#   /dev/   the most recently updated other branch (latest dev changes, e.g. a cloud session's branch)
+# Pushing either kind of branch rebuilds both, so neither ever wipes the other.
 # The design doc, README and dev tools stay in the repo but are not put on the public site.
 # To use: repo Settings → Pages → Build and deployment → Source: "GitHub Actions".
+# If a dev-branch run fails at "deploy" with "not allowed to deploy to github-pages due to environment
+# protection rules": Settings → Environments → github-pages → Deployment branches → add a rule for that branch
+# (e.g. "main-*"), or just run this workflow by hand from main (Actions tab → Run workflow).
 name: Deploy game to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: ['**']
   workflow_dispatch:
 
 permissions:
@@ -25,10 +31,30 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Collect game files
+        with:
+          fetch-depth: 0
+      - name: Collect game files (main at /, newest other branch at /dev/)
         run: |
+          set -e
+          build() { # build <ref> <outdir>
+            mkdir -p "$2"
+            git archive "$1" index.html css js | tar -x -C "$2"
+            sha=$(git rev-parse --short "$1")
+            date=$(git log -1 --format=%cd --date=format:'%Y-%m-%d %H:%M' "$1")
+            printf 'globalThis.NYA = globalThis.NYA || {};\nNYA.BUILD = { sha: "%s", branch: "%s", date: "%s" };\n' "$sha" "${1#origin/}" "$date" > "$2/js/build.js"
+            # older builds may not load build.js; that's fine, it just won't show the stamp
+          }
           mkdir _site
-          cp -r index.html css js _site/
+          build origin/main _site
+          dev=$(git for-each-ref --sort=-committerdate --format='%(refname:short)' refs/remotes/origin \
+                | grep -v -e '^origin/main$' -e '^origin/HEAD$' -e '^origin$' | head -n1)
+          if [ -n "$dev" ]; then
+            echo "Dev build from $dev"
+            build "$dev" _site/dev
+          else
+            echo "No dev branch; /dev/ mirrors main"
+            build origin/main _site/dev
+          fi
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

@@ -1,9 +1,19 @@
 // Boot, main loop (fixed-timestep sim + interpolated render), Banked Time, autosave.
 (function (NYA) {
   'use strict';
-  const SAVE_KEY = 'nyapotism.save.v1';
+  const MAIN_SAVE_KEY = 'nyapotism.save.v1';
+  // The /dev/ Pages build shares this origin's localStorage, so it keeps its own save.
+  const devBuild = /\/dev\//.test(location.pathname);
+  const SAVE_KEY = devBuild ? 'nyapotism.save.dev' : MAIN_SAVE_KEY;
   const params = new URLSearchParams(location.search);
   const dev = params.has('dev');
+  let copiedMain = false;
+  try {
+    if (devBuild && !localStorage.getItem(SAVE_KEY) && localStorage.getItem(MAIN_SAVE_KEY)) {
+      localStorage.setItem(SAVE_KEY, localStorage.getItem(MAIN_SAVE_KEY));
+      copiedMain = true;
+    }
+  } catch (e) { /* storage blocked */ }
 
   function loadSave() {
     try {
@@ -61,6 +71,21 @@
     view.resize();
   }
 
+  // changelog + content frontier, shown on the title card at every load
+  function newsHtml() {
+    const log = NYA.CHANGELOG || [], fr = NYA.FRONTIER;
+    const b = NYA.BUILD;
+    const tag = (devBuild ? '<span class="tc-dev">DEV BUILD</span> ' : '') + (b ? `${NYA.esc(b.sha)} · ${NYA.esc(b.date)}` : '');
+    const entry = (e, i) => `<details class="tc-log"${i === 0 ? ' open' : ''}><summary><b>${NYA.esc(e.title)}</b> <small>${NYA.esc(e.date)}</small></summary>
+      <ul>${e.items.map(x => `<li>${NYA.esc(x)}</li>`).join('')}</ul></details>`;
+    return `<div class="tc-news">
+      ${tag ? `<div class="tc-build">${tag}</div>` : ''}
+      ${copiedMain ? '<p class="mini">Dev build: copied your main save to start from. The two saves are separate from now on.</p>' : ''}
+      <h3>What's new</h3>${log.slice(0, 4).map(entry).join('')}
+      ${fr ? `<h3>How far this build goes</h3><p>${NYA.esc(fr.summary)}</p><ul>${fr.items.map(x => `<li>${NYA.esc(x)}</li>`).join('')}</ul>` : ''}
+    </div>`;
+  }
+
   // title / welcome-back card (also unlocks audio with a user gesture)
   if (isNew) {
     ui.openModal(`<div class="title-card">
@@ -68,11 +93,11 @@
       <div class="tc-fax"><div class="fax-head">FAX — FROM: AUNTIE</div><div class="fax-body">${NYA.esc(NYA.STORY_FAX.intro)}</div></div>
       <p>You've just been made <b>Foreman</b> of a catnip mine. You did not earn this.</p>
       <button class="big" data-act="close">Clock in ▶</button>
-      <p class="mini">Click tiles to laser-point your crew. Hover anything for the real numbers.</p></div>`);
+      <p class="mini">Click tiles to laser-point your crew. Hover anything for the real numbers.</p>${newsHtml()}</div>`);
   } else {
     ui.openModal(`<div class="title-card"><div class="tc-logo">NYAPOTISM!</div><div class="tc-sub">Welcome back, Foreman.</div>
       ${offline > 60 ? `<p>You were away for <b>${NYA.fmtTime(offline)}</b>. The crew napped. You banked <b>${NYA.fmtTime(offline * game.bankEff())}</b> of Fast-Forward.</p>` : ''}
-      <button class="big" data-act="close">Clock in ▶</button></div>`);
+      <button class="big" data-act="close">Clock in ▶</button>${newsHtml()}</div>`);
   }
 
   // ---------------------------------------------------------------- loop
