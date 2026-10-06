@@ -13,8 +13,10 @@
 
   // Per-tier scaling (GDD §6.3)
   NYA.tierBase = t => Math.pow(10, t - 1);       // nip value
-  NYA.tierHP = t => Math.pow(3.5, t - 1);         // tile HP
-  NYA.tierResist = t => Math.pow(1.6, t - 1);     // stamina per swing
+  // HP and resistance outgrow nip value enough that a new mine only pays well once Power and Grit catch
+  // up (playtest: moving up shouldn't be an instant big gain). Stay-vs-jump at unlock: ~2x, was 3-4x.
+  NYA.tierHP = t => Math.pow(5, t - 1);         // tile HP
+  NYA.tierResist = t => Math.pow(2.0, t - 1);     // stamina per swing
   NYA.tierXP = t => Math.pow(2.5, t - 1);         // XP per swing / item
 
   // Counter-pressures: every stat faces something that grows each tier, so upgrading it keeps

@@ -5,6 +5,16 @@
 
   NYA.CHANGELOG = [
     {
+      title: 'Tougher new mines, cheaper pickaxes',
+      date: '2026-10-07',
+      items: [
+        'Each tier’s rock is tougher (HP ×5 per tier, was ×3.5) and tires miners faster (stamina per swing ×2 per tier, was ×1.6). Tier 2 rock is ~40% tougher than before.',
+        'Sharper Pickaxe and Stamina Snacks get pricier more slowly (×2.1 per level, was ×2.3), so upgrading is how you get ready for the next mine.',
+        'Moving to a new mine before your Power and Grit are ready now pays about 2× your current mine instead of 3–4×.',
+        'Mud and rubble are now proper pixel tiles instead of drawn-on shapes.',
+      ],
+    },
+    {
       title: 'Dev saves (dev build only)',
       date: '2026-10-06',
       items: [

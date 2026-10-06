@@ -85,7 +85,7 @@
     fx: l => 'Level cap ' + NYA.LEVEL_CAPS[l] });
 
   // ---------------- R&D Lab: Excavation ----------------
-  def({ id: 'pick', bld: 'lab', branch: 'Excavation', name: 'Sharper Pickaxe', max: 60, base: 10, growth: 2.3,
+  def({ id: 'pick', bld: 'lab', branch: 'Excavation', name: 'Sharper Pickaxe', max: 60, base: 10, growth: 2.1,
     desc: '+20% Power (compounding).', flavor: 'Doc Boom sharpened it with another pickaxe. Then sharpened that one.',
     fx: l => 'Power ×' + NYA.fmt(Math.pow(1.2, l)) });
   def({ id: 'grip', bld: 'lab', branch: 'Excavation', name: 'Grippy Paw Pads', max: 30, base: 60, growth: 2.4,
@@ -116,7 +116,7 @@
     fx: l => 'Pack-up ' + (6 - 0.5 * l).toFixed(1) + ' s' });
 
   // ---------------- R&D Lab: Personnel ----------------
-  def({ id: 'snacks', bld: 'lab', branch: 'Personnel', name: 'Stamina Snacks', max: 60, base: 12, growth: 2.3,
+  def({ id: 'snacks', bld: 'lab', branch: 'Personnel', name: 'Stamina Snacks', max: 60, base: 12, growth: 2.1,
     desc: '+15% Stamina (compounding).', flavor: 'Fish crackers. Industrial quantities.',
     fx: l => 'Stamina ×' + NYA.fmt(Math.pow(1.15, l)) });
   def({ id: 'grit', bld: 'lab', branch: 'Personnel', name: 'Grit Training', max: 80, base: 300, growth: 1.75,

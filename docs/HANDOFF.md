@@ -31,6 +31,8 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Title card shows a changelog (`js/ui/changelog.js`) and how far the build goes; `/dev/` Pages build | User is away from their computer and playtests by URL |
 | Four Ears?! eyecatcher: human ears drawn outside the head; gallery keeps one look per replay | Ears were hidden inside the head; the gallery re-rolled the catgirl every frame |
 | Applicant board: 3 visible applicants, slots refill after episodes, one turns over every 2 episodes, paid "Post a new ad" refresh (×3 hire, doubles per ad, halves per turnover); transfer refund 40% → 25% | Hire-and-transfer loops let you fish for exact fur/aptitude rolls (user found it fishing for a second tuxedo) |
+| Tier HP ×5/tier (was 3.5), resistance ×2/tier (was 1.6); Sharper Pickaxe and Stamina Snacks growth 2.3 → 2.1 | Playtest: moving to a new mine was an instant big income gain; it should be held back by low Power/Grit. Measured stay-vs-jump income at unlock: median ~2× (was 3–4×). The user rejected an unmined-ore fine as the lever |
+| Mud and rubble drawn as pixel tiles (mud floor texture, rubble overlay) | Playtest: should be tiles, not decals |
 | Rough ground from Tier 2: mud patches (×0.5 walk speed) and rubble from broken rock (×0.65, trampled after 2 crossings). New Mud Puppy trait ignores both | Pace needed a per-tier counter-pressure. Pacing targets unchanged in the harness |
 
 ### Pacing targets vs current sims (active bot)
@@ -39,11 +41,12 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | --- | --- | --- |
 | First perfect clear | ~10 min | 4–11 min |
 | Tier 2 | 15–20 min | 16–18 min |
-| Tier 3 | 55–65 min | 52–60 min |
-| Skein | 65–80 min | 62–72 min |
-| Tier 4 (needs the Skein) | after the Skein | 85–100 min |
+| Tier 3 | 55–65 min | 59–65 min |
+| Skein | 65–80 min | 71–84 min |
+| Tier 4 (needs the Skein) | after the Skein | 100–112 min |
 | Crew size | 3 at Tier 1, 3–4 at Tier 2, 5–6 at Tier 3, 7–8 at Tier 4 | on target |
 | Season 1 | 90–150 min | ~1h25–1h30 (the bot unravels 25 min after the Skein) |
+| Stay-vs-jump income at a tier unlock | ~1× (new mine held back by Power/Grit) | median ~2× (T2 0.8–4, T3 2–3, T4 1–2.7); measure with a stay/jump script like the one described in the T-HP commit |
 | Yarn per season | ~×3 growth | S2 ~50, S4 ~100–400, S5 ~600–1300 |
 
 ## Known issues / watch list
