@@ -735,10 +735,11 @@
     showEyecatchModal(id) {
       this.openModal(`<h2>${esc(NYA.EYECATCHERS.find(e => e.id === id).name)}</h2><canvas id="galCv" width="640" height="360" style="width:100%;border-radius:12px"></canvas><div class="row"><button class="big" data-act="close">Close</button></div>`);
       const cv = document.getElementById('galCv');
+      const look = NYA.randEyeLook(); // one catgirl for the whole replay, not a new one per frame
       let fr = 0;
       const tick = () => {
         if (!cv.isConnected) return;
-        NYA.drawEyecatch(cv.getContext('2d'), 640, 360, id, fr % 3, performance.now() / 1000);
+        NYA.drawEyecatch(cv.getContext('2d'), 640, 360, id, fr % 3, performance.now() / 1000, look);
         fr++;
         setTimeout(tick, 900);
       };

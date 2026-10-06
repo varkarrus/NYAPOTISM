@@ -169,11 +169,17 @@
       const L2 = randLookSeed(9);
       D(ctx, W * 0.36, H * 0.98, H * 0.7, L, { anim: 'idle', t, noPick: true });
       D(ctx, W * 0.68, H * 0.98, H * 0.7, L2, { anim: f === 1 ? 'cheer' : 'idle', t, eyes: f === 1 ? 'pin' : f === 2 ? 'half' : 'open', mouth: f === 1 ? 'open' : 'cat', noPick: true, face: -1 });
-      // human-ear headband
+      // human-ear headband: ears poke out past the sides of her head (head radius 8.6, centre y −20.2 in sprite units)
       if (f < 2) {
-        const hx = W * 0.36, hy = H * 0.98 - H * 0.7 * 0.6;
-        ctx.fillStyle = '#ffe3d1';
-        ctx.beginPath(); ctx.ellipse(hx - H * 0.13, hy, H * 0.025, H * 0.04, 0, 0, 7); ctx.ellipse(hx + H * 0.13, hy, H * 0.025, H * 0.04, 0, 0, 7); ctx.fill();
+        const u = H * 0.7 / 34;
+        ctx.save(); ctx.translate(W * 0.36, H * 0.98); ctx.scale(u, u);
+        ctx.fillStyle = '#ffe3d1'; ctx.strokeStyle = '#2a1f33'; ctx.lineWidth = 0.7;
+        for (const sx of [-1, 1]) {
+          ctx.beginPath(); ctx.ellipse(sx * 9.4, -19.6, 1.6, 2.5, sx * 0.25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.strokeStyle = 'rgba(160,90,80,0.6)'; ctx.beginPath(); ctx.arc(sx * 9.5, -19.6, 0.9, sx > 0 ? -1.2 : Math.PI - 1.2, sx > 0 ? 1.2 : Math.PI + 1.2); ctx.stroke();
+          ctx.strokeStyle = '#2a1f33';
+        }
+        ctx.restore();
       } else {
         ctx.save(); ctx.translate(W * 0.18, H * 0.4); ctx.rotate(-0.5);
         ctx.strokeStyle = '#ff7eb6'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(0, 0, H * 0.1, Math.PI, 0); ctx.stroke();
@@ -188,6 +194,7 @@
     return { fur: r.pick(NYA.FUR_KEYS), hair: r.pick(['bob', 'buzz', 'ponytail', 'undercut', 'twinbuns', 'velvet', 'bun']), outfit: r.pick(NYA.OUTFITS), hat: true };
   }
 
+  NYA.randEyeLook = randLook;
   NYA.drawEyecatch = function (ctx, W, H, id, frame, t, look) {
     const fn = EYE[id] || EYE.box;
     ctx.save();
