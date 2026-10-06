@@ -770,11 +770,13 @@
           ${tog('hideAnims', 'Hide pack-up animations (time cost is simulated either way)')}${tog('sci', 'Scientific notation')}${tog('vhs', 'VHS mode (scanlines)')}
         </div>
         <h3>Save</h3>
-        <div class="row"><button data-act="export">Export save</button><button data-act="import">Import save</button><button class="danger" data-act="reset">Hard reset</button></div>
+        <div class="row"><button data-act="export">Export save</button><button data-act="import">Import save</button><button class="danger" data-act="reset">Hard reset</button>${this.opts.devTools ? '<button id="devSavesBtn">🧪 Dev saves</button>' : ''}</div>
         <textarea id="saveText" rows="4" placeholder="Your save string appears here / paste one to import"></textarea>
         <div class="row"><button class="big" data-act="close">Done</button></div>`);
       this.el.modal.querySelectorAll('[data-set]').forEach(inp => inp.addEventListener('change', () => { s[inp.dataset.set] = inp.checked; this.applySettings(); }));
       this.el.modal.querySelectorAll('[data-vol]').forEach(inp => inp.addEventListener('input', () => { s[inp.dataset.vol] = +inp.value; this.audio.applyVolumes(); }));
+      const dv = document.getElementById('devSavesBtn');
+      if (dv) dv.onclick = () => NYA.openDevSaves(this);
     }
     applySettings() {
       const s = this.g.s.settings;

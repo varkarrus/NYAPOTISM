@@ -419,6 +419,13 @@ button.danger { color: var(--red); }
 .setgrid label { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .setgrid input[type=range] { flex: 1; }
 textarea { width: 100%; background: #120b1c; color: var(--text); border: 1px solid var(--line); border-radius: 8px; font-family: var(--dot); font-size: 14px; }
+.devms { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.devms button { background: var(--panel3); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; text-align: left; display: flex; flex-direction: column; gap: 2px; }
+.devms button:disabled { opacity: .5; }
+.devms small { color: var(--muted); font-size: 11px; }
+.devsnap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0; }
+.devbtns { margin-left: auto; display: flex; gap: 6px; }
+.devbtns button { background: var(--panel3); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; }
 .help li { margin-bottom: 6px; line-height: 1.4; }
 .title-card { text-align: center; }
 .tc-logo { font-family: var(--disp); font-size: 52px; color: var(--gold); text-shadow: 4px 4px 0 #c2185b, 8px 8px 0 rgba(0,0,0,.35); animation: wob 3s ease-in-out infinite; }

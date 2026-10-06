@@ -5,6 +5,15 @@
 
   NYA.CHANGELOG = [
     {
+      title: 'Dev saves (dev build only)',
+      date: '2026-10-06',
+      items: [
+        'Settings → 🧪 Dev saves. Jump to a milestone (Barracks, Tier 2, Tier 3, the Skein, Tier 4, Seasons 2/3/5…): the balance bot plays a fresh game in a few seconds and loads it.',
+        'Three snapshot slots to save your current game and come back to it later.',
+        'Only on /dev/. Your main save is never touched.',
+      ],
+    },
+    {
       title: 'Applicant board',
       date: '2026-10-06',
       items: [

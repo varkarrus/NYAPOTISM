@@ -50,6 +50,8 @@
     importSave(json) { resetting = true; localStorage.setItem(SAVE_KEY, json); location.reload(); },
     hardReset() { resetting = true; localStorage.removeItem(SAVE_KEY); location.reload(); },
     onModalClose() { if (!started) begin(); },
+    // dev save tools: the /dev/ build, or ?dev anywhere except the live main site
+    devTools: devBuild || (dev && location.hostname !== 'varkarrus.github.io'),
   });
   NYA.debug = { game, ui, view, audio, save };
 
