@@ -30,7 +30,7 @@ The game autosaves to `localStorage` every 30 s. You can export or import a save
 | Refinery Mk, Polisher, Centrifuge, **Tora's Special Blend** gamble | 6.2 | |
 | Actives: Blunt (tolerance), Hairball Bomb, Tuna Time, Sonar, Hotbox, Treat Bag, Catterall, **Mewclear Option** | 7 | |
 | R&D tree (5 branches) and Project MEWCLEAR's 10 stages, with the warhead sprite evolving | 7.1, 8 | |
-| Tiers 1–4: Backyard Burrow, Scratching Post Quarry (grooved chains), Yarnball Caverns (tangles + Schrödinger's Box), **Dairy Depths** (milk nodes, pumpjacks, pipes, Creamery) | 9 | |
+| Tiers 1–4: Backyard Burrow, Scratching Post Quarry (grooved chains), Yarnball Caverns (tangles + Schrödinger's Box), **Dairy Depths** (milk nodes, pumpjacks, pipes, Creamery). Rough ground (mud, rubble) from Tier 2 | 9 | |
 | Purrmit Office standing orders, Requisition Points (boot-screen bar), auto-cast, auto-hire | 11 | |
 | Banked Time and Fast-Forward | 12 | |
 | ~45 Faxes from Auntie (achievements with bonuses) | 13 | |

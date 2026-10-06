@@ -233,6 +233,7 @@
           case 'treat': if (m) this.pop(m.x + 0.5, m.y - 0.6, 'TREAT!', '#ff7eb6', true); this.sfx('treat'); break;
           case 'catterall': if (e.on && this.banners) this.banners('catterall'); if (this.audio) this.audio.duck(e.on); break;
           case 'tangle': this.burst(e.i, '#ff9ec4', 3, 1.5, 0.08); break;
+          case 'rubble': this.burst(e.i, '#b8a890', 2, 1.2, 0.06); break;
           case 'wish':
             this.pop(M.x(e.i) + 0.5, M.y(e.i) - 0.2, '★ WISH ' + e.n + ' ★', '#c9e3ff', true);
             this.burst(e.i, '#c9e3ff', 24, 4, 0.12); this.sfx('trait'); break;
@@ -294,6 +295,8 @@
           if (ty === T.OPEN || ty === T.BOX) {
             ctx.drawImage(tex.floor[v], X, Y, ts, ts);
             if (y > 0 && !M.isOpen(i - M.w) && M.type[i - M.w] !== T.BOX) { ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(X, Y, ts, ts * 0.22); }
+            if (M.mud[i]) this.drawMud(ctx, X, Y, ts, i);
+            if (M.rubble[i]) this.drawRubble(ctx, X, Y, ts, i, M.rubble[i]);
             if (M.tangle[i]) this.drawTangle(ctx, X, Y, ts, i, M.tangle[i]);
             if (ty === T.BOX) {
               ctx.save(); ctx.translate(X + ts / 2, Y + ts * 0.9); ctx.scale(ts / 20, ts / 20);
@@ -657,6 +660,26 @@
       ctx.stroke();
     }
 
+    drawMud(ctx, X, Y, ts, i) {
+      const a = ((i * 37) % 100) / 100, b = ((i * 61) % 100) / 100;
+      ctx.fillStyle = 'rgba(150,102,60,0.8)';
+      ctx.strokeStyle = 'rgba(70,44,24,0.8)'; ctx.lineWidth = Math.max(1, ts * 0.04);
+      ctx.beginPath();
+      ctx.ellipse(X + ts * (0.35 + 0.3 * a), Y + ts * (0.4 + 0.25 * b), ts * 0.38, ts * 0.26, a * 3, 0, Math.PI * 2);
+      ctx.ellipse(X + ts * (0.65 - 0.3 * b), Y + ts * (0.6 - 0.2 * a), ts * 0.3, ts * 0.22, b * 3, 0, Math.PI * 2);
+      ctx.stroke(); ctx.fill();
+      ctx.fillStyle = 'rgba(255,240,220,0.35)'; // wet shine
+      ctx.beginPath(); ctx.ellipse(X + ts * (0.3 + 0.3 * a), Y + ts * (0.35 + 0.2 * b), ts * 0.1, ts * 0.04, -0.4, 0, Math.PI * 2); ctx.fill();
+    }
+    drawRubble(ctx, X, Y, ts, i, n) {
+      ctx.fillStyle = n > 1 ? 'rgba(200,188,170,0.9)' : 'rgba(200,188,170,0.5)';
+      for (let k = 0; k < 5; k++) {
+        const a = ((i * 23 + k * 47) % 100) / 100, b = ((i * 59 + k * 31) % 100) / 100, r = ts * (0.06 + 0.05 * ((k * 13 + i) % 3) / 2);
+        ctx.beginPath(); ctx.moveTo(X + ts * (0.15 + 0.7 * a) - r, Y + ts * (0.2 + 0.65 * b) + r * 0.6);
+        ctx.lineTo(X + ts * (0.15 + 0.7 * a), Y + ts * (0.2 + 0.65 * b) - r); ctx.lineTo(X + ts * (0.15 + 0.7 * a) + r, Y + ts * (0.2 + 0.65 * b) + r * 0.6);
+        ctx.closePath(); ctx.fill();
+      }
+    }
     drawTangle(ctx, X, Y, ts, i, n) {
       ctx.strokeStyle = n > 1 ? 'rgba(255,158,196,0.85)' : 'rgba(255,158,196,0.45)';
       ctx.lineWidth = Math.max(1, ts * 0.05);

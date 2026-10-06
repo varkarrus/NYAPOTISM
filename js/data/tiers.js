@@ -28,6 +28,12 @@
   NYA.BASE_SIGHT = 3;
   NYA.tierDarkness = t => Math.floor((t - 1) / 2);   // T1-2: 0, T3-4: 1, T5-6: 2, ...
   NYA.MAX_NOTICE = 8; NYA.MAX_REVEAL = 6;
+  // Pace <- rough ground: mud patches (permanent) and rubble left by broken rock (trampled flat after a
+  // couple of crossings). Both start at Tier 2 and spread with depth; mines also widen each tier.
+  NYA.tierMud = t => t < 2 ? 0 : Math.min(0.3, 0.06 * (t - 1));     // share of the mine floor that's mud
+  NYA.tierRubble = t => t < 2 ? 0 : Math.min(0.6, 0.12 * (t - 1));  // chance a broken rock tile leaves rubble
+  NYA.MUD_SLOW = 0.5; NYA.RUBBLE_SLOW = 0.65; NYA.TANGLE_SLOW = 0.4;
+  NYA.RUBBLE_STEPS = 2;
 
   // Quality shapes & colors (never color alone — GDD §3.3)
   NYA.QUALITY = [

@@ -51,6 +51,8 @@
       this.resist = NYA.tierResist(this.tier);
       this.motherlodeSeen = false; this.boxSeen = false;
       // Sight: how far miners notice ore on their own, and how far opened tiles reveal fog
+      this.rubbleP = NYA.tierRubble(this.tier);
+      this.roughRng = new NYA.RNG('rubble:' + cfg.seed);
       this.darkness = NYA.tierDarkness(this.tier);
       this.sight = NYA.BASE_SIGHT + (cfg.headlamp || 0) - this.darkness;
       this.noticeRange = Math.max(1, Math.min(NYA.MAX_NOTICE, this.sight));
@@ -435,7 +437,7 @@
         const tx = M.x(nxt), ty = M.y(nxt);
         const dx = tx - m.x, dy = ty - m.y;
         const d = Math.abs(dx) + Math.abs(dy);
-        const slow = (M.tangle[nxt] && !m.s.flags.yarnWrangler) ? 0.4 : 1;
+        const slow = this.terrainSlow(m, nxt);
         const step = remaining * slow;
         if (Math.abs(dx) > 0.01) m.face = dx > 0 ? 1 : -1;
         if (d <= step) {
@@ -454,6 +456,18 @@
       return m.pathI >= m.path.length;
     }
 
+    // Rough ground (Pace's per-tier counter-pressure): the worst obstacle on a tile sets the walking speed.
+    terrainSlow(m, i) {
+      const M = this.mine, f = m.s.flags;
+      let slow = 1;
+      if (M.tangle[i] && !f.yarnWrangler) slow = NYA.TANGLE_SLOW;
+      if (!f.mudPuppy) {
+        if (M.mud[i]) slow = Math.min(slow, NYA.MUD_SLOW);
+        if (M.rubble[i]) slow = Math.min(slow, NYA.RUBBLE_SLOW);
+      }
+      return slow;
+    }
+
     onEnterTile(m, i) {
       const M = this.mine;
       if (m.state === 'pipe') {
@@ -465,6 +479,11 @@
       if (M.tangle[i]) {
         if (m.s.flags.yarnWrangler) M.tangle[i] = 0; else M.tangle[i]--;
         this.ev({ t: 'tangle', i });
+      }
+      if (M.rubble[i]) {
+        if (m.s.flags.mudPuppy) M.rubble[i] = 0; else M.rubble[i]--;
+        this.st.rubble = (this.st.rubble || 0) + 1;
+        this.ev({ t: 'rubble', i });
       }
       if (m.s.flags.boxSitter && m.state === 'walk' && i !== M.elev && this.t - m.lastBox > 10) {
         let open = 0;
@@ -800,6 +819,7 @@
     breakTile(i, m) {
       const M = this.mine, ty = M.type[i];
       M.type[i] = T.OPEN; M.hp[i] = 0;
+      if (this.rubbleP > 0 && (ty === T.DIRT || ty === T.STONE || ty === T.HARD || ty === T.GROOVE) && this.roughRng.chance(this.rubbleP)) M.rubble[i] = NYA.RUBBLE_STEPS;
       if (ty === T.ORE || ty === T.BOX) this.resLeft--;
       if (ty === T.ORE && M.cluster[i] >= 0) {
         const c = M.cluster[i];
@@ -1098,13 +1118,14 @@
         const d = Math.hypot(M.x(i) - x0, M.y(i) - y0);
         if (d <= R) {
           const ty = M.type[i];
-          if (ty === T.ELEV || ty === T.OPEN) { M.tangle[i] = 0; continue; }
+          if (ty === T.ELEV || ty === T.OPEN) { M.tangle[i] = 0; M.rubble[i] = 0; continue; }
           this.reveal(i);
           if (ty === T.ORE) {
             while (M.dropped[i] < M.dens[i]) { M.dropped[i]++; this.spawnItem(i, null); }
           }
           if (ty === T.BEDROCK) { M.type[i] = T.STONE; }
           this.breakTile(i, null);
+          M.rubble[i] = 0; // blasted clean
         } else if (d <= R2) {
           this.reveal(i);
           if (M.type[i] === T.ORE && !M.glow[i]) { M.glow[i] = 1; this.st.glowing++; }

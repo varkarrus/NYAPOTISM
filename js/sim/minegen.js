@@ -50,6 +50,8 @@
       this.revealed = new Uint8Array(n);
       this.groove = new Int16Array(n).fill(-1);
       this.tangle = new Uint8Array(n);
+      this.mud = new Uint8Array(n);       // muddy floor: slows walkers once the tile is open
+      this.rubble = new Uint8Array(n);    // crossings left before rubble is trampled flat
       this.forbid = new Uint8Array(n);
       this.glow = new Uint8Array(n);      // "Glowing Nip" (+quality from Mewclear)
       this.cluster = new Int16Array(n).fill(-1); // Tanabata constellations
@@ -223,6 +225,23 @@
       // --- Tangles (T3 quirk): yarn-choked open tiles
       if (def.quirk === 'tangles') {
         for (let i = 0; i < n; i++) if (type[i] === T.OPEN && rng.chance(0.45)) this.tangle[i] = 2;
+      }
+
+      // --- Mud patches (rough ground, Tier 2+). Own RNG so adding mud doesn't reshuffle the rest of the mine.
+      const mudShare = NYA.tierMud(def.tier);
+      if (mudShare > 0) {
+        const mr = new NYA.RNG('mud:' + this.seed);
+        const target = Math.round(n * mudShare);
+        let muddy = 0, g2 = 0;
+        while (muddy < target && g2++ < 400) {
+          let c = mr.int(0, n - 1);
+          const len = mr.int(3, 8);
+          for (let s = 0; s < len && muddy < target; s++) {
+            if (!nearElev(c, 1) && !this.mud[c] && type[c] !== T.BEDROCK && type[c] !== T.ELEV) { this.mud[c] = 1; muddy++; }
+            const d = mr.int(0, 3), cx = this.x(c) + (d === 0 ? 1 : d === 1 ? -1 : 0), cy = this.y(c) + (d === 2 ? 1 : d === 3 ? -1 : 0);
+            if (this.inb(cx, cy)) c = this.idx(cx, cy);
+          }
+        }
       }
 
       // --- Milk nodes (T4 quirk): pumped, never mined

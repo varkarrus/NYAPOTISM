@@ -429,7 +429,13 @@
           const left = M.dens[i] - M.dropped[i], q = M.q[i] + (M.glow[i] ? 2 : 0), qi = NYA.qInfo(q);
           html = `<b>Catnip Ore</b>${i === M.motherlode ? ' <b style="color:#ff7eb6">MOTHERLODE</b>' : ''}${M.glow[i] ? ' <b style="color:#b4ff78">GLOWING</b>' : ''} · density <b>${left}</b> · quality <b style="color:${qi.color}">${q} ${qi.label}</b> · ≈${fmt(left * ep.itemValue({ q, d: M.dens[i] }))} ore value${hp}`;
         } else if (ty === T.BOX) html = `<b>Schrödinger’s Box</b> — it hums.${hp}`;
-        else if (ty === T.OPEN) html = M.tangle[i] ? '<b>Tangle</b> — slows walkers until cut through' : '<b>Open floor</b>';
+        else if (ty === T.OPEN) {
+          const bits = [];
+          if (M.tangle[i]) bits.push('<b>Tangle</b> — walkers ×' + NYA.TANGLE_SLOW + ' until cut through');
+          if (M.rubble[i]) bits.push('<b>Rubble</b> — walkers ×' + NYA.RUBBLE_SLOW + ' until trampled flat (' + M.rubble[i] + ' more)');
+          if (M.mud[i]) bits.push('<b>Mud</b> — walkers ×' + NYA.MUD_SLOW + '. Pace pushes through');
+          html = bits.length ? bits.join(' · ') : '<b>Open floor</b>';
+        }
         else html = `<b>${NYA.TILE_NAME[ty]}</b>${ty === T.GROOVE ? ' — breaks in a chain' : ty === T.BEDROCK ? ' — indestructible (mostly)' : ''}${hp}`;
         if (M.forbid[i]) html += ' · <b style="color:#8fd0ff">FORBIDDEN</b>';
       }

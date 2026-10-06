@@ -28,6 +28,9 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Sight = 3 + Headlamps − darkness (−1 every two tiers) | Headlamps need a per-tier counter-pressure |
 | Sight also sets the ore-noticing range and fog reveal radius; dark-mine overlay | Sight needs to be felt and seen |
 | Yarn exponent nodes cost 40/600, Catnip Cable-Knit cost ×4/rank, Skein Stripe ×1.5 | Yarn ran away from Season 4 on (up to 44K/season) |
+| Title card shows a changelog (`js/ui/changelog.js`) and how far the build goes; `/dev/` Pages build | User is away from their computer and playtests by URL |
+| Four Ears?! eyecatcher: human ears drawn outside the head; gallery keeps one look per replay | Ears were hidden inside the head; the gallery re-rolled the catgirl every frame |
+| Rough ground from Tier 2: mud patches (×0.5 walk speed) and rubble from broken rock (×0.65, trampled after 2 crossings). New Mud Puppy trait ignores both | Pace needed a per-tier counter-pressure. Pacing targets unchanged in the harness |
 
 ### Pacing targets vs current sims (active bot)
 
@@ -56,7 +59,7 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 
 ## Next steps (agreed with the user, roughly in priority order)
 
-1. **Pace vs terrain.** Mines grow about 4× wider by Tier 12. Add a per-tier "rough ground" pace penalty, plus patches of mud or rubble alongside the existing tangles. Crossing early mines in a single frame late-game is a deliberate payoff, so keep it.
+1. ~~Pace vs terrain~~ — done (`NYA.tierMud`, `NYA.tierRubble` in `js/data/tiers.js`, `terrainSlow` in `js/sim/episode.js`). Possible follow-ups: let pathfinding avoid mud when a detour is short, and feed trampled rubble into Robovacs later.
 2. **OVAs (GDD §15).** Challenge seasons unlocked after Season 5. Each has three difficulty releases (VHS / Laserdisc / Director's Cut) and a permanent reward. Most limiters are just flags on existing systems (One Cat Army, Lights Out, No Laser Zone, Budget Cuts, Nine to Five, Monday). This is the next novelty source for Season 5+.
 3. **Loom Pattern 2**, unlocked when Pattern 1 is complete.
 4. **Tiers 5–6 (GDD §9.2), built on the per-tier scaling framework:**

@@ -30,6 +30,7 @@
     { id: 'tunnel_vision', name: 'Tunnel Vision', kind: 'mixed', rarity: 'uncommon', desc: '+4 Focus, ignores laser marks entirely.', flavor: 'Has a plan. Will not be sharing it.', mods: { focusAdd: 4, ignoreLaser: 1 } },
     { id: 'box_obsessed', name: 'Box Obsessed', kind: 'neg', rarity: 'common', desc: 'Stops to sit in any dead-end nook for 5 seconds. Every time.', flavor: 'If it fits, she sits. It always fits.', mods: { boxSitter: 1 } },
     { id: 'zoomies_3am', name: 'Zoomies at 3AM', kind: 'pos', rarity: 'uncommon', desc: 'Random bursts of +100% Pace.', flavor: 'It is always 3AM somewhere.', mods: { zoomies3am: 1 } },
+    { id: 'mud_puppy', name: 'Mud Puppy', kind: 'pos', rarity: 'uncommon', desc: 'Mud and rubble don’t slow her; she stomps rubble flat.', flavor: 'Splashes in every puddle. On purpose. With joy.', mods: { mudPuppy: 1 }, mines: { quarry: 3, dairy: 3 } },
     { id: 'sure_footed', name: 'Sure-Footed', kind: 'pos', rarity: 'common', desc: '+20% Pace.', flavor: 'Always lands on her feet. Usually on purpose.', mods: { paceMult: 1.2 }, mines: { yarn: 2 } },
     { id: 'yarn_wrangler', name: 'Yarn Wrangler', kind: 'pos', rarity: 'uncommon', desc: 'Tangles don’t slow her; she cuts them clean.', flavor: 'Has fought yarn before. Yarn lost.', mods: { yarnWrangler: 1 }, mines: { yarn: 6 } },
     { id: 'ball_of_energy', name: 'Ball of Energy', kind: 'mixed', rarity: 'common', desc: '+20% Haste, +60% Whimsy.', flavor: 'Bounces. Constantly. Even asleep.', mods: { hasteMult: 1.2, whimsyMult: 1.6 }, mines: { yarn: 3 } },

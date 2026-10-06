@@ -147,7 +147,7 @@
       if (m.dmgStone) f.dmg.stone *= m.dmgStone;
       if (m.xpMult) f.xpMult *= m.xpMult;
       for (const k of ['scoreOre', 'luckyPaw', 'doubleDrop', 'zoomMult', 'whimsyNoLaser', 'ignoreLaser', 'boxSitter', 'zoomies3am',
-        'powerNap', 'sleepy', 'nightOwl', 'butterfingers', 'menace', 'teamPlayer', 'loner', 'yarnWrangler', 'boxWhisperer',
+        'powerNap', 'sleepy', 'nightOwl', 'butterfingers', 'menace', 'teamPlayer', 'loner', 'yarnWrangler', 'mudPuppy', 'boxWhisperer',
         'nineLives', 'midas', 'crackSpread', 'lactose']) {
         if (m[k] !== undefined) f[k] = m[k];
       }

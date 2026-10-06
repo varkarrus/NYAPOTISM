@@ -27,7 +27,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - Haste vs swing techniques: speed caps at 4 swings/s, then a fold gives half the swings, ×2.2 power and ×2 stamina per swing.
   - Carry vs ore density.
   - Headlamps vs darkness (Sight).
-  - Pace vs mine size and rough terrain (TODO).
+  - Pace vs mine size and rough ground: mud patches and rubble (`tierMud`, `tierRubble`).
   - Focus vs decoy tiles (TODO).
 - **Crew size grows slowly.** Bunk Beds are hand-authored and progress-gated (`NYA.BUNKS`). The user wants about 3–5 miners through Tier 2.
 - **Animations must be readable.** Eyecatchers play picture-in-picture on a real-time clock and are never rushed or cut off. Pack-up time is a real sim cost: don't lengthen it for presentation.

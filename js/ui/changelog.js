@@ -5,6 +5,16 @@
 
   NYA.CHANGELOG = [
     {
+      title: 'Rough ground',
+      date: '2026-10-06',
+      items: [
+        'From Tier 2, mines have mud patches (half walking speed) and broken rock can leave rubble (slower walking until it’s trampled flat after two crossings). Both spread with depth, so Pace upgrades keep mattering.',
+        'New trait: Mud Puppy. Mud and rubble don’t slow her, and she stomps rubble flat. Likes the Quarry and Dairy Depths.',
+        'Hover a floor tile to see its slowdown.',
+        'Fixed the Four Ears?! eyecatcher: the human ears now show, and the gallery replay keeps the same catgirl.',
+      ],
+    },
+    {
       title: 'Dev build & changelog',
       date: '2026-10-06',
       items: [

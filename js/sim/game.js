@@ -537,6 +537,7 @@
       this.episode = new NYA.Episode(this, cfg);
       if (this.catterallActive()) this.episode.setCatterall(true);
       this.phase = 'shift';
+      if (NYA.tierMud(t) > 0) this.novel('terrain', 'Rough ground! Mud and rubble slow your crew down. Pace matters now', 'mine');
       this.emit('episodeStart', { ep: this.episode, num: this.s.episodeNum, tier: t });
       return this.episode;
     }
