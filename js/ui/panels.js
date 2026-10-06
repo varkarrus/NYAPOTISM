@@ -94,7 +94,9 @@
     h += `<h3 class="sec">Fax Machine <small>${got}/${NYA.FAXES.length} faxes · +${Math.round(fb.catnip * 100)}% catnip · +${Math.round(fb.xp * 100)}% XP${fb.yarn ? ' · +' + Math.round(fb.yarn * 100) + '% yarn' : ''}</small></h3>
       <div class="faxgrid">` + NYA.FAXES.map(f => {
         const have = s.faxes[f.id] !== undefined;
-        if (!have && f.hidden) return `<div class="fx-tile hidden" data-act="faxclick">?</div>`;
+        // yarn faxes talk about seasons and unravelling: keep them secret until the Skein is found
+        const spoiler = f.bonus.yarn && !s.skein.have && s.season === 1;
+        if (!have && (f.hidden || spoiler)) return `<div class="fx-tile hidden" data-act="faxclick">?</div>`;
         return `<div class="fx-tile ${have ? 'have' : ''}" data-tip="fax:${f.id}">${have ? '📠' : '·'}</div>`;
       }).join('') + `</div>`;
     // gallery

@@ -3,12 +3,21 @@
 (function (NYA) {
   'use strict';
 
+  // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
+    {
+      title: 'Dairy Depths gate, fewer spoilers',
+      date: '2026-10-07',
+      items: [
+        'The Dairy Depths survey now only needs 10 perfect clears of Yarnball Caverns, so you can reach Tier 4 in your first run.',
+        'Removed spoilers from the survey text, this changelog and the dev-save list.',
+      ],
+    },
     {
       title: 'Playtest fixes: Blend, Treat Bag, VHS, mud edges',
       date: '2026-10-07',
       items: [
-        'Tora’s Special Blend now unlocks once you find the Skein (or from Season 2), and you can run it once an hour instead of once a season.',
+        'Tora’s Special Blend now unlocks later, when one bad roll can’t stall your progress, and you can run it once an hour.',
         'Treat Bag: one catgirl earns double XP for 1 minute (carries across episodes) instead of an instant half-level. The crew rail shows the timer.',
         'Catnip Hotbox fixed: a puff now really gives 22% stamina (it was only ~7%, so woken miners flopped again after one block), it wakes sleepers properly, and revived miners lose their Zs.',
         'VHS mode is much cheaper to draw: same scanline look, no more framerate drop.',
@@ -31,7 +40,7 @@
       title: 'Dev saves (dev build only)',
       date: '2026-10-06',
       items: [
-        'Settings → 🧪 Dev saves. Jump to a milestone (Barracks, Tier 2, Tier 3, the Skein, Tier 4, Seasons 2/3/5…): the balance bot plays a fresh game in a few seconds and loads it.',
+        'Settings → 🧪 Dev saves. Jump to a milestone (Barracks, Tier 2, Tier 3, Tier 4 and later): the balance bot plays a fresh game in a few seconds and loads it.',
         'Three snapshot slots to save your current game and come back to it later.',
         'Only on /dev/. Your main save is never touched.',
       ],
@@ -71,7 +80,6 @@
       items: [
         'Ore gets denser each tier, and dense ore crumbles more easily, so Carry upgrades keep mattering.',
         'Deeper mines are darker: Sight = 3 + Headlamps − darkness. Sight also sets how far miners notice ore and how far the fog clears.',
-        'Yarn growth tamed from Season 4 on (it was reaching 44K per season).',
       ],
     },
     {
@@ -93,13 +101,13 @@
 
   // What the current build actually contains, so a playtester knows where the content ends.
   NYA.FRONTIER = {
-    summary: 'Roughly 3–4 hours of new things, up to about Season 5. After that nothing new unlocks yet — just bigger numbers.',
+    summary: 'Roughly 3–4 hours of new things. After that nothing new unlocks yet — just bigger numbers.',
     items: [
-      'Tiers 1–3 in your first season (Tier 3 at about 1 hour).',
-      'The Skein (about 1h 15m): Unravel the Timeline and spend yarn on Quantum Loom Pattern 1.',
-      'Tier 4, Dairy Depths (milk pumping), unlocks after your first Skein.',
+      'Tiers 1–3 in your first run (Tier 3 at about 1 hour).',
+      'Something big around the 1h 15m mark. No spoilers!',
+      'Tier 4, Dairy Depths (milk pumping), at about 1h 30m.',
       'Tanuki’s limited-time event mines, R&D and MEWCLEAR, standing orders, swing techniques.',
-      'Not built yet: OVAs, Loom Pattern 2, Tiers 5+, equipment.',
+      'Not built yet: Tiers 5+, equipment, and more late-game content.',
     ],
   };
 })(globalThis.NYA = globalThis.NYA || {});

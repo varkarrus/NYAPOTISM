@@ -217,7 +217,9 @@
 
   def({ id: 'mine4', bld: 'lab', branch: 'Exploration', name: 'Survey: Dairy Depths', max: 1, base: 2e7, timer: 30,
     show: g => g.s.maxTierReached >= 3,
-    req: g => (!g.s.skein.have && g.s.season === 1 ? 'Find the Skein first (Schrödinger\u2019s Box, Tier 3)' : g.fc(3) >= 10 ? null : 'Full-clear Yarnball Caverns 10 times (' + g.fc(3) + '/10)'),
+    // no Skein gate (spoiler, and the user wants Dairy Depths reachable first run), but priced so the
+    // Skein usually turns up first (check with tools/skeinrace.js)
+    req: g => (g.fc(3) >= 10 ? null : 'Full-clear Yarnball Caverns 10 times (' + g.fc(3) + '/10)'),
     desc: 'Unlocks Tier 4 — Dairy Depths. Milk nodes, pumpjacks and pipes… and a new resource: MILK.', flavor: 'Doc Boom swears the cave is "lactating." Nobody asked her to elaborate.',
     unlock: 'mine:4' });
   def({ id: 'junctions', bld: 'lab', branch: 'Logistics', name: 'Pipe Junctions', max: 1, base: 6e7, timer: 20,

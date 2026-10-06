@@ -15,11 +15,11 @@
     { id: 'tanuki', label: 'Tanuki’s Emporium', hint: '~18 min', done: g => g.s.buildings.tanuki },
     { id: 't2mid', label: 'Mid Tier 2 (30 min in)', hint: '30 min', done: g => g.s.simTime >= 30 * 60 },
     { id: 't3', label: 'Tier 3: Yarnball Caverns', hint: '~55 min', done: g => g.s.maxTierReached >= 3 },
-    { id: 'skein', label: 'The Skein found', hint: '~70 min', done: g => g.s.skein.have },
+    { id: 'skein', label: 'Big discovery (spoiler!)', hint: '~75 min', done: g => g.s.skein.have },
     { id: 't4', label: 'Tier 4: Dairy Depths', hint: '~90 min', done: g => g.s.maxTierReached >= 4 },
-    { id: 's2', label: 'Season 2 start', hint: '~1h30', seasons: true, done: g => g.s.season >= 2 },
-    { id: 's3', label: 'Season 3 start', hint: '~2h30', seasons: true, done: g => g.s.season >= 3 },
-    { id: 's5', label: 'Season 5 start', hint: '~3h30', seasons: true, done: g => g.s.season >= 5 },
+    { id: 's2', label: 'After the discovery: stage 2 (spoiler!)', hint: '~1h30', seasons: true, done: g => g.s.season >= 2 },
+    { id: 's3', label: 'After the discovery: stage 3 (spoiler!)', hint: '~2h30', seasons: true, done: g => g.s.season >= 3 },
+    { id: 's5', label: 'After the discovery: stage 5 (spoiler!)', hint: '~3h30', seasons: true, done: g => g.s.season >= 5 },
   ];
 
   function readSnap(k) {
@@ -78,7 +78,7 @@
       box.querySelectorAll('[data-ms]').forEach(x => { x.disabled = true; });
       prog.textContent = 'Simulating: ' + ms.label + '…';
       cancel = NYA.buildMilestoneSave(ms,
-        (min, g) => { if (prog.isConnected) prog.textContent = `Simulating: ${ms.label}… ${Math.floor(min)} sim-min · Season ${g.s.season} · Tier ${g.s.maxTierReached} · crew ${g.s.crew.length}`; else cancel(); },
+        (min, g) => { if (prog.isConnected) prog.textContent = `Simulating: ${ms.label}… ${Math.floor(min)} sim-min · Tier ${g.s.maxTierReached} · crew ${g.s.crew.length}`; else cancel(); },
         json => {
           if (!prog.isConnected) return;
           if (!json) { prog.textContent = 'The bot didn’t reach that milestone in 8 sim-hours. Try again (it’s random).'; cancel = null; box.querySelectorAll('[data-ms]').forEach(x => { x.disabled = false; }); return; }
@@ -90,7 +90,7 @@
       const [op, k] = b.dataset.snap.split(':');
       if (op === 'save') {
         const g = ui.g;
-        const label = `Season ${g.s.season} · Tier ${g.s.maxTierReached} · ${NYA.fmt(g.s.catnip)} catnip`;
+        const label = (g.s.season > 1 ? `Season ${g.s.season} · ` : '') + `Tier ${g.s.maxTierReached} · ${NYA.fmt(g.s.catnip)} catnip`;
         try {
           localStorage.setItem(SNAP_KEY(k), JSON.stringify({ label, at: Date.now(), save: g.serialize() }));
           ui.toast('Saved to slot ' + (+k + 1) + '.');
