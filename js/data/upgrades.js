@@ -52,8 +52,28 @@
     fx: l => 'Stamina ×' + NYA.fmt(Math.pow(1.1, l)) + ', +' + (2 * l) + ' Grit' });
 
   // ---------------- Barracks ----------------
-  def({ id: 'bunk', bld: 'barracks', name: 'Bunk Beds', max: 9, base: 15, growth: 3.4,
-    desc: '+1 active crew slot.', flavor: 'Top bunk is contested. Violently. Adorably.',
+  // Crew size is the biggest multiplier in the game, so every bunk is hand-priced and the
+  // Barracks only has room for more as you dig deeper. BUNKS[i] is the bunk that takes you
+  // from i+1 to i+2 active slots.
+  NYA.BUNKS = [
+    { cost: 15 },
+    { cost: 90 },
+    { cost: 1500, tier: 2 },
+    { cost: 4e4, fc: [2, 3] },
+    { cost: 1e6, tier: 3 },
+    { cost: 2.5e7, fc: [3, 5] },
+    { cost: 6e8, tier: 4 },
+  ];
+  NYA.bunkReq = function (g) {
+    const b = NYA.BUNKS[g.lvl('bunk')];
+    if (!b) return null;
+    if (b.tier && g.s.maxTierReached < b.tier) return 'Reach Tier ' + b.tier + ' (' + NYA.TIERS[b.tier].name + ') to make room';
+    if (b.fc && g.fc(b.fc[0]) < b.fc[1]) return 'Full-clear ' + NYA.TIERS[b.fc[0]].name + ' ' + b.fc[1] + ' times (' + g.fc(b.fc[0]) + '/' + b.fc[1] + ')';
+    return null;
+  };
+  def({ id: 'bunk', bld: 'barracks', name: 'Bunk Beds', max: NYA.BUNKS.length, costs: NYA.BUNKS.map(b => b.cost),
+    req: g => NYA.bunkReq(g),
+    desc: '+1 active crew slot. Each bunk is hand-built, and the Barracks only has room for more as you dig deeper.', flavor: 'Top bunk is contested. Violently. Adorably.',
     fx: l => (1 + l) + ' active slots' });
   def({ id: 'lockers', bld: 'barracks', name: 'Reserve Lockers', max: 4, base: 150, growth: 5,
     show: g => g.s.hires >= 2,
@@ -185,13 +205,13 @@
     req: g => (g.fc(1) >= 3 ? null : 'Full-clear the Backyard Burrow 3 times (' + g.fc(1) + '/3)'),
     desc: 'Unlocks Tier 2 — Scratching Post Quarry. Grooved stone shatters in chains.', flavor: 'Prove you’re ready before you’re allowed to be underprepared.',
     unlock: 'mine:2' });
-  def({ id: 'mine3', bld: 'lab', branch: 'Exploration', name: 'Survey: Yarnball Caverns', max: 1, base: 5e5, timer: 20,
+  def({ id: 'mine3', bld: 'lab', branch: 'Exploration', name: 'Survey: Yarnball Caverns', max: 1, base: 1.5e5, timer: 20,
     show: g => g.s.maxTierReached >= 2,
     req: g => (g.fc(2) >= 5 ? null : 'Full-clear the Scratching Post Quarry 5 times (' + g.fc(2) + '/5)'),
     desc: 'Unlocks Tier 3 — Yarnball Caverns. Tangles, air pockets… and Schrödinger’s Box.', flavor: 'Somewhere down there, something hums.',
     unlock: 'mine:3' });
 
-  def({ id: 'mine4', bld: 'lab', branch: 'Exploration', name: 'Survey: Dairy Depths', max: 1, base: 2e8, timer: 30,
+  def({ id: 'mine4', bld: 'lab', branch: 'Exploration', name: 'Survey: Dairy Depths', max: 1, base: 6e7, timer: 30,
     show: g => g.s.maxTierReached >= 3,
     req: g => (!g.s.skein.have && g.s.season === 1 ? 'Find the Skein first (Schrödinger\u2019s Box, Tier 3)' : g.fc(3) >= 10 ? null : 'Full-clear Yarnball Caverns 10 times (' + g.fc(3) + '/10)'),
     desc: 'Unlocks Tier 4 — Dairy Depths. Milk nodes, pumpjacks and pipes… and a new resource: MILK.', flavor: 'Doc Boom swears the cave is "lactating." Nobody asked her to elaborate.',
