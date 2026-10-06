@@ -18,7 +18,7 @@
   function makeTextures(pal, key) {
     const V = 4, out = {};
     const bevel = (x, light, dark) => { px(x, 0, 0, light, 16, 1); px(x, 0, 0, light, 1, 16); px(x, 0, 15, dark, 16, 1); px(x, 15, 0, dark, 1, 16); };
-    out.dirt = []; out.stone = []; out.hard = []; out.groove = []; out.bed = []; out.floor = []; out.fog = [];
+    out.dirt = []; out.stone = []; out.hard = []; out.groove = []; out.bed = []; out.floor = []; out.fog = []; out.mud = []; out.rubble = []; out.rubbleLite = [];
     for (let v = 0; v < V; v++) {
       out.dirt.push(texCanvas((x, r) => {
         px(x, 0, 0, pal.dirt, 16, 16);
@@ -58,6 +58,28 @@
         for (let k = 0; k < 14; k++) px(x, r.int(0, 15), r.int(0, 15), pal.floor2);
         for (let k = 0; k < 2; k++) px(x, r.int(0, 14), r.int(0, 14), shadeHex(pal.floor, -0.25), 2, 1);
       }, key + 'f' + v));
+      // rough ground: mud is its own floor tile; rubble is a pixel overlay so it can sit on mud too
+      out.mud.push(texCanvas((x, r) => {
+        px(x, 0, 0, '#6b4a2e', 16, 16);
+        for (let k = 0; k < 18; k++) px(x, r.int(0, 15), r.int(0, 15), r.chance(0.5) ? '#7d5734' : '#5a3d25', r.int(1, 3), 1);
+        for (let k = 0; k < 2; k++) { // puddles with a wet glint
+          const a = r.int(1, 10), b = r.int(2, 12), w = r.int(4, 6);
+          px(x, a, b, '#4a321e', w, 2); px(x, a + 1, b - 1, '#4a321e', w - 2, 1); px(x, a + 1, b + 2, '#4a321e', w - 2, 1);
+          px(x, a + 1, b, '#c9a27a', 2, 1);
+        }
+        for (let k = 0; k < 3; k++) px(x, r.int(0, 15), r.int(0, 15), '#9c7650'); // footprints-ish flecks
+      }, key + 'm' + v));
+      const rubbleTex = (n, tag) => texCanvas((x, r) => {
+        for (let k = 0; k < n; k++) {
+          const a = r.int(0, 12), b = r.int(1, 13), w = r.int(2, 3), h = r.int(1, 2);
+          px(x, a, b, pal.stone3, w + 1, h + 1);   // shadow
+          px(x, a, b, pal.stone, w, h);
+          px(x, a, b, pal.stone2, 1, 1);           // highlight
+        }
+        for (let k = 0; k < n; k++) px(x, r.int(0, 15), r.int(0, 15), pal.stone3); // grit
+      }, key + tag + v);
+      out.rubble.push(rubbleTex(7, 'r'));
+      out.rubbleLite.push(rubbleTex(3, 'q'));
       out.fog.push(texCanvas((x, r) => {
         px(x, 0, 0, pal.fog, 16, 16);
         for (let k = 0; k < 16; k++) px(x, r.int(0, 15), r.int(0, 15), pal.fog2, 2, 1);
@@ -293,10 +315,9 @@
           }
           const ty = M.type[i];
           if (ty === T.OPEN || ty === T.BOX) {
-            ctx.drawImage(tex.floor[v], X, Y, ts, ts);
+            ctx.drawImage((M.mud[i] ? tex.mud : tex.floor)[v], X, Y, ts, ts);
+            if (M.rubble[i]) ctx.drawImage((M.rubble[i] > 1 ? tex.rubble : tex.rubbleLite)[v], X, Y, ts, ts);
             if (y > 0 && !M.isOpen(i - M.w) && M.type[i - M.w] !== T.BOX) { ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(X, Y, ts, ts * 0.22); }
-            if (M.mud[i]) this.drawMud(ctx, X, Y, ts, i);
-            if (M.rubble[i]) this.drawRubble(ctx, X, Y, ts, i, M.rubble[i]);
             if (M.tangle[i]) this.drawTangle(ctx, X, Y, ts, i, M.tangle[i]);
             if (ty === T.BOX) {
               ctx.save(); ctx.translate(X + ts / 2, Y + ts * 0.9); ctx.scale(ts / 20, ts / 20);
@@ -660,26 +681,6 @@
       ctx.stroke();
     }
 
-    drawMud(ctx, X, Y, ts, i) {
-      const a = ((i * 37) % 100) / 100, b = ((i * 61) % 100) / 100;
-      ctx.fillStyle = 'rgba(150,102,60,0.8)';
-      ctx.strokeStyle = 'rgba(70,44,24,0.8)'; ctx.lineWidth = Math.max(1, ts * 0.04);
-      ctx.beginPath();
-      ctx.ellipse(X + ts * (0.35 + 0.3 * a), Y + ts * (0.4 + 0.25 * b), ts * 0.38, ts * 0.26, a * 3, 0, Math.PI * 2);
-      ctx.ellipse(X + ts * (0.65 - 0.3 * b), Y + ts * (0.6 - 0.2 * a), ts * 0.3, ts * 0.22, b * 3, 0, Math.PI * 2);
-      ctx.stroke(); ctx.fill();
-      ctx.fillStyle = 'rgba(255,240,220,0.35)'; // wet shine
-      ctx.beginPath(); ctx.ellipse(X + ts * (0.3 + 0.3 * a), Y + ts * (0.35 + 0.2 * b), ts * 0.1, ts * 0.04, -0.4, 0, Math.PI * 2); ctx.fill();
-    }
-    drawRubble(ctx, X, Y, ts, i, n) {
-      ctx.fillStyle = n > 1 ? 'rgba(200,188,170,0.9)' : 'rgba(200,188,170,0.5)';
-      for (let k = 0; k < 5; k++) {
-        const a = ((i * 23 + k * 47) % 100) / 100, b = ((i * 59 + k * 31) % 100) / 100, r = ts * (0.06 + 0.05 * ((k * 13 + i) % 3) / 2);
-        ctx.beginPath(); ctx.moveTo(X + ts * (0.15 + 0.7 * a) - r, Y + ts * (0.2 + 0.65 * b) + r * 0.6);
-        ctx.lineTo(X + ts * (0.15 + 0.7 * a), Y + ts * (0.2 + 0.65 * b) - r); ctx.lineTo(X + ts * (0.15 + 0.7 * a) + r, Y + ts * (0.2 + 0.65 * b) + r * 0.6);
-        ctx.closePath(); ctx.fill();
-      }
-    }
     drawTangle(ctx, X, Y, ts, i, n) {
       ctx.strokeStyle = n > 1 ? 'rgba(255,158,196,0.85)' : 'rgba(255,158,196,0.45)';
       ctx.lineWidth = Math.max(1, ts * 0.05);
