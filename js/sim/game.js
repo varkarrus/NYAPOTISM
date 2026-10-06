@@ -132,7 +132,8 @@
     ovaIs(id) { return !!(this.s.ova && this.s.ova.id === id); }
     ovaPerk(id) { return (this.s.ovaDone && this.s.ovaDone[id]) || 0; }
     ovaShelfOpen() { return this.s.season >= NYA.OVA_UNLOCK_SEASON || !!this.s.ova || Object.keys(this.s.ovaDone || {}).length > 0; }
-    ovaUnlocked(id) { const o = NYA.OVA[id]; return this.ovaShelfOpen() && (o.index === 0 || this.ovaPerk(NYA.OVAS[o.index - 1].id) >= 1); }
+    ovaUnlocked(id) { const o = NYA.OVA[id]; return this.ovaShelfOpen() && this.s.season >= NYA.ovaSeason(o, 0) && (o.index === 0 || this.ovaPerk(NYA.OVAS[o.index - 1].id) >= 1); }
+    ovaReleaseReady(id) { const o = NYA.OVA[id], rel = this.ovaPerk(id); return rel < 3 && this.ovaUnlocked(id) && this.s.season >= NYA.ovaSeason(o, rel); }
     ovaGoal() { const o = this.s.ova && NYA.OVA[this.s.ova.id]; return o ? o.goals[this.s.ova.rel] : null; }
     ovaCfg() {
       return { lightsOut: this.ovaIs('lights'), timeLimit: this.ovaIs('nine') ? NYA.OVA_TIME_LIMIT : 0,
@@ -141,9 +142,8 @@
     // start an OVA instead of a normal unravel: you still get this run's yarn on the way out
     startOva(id) {
       const o = NYA.OVA[id];
-      if (!o || this.s.ova || !this.s.skein.have || !this.ovaUnlocked(id)) return false;
+      if (!o || this.s.ova || !this.s.skein.have || !this.ovaReleaseReady(id)) return false;
       const rel = this.ovaPerk(id);
-      if (rel >= 3) return false;
       this.unravel({ ova: { id, rel } });
       return true;
     }
@@ -165,7 +165,7 @@
       this.s.life.ovaClears = (this.s.life.ovaClears || 0) + 1;
       this.novel('ova:' + ova.id + ':' + ova.rel, 'OVA cleared: ' + o.name + ' (' + NYA.OVA_RELEASES[ova.rel] + ')! ' + o.perk + ' ' + ['', 'I', 'II', 'III'][ova.rel + 1], 'prestige');
       const next = NYA.OVAS[o.index + 1];
-      if (ova.rel === 0 && next) this.novel('ova:unlock:' + next.id, 'New OVA on the shelf: ' + next.name, 'prestige');
+
       this.emit('ova', { phase: 'clear', id: ova.id, rel: ova.rel });
       this.unravel({ force: true, noYarn: true });
     }
@@ -1006,6 +1006,10 @@
       }
       this.syncActives();
       this._faxBonus = null;
+      for (const o of NYA.OVAS) { // a new tape or a harder release just arrived on the shelf
+        if (this.ovaUnlocked(o.id) && this.ovaPerk(o.id) === 0) this.novel('ova:unlock:' + o.id, 'New OVA on the shelf: ' + o.name + '!', 'prestige');
+        else if (this.ovaReleaseReady(o.id) && this.ovaPerk(o.id) > 0) this.novel('ova:rel:' + o.id + ':' + this.ovaPerk(o.id), o.name + ': the ' + NYA.OVA_RELEASES[this.ovaPerk(o.id)] + ' release is out!', 'prestige');
+      }
       if (s.ova) {
         const o = NYA.OVA[s.ova.id];
         this.novel('ova:start', 'OVA! A special episode with its own rules. Clear the goal for a permanent perk', 'prestige');

@@ -78,9 +78,15 @@
     if (g.ovaShelfOpen() && !s.ova) {
       h += `<h3 class="sec">📼 OVA Tape Shelf <small>challenge runs · no yarn, permanent perks</small></h3><div class="tapes">` + NYA.OVAS.map(o => {
         const done = g.ovaPerk(o.id), open = g.ovaUnlocked(o.id);
-        if (!open) return `<div class="tape locked"><div class="tape-t">📼 ???</div><div class="ms">Clear ${esc(NYA.OVAS[o.index - 1].name)} (VHS) to unlock.</div></div>`;
+        if (!open) {
+          const need = [];
+          if (s.season < NYA.ovaSeason(o, 0)) need.push('arrives in Season ' + NYA.ovaSeason(o, 0));
+          if (o.index > 0 && g.ovaPerk(NYA.OVAS[o.index - 1].id) < 1) need.push('clear ' + NYA.OVAS[o.index - 1].name + ' (VHS) first');
+          return `<div class="tape locked"><div class="tape-t">📼 ???</div><div class="ms">Coming soon: ${esc(need.join(', '))}.</div></div>`;
+        }
         const rels = NYA.OVA_RELEASES.map((r, i) => `<li class="${i < done ? 'got' : i === done ? 'next' : ''}">${i < done ? '✓' : i === done ? '▶' : '·'} <b>${r}</b>: ${esc(o.goals[i].text)} → ${esc(o.perk)} ${['I', 'II', 'III'][i]} <small>(${esc(o.perkText(i + 1))})</small></li>`).join('');
         const btn = done >= 3 ? '<div class="ms">All releases cleared! ★</div>'
+          : !g.ovaReleaseReady(o.id) ? `<div class="ms">The ${NYA.OVA_RELEASES[done]} release arrives in Season ${NYA.ovaSeason(o, done)}.</div>`
           : s.skein.have ? `<button class="big danger" data-act="ova:start:${o.id}">▶ Play the ${NYA.OVA_RELEASES[done]} release</button>`
           : '<div class="ms">Find the Skein to switch tapes.</div>';
         return `<div class="tape ${done >= 3 ? 'done' : ''}"><div class="tape-t">${o.icon} ${esc(o.name)}</div><div class="ms">${esc(o.limiter)}</div><ul>${rels}</ul>${btn}</div>`;

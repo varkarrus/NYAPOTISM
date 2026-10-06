@@ -18,7 +18,7 @@
       items: [
         'Late in the game, an OVA Tape Shelf appears in the Office: six special episodes with their own rules (no laser, 30-second shifts, a frozen Refinery, a one-cat crew…).',
         'Each has three releases (VHS, Laserdisc, Director’s Cut) with harder goals. Clearing one gives a permanent perk, and the OVA ends right there.',
-        'Each tape unlocks when you clear the previous one’s VHS release.',
+        'New tapes arrive every few runs, one at a time, and each tape’s harder releases come out a couple of runs after the last. The shelf shows when the next one is due.',
       ],
     },
     {

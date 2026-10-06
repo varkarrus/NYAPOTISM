@@ -1,11 +1,16 @@
 // OVAs (GDD §15): challenge runs with a limiter and a goal, in three releases of rising difficulty.
 // They pay no yarn: each cleared release raises a permanent perk instead, and an OVA ends the moment its
-// goal is met (no reason to stay, nothing to farm). Each OVA unlocks when the previous one's VHS is cleared.
+// goal is met (no reason to stay, nothing to farm). Tapes arrive spread out over many seasons (one new
+// challenge every now and then): tape i needs Season OVA_UNLOCK_SEASON + OVA_SPACING·i and the previous
+// tape's VHS, and each harder release needs OVA_RELEASE_GAP more seasons than the one before.
 (function (NYA) {
   'use strict';
 
   NYA.OVA_RELEASES = ['VHS', 'Laserdisc', "Director's Cut"];
   NYA.OVA_UNLOCK_SEASON = 5;
+  NYA.OVA_SPACING = 3;     // seasons between new tapes
+  NYA.OVA_RELEASE_GAP = 2; // seasons between a tape's VHS, Laserdisc and Director's Cut
+  NYA.ovaSeason = (o, rel) => NYA.OVA_UNLOCK_SEASON + NYA.OVA_SPACING * o.index + NYA.OVA_RELEASE_GAP * (rel || 0);
 
   // goal helpers: { text, cur(g), need }
   const tier = n => ({ tier: n, text: 'Reach Tier ' + n + ' (' + NYA.TIERS[n].name + ')', cur: g => g.s.maxTierReached, need: n });
