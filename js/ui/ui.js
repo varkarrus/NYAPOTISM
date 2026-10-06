@@ -264,6 +264,7 @@
         case 'levelup': break;
         case 'orders': this.renderTools(); break;
         case 'technique': this.banner('technique', d); this.audio.sfx('montage'); break;
+        case 'critfold': this.banner('critfold', d); this.audio.sfx('montage'); break;
         case 'tanuki':
           if (d.phase === 'arrive') { this.toast(`<b>Tanuki-san</b> sets up shop: ${esc(NYA.EVENTS[d.offer.ev].name)}! “${esc(d.line)}”`, 'tanuki'); this.newTabs.tanuki = 1; this.renderTabs(); this.audio.sfx('novel'); }
           else if (d.phase === 'expire') this.toast(esc(d.line), 'tanuki');
@@ -514,7 +515,6 @@
       const p = this.el.panel;
       const st = p.scrollTop;
       p.innerHTML = fn(this.g);
-      p.scrollTop = st;
       this.paintNpcs(p);
       p.querySelectorAll('[data-por]').forEach(el => {
         const cg = this.g.crewById(+el.dataset.por);
@@ -524,6 +524,7 @@
         const cg = this.g.s.board.apps[+el.dataset.apor];
         if (cg) el.appendChild(NYA.portrait('cg' + cg.id, { fur: cg.fur, hair: cg.hair, outfit: cg.outfit, hat: false }, 56));
       });
+      p.scrollTop = st; // after portraits: before them the panel is shorter and the scroll gets clamped
     }
     paintNpcs(root) {
       root.querySelectorAll('.npc[data-npc]').forEach(el => {
@@ -697,6 +698,7 @@
         allloaf: ['LOAF OF THE MONTH', 'the entire crew is bread', 'pink'],
         blend: ['×' + (d && d.f), 'Tora’s Special Blend pays ' + (d ? fmt(d.payout) : ''), d && d.f >= 2 ? 'gold' : 'blue'],
         montage: ['TRAINING MONTAGE!', d ? 'Level cap → ' + d : '', 'gold'],
+        critfold: [d ? NYA.critRankName(d.fold).toUpperCase() + '!' : '', 'crit focus: −30% crit chance, ×' + NYA.CRIT_FOLD_POWER + ' power', 'gold'],
         technique: [d ? NYA.techName(d.fold).toUpperCase() + '!' : '', 'new swing technique — half the swings, ×' + (2 * NYA.FOLD_BONUS).toFixed(1) + ' power each', 'blue'],
       }[k];
       if (!B) return;

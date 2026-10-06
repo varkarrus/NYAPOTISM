@@ -25,6 +25,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - Power vs tile HP.
   - Stamina and Grit vs swing resistance.
   - Haste vs swing techniques: speed caps at 4 swings/s, then a fold gives half the swings, ×2.2 power and ×2 stamina per swing.
+  - Crit folds the same way: past 40%, 30 points of crit become ×1.65 Power (crit focus ranks).
   - Carry vs ore density.
   - Headlamps vs darkness (Sight).
   - Pace vs mine size and rough ground: mud patches and rubble (`tierMud`, `tierRubble`).

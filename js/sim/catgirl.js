@@ -26,7 +26,19 @@
   NYA.FOLD_BONUS = 1.1;
   NYA.TECHNIQUES = ['Kitty Tap', 'Paw Smash', 'Pounce Strike', 'Tiger Drop', 'Meteor Mew', 'Nine-Tail Nova', 'Big Bang Biscuit', 'Catastrophe', 'Purrfect Singularity'];
   NYA.techName = f => NYA.TECHNIQUES[Math.min(f, NYA.TECHNIQUES.length - 1)] + (f >= NYA.TECHNIQUES.length ? ' ' + (f - NYA.TECHNIQUES.length + 2) : '');
+  // Crit folds the same way: past CRIT_CAP, 30 points of crit chance become a Power multiplier
+  // (×1.65, a bit more than the ×1.5 those crits were worth), so crit can climb forever without capping.
+  NYA.CRIT_CAP = 0.4; NYA.CRIT_FOLD_STEP = 0.3; NYA.CRIT_FOLD_POWER = 1.65;
+  NYA.CRIT_RANKS = ['Claw Mastery', 'Razor Mastery', 'Diamond Claw', 'Meteor Claw', 'Nine-Claw Style', 'Catastrophe Claw'];
+  NYA.critRankName = f => NYA.CRIT_RANKS[Math.min(f, NYA.CRIT_RANKS.length) - 1] + (f > NYA.CRIT_RANKS.length ? ' ' + (f - NYA.CRIT_RANKS.length + 1) : '');
   NYA.foldStats = function (out) {
+    out.critFold = 0;
+    while (out.crit > NYA.CRIT_CAP && out.critFold < 40) { out.crit -= NYA.CRIT_FOLD_STEP; out.power *= NYA.CRIT_FOLD_POWER; out.critFold++; }
+    if (out.critFold) {
+      const name = NYA.critRankName(out.critFold) + ' (crit focus)';
+      out.parts.crit.push({ src: name, op: 'add', v: -NYA.CRIT_FOLD_STEP * out.critFold });
+      out.parts.power.push({ src: name, op: 'mul', v: Math.pow(NYA.CRIT_FOLD_POWER, out.critFold) });
+    }
     out.fold = 0; out.swingMult = 1;
     while (out.haste > NYA.HASTE_CAP && out.fold < 40) { out.haste /= 2; out.power *= 2 * NYA.FOLD_BONUS; out.swingMult *= 2; out.fold++; }
     if (out.fold) {

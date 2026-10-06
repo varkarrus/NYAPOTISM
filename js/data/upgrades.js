@@ -93,10 +93,10 @@
     show: g => g.lvl('pick') >= 2,
     desc: '+10% Haste (compounding).', flavor: 'Tiny rubber beans for tiny rubber beans.',
     fx: l => 'Haste ×' + NYA.fmt(Math.pow(1.1, l)) });
-  def({ id: 'claws', bld: 'lab', branch: 'Excavation', name: 'Claw Sharpening', max: 8, base: 300, growth: 2.6,
+  def({ id: 'claws', bld: 'lab', branch: 'Excavation', name: 'Claw Sharpening', max: 60, base: 300, growth: 2.6,
     show: g => g.s.stats.swings >= 300,
-    desc: '+3% chance for a critical swing (×3 damage, loud "NYA!").', flavor: 'The scratching post finally pays for itself.',
-    fx: l => (3 + 3 * l) + '% crit' });
+    desc: '+3% chance for a critical swing (×3 damage, loud "NYA!"). Past 40% crit, 30% of it focuses into ×1.65 Power, like swing techniques.', flavor: 'The scratching post finally pays for itself.',
+    fx: l => (3 + 3 * l) + '% crit (before focus)' });
   def({ id: 'resonance', bld: 'lab', branch: 'Excavation', name: 'Groove Theory', max: 1, base: 1800, timer: 20,
     show: g => g.s.maxTierReached >= 2,
     desc: 'Grooved stone chains also crack every ordinary stone tile touching the chain (25% each).', flavor: '"Rocks are just very slow dominoes." — Doc Boom, unprompted',

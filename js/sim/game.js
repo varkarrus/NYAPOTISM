@@ -868,6 +868,11 @@
       // swing techniques: first time any crew member folds to a new technique
       let fold = 0;
       for (const cg of this.activeCrew()) fold = Math.max(fold, this.statsFor(cg).fold || 0);
+      let cf = 0;
+      for (const cg of this.activeCrew()) cf = Math.max(cf, this.statsFor(cg).critFold || 0);
+      for (let f = 1; f <= cf; f++) {
+        if (this.novel('critfold:' + f, 'Crit focus: ' + NYA.critRankName(f).toUpperCase() + '! Crit chance −30%, Power ×' + NYA.CRIT_FOLD_POWER, 'technique')) this.emit('critfold', { fold: f });
+      }
       for (let f = 1; f <= fold; f++) {
         if (this.novel('fold:' + f, 'New swing technique: ' + NYA.techName(f).toUpperCase() + '! Half the swings, double the power', 'technique')) this.emit('technique', { fold: f });
       }

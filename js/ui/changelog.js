@@ -6,6 +6,15 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Crit focus, Barracks scroll fix',
+      date: '2026-10-07',
+      items: [
+        'Crit now works like Haste: past 40% crit chance, 30% of it focuses into ×1.65 Power (Claw Mastery, Razor Mastery, Diamond Claw…). Damage only ever goes up.',
+        'Claw Sharpening is no longer capped at 8 levels, so crit keeps climbing and focusing.',
+        'Fixed: the Barracks (and other tabs) no longer jump back up a few lines while you’re scrolled to the bottom.',
+      ],
+    },
+    {
       title: 'Suggestions link',
       date: '2026-10-07',
       items: [
