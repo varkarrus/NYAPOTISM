@@ -39,6 +39,10 @@ kbd { font-family: var(--dot); font-size: 13px; background: rgba(255,255,255,.12
 .ep b { color: var(--peach); font-family: var(--disp); font-weight: 400; }
 .ctrl { display: flex; gap: 6px; align-items: center; }
 .ctrl button { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: 14px; }
+.ctrl .btnlink { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: 14px; text-decoration: none; line-height: 1.2; }
+.ctrl .btnlink:hover { border-color: var(--pink); }
+.tc-suggest { text-align: center; margin: 8px 0 0; font-size: 13px; }
+.tc-suggest a { color: var(--teal); }
 .ctrl button.on { background: var(--pink); color: #1a1020; border-color: var(--pink); }
 #btnFF { display: flex; align-items: center; gap: 6px; }
 #btnFF .bk { font-size: 11px; color: var(--muted); }

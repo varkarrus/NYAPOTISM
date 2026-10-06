@@ -6,6 +6,13 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Suggestions link',
+      date: '2026-10-07',
+      items: [
+        'Got an idea or found a bug? The 💡 button in the top bar (and the link below) opens the suggestion box on GitHub.',
+      ],
+    },
+    {
       title: 'Keeps mining in background tabs',
       date: '2026-10-07',
       items: [

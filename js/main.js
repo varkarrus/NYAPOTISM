@@ -85,6 +85,7 @@
       ${copiedMain ? '<p class="mini">Dev build: copied your main save to start from. The two saves are separate from now on.</p>' : ''}
       <h3>What's new</h3>${log.slice(0, 4).map(entry).join('')}
       ${fr ? `<h3>How far this build goes</h3><p>${NYA.esc(fr.summary)}</p><ul>${fr.items.map(x => `<li>${NYA.esc(x)}</li>`).join('')}</ul>` : ''}
+      <p class="tc-suggest">💡 Ideas or bugs? <a href="https://github.com/varkarrus/NYAPOTISM/issues" target="_blank" rel="noopener">Leave a suggestion</a> (the 💡 button up top goes there too).</p>
     </div>`;
   }
 
