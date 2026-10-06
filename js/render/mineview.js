@@ -290,6 +290,13 @@
     flashOn(col, a) { if (!this.game.s.settings.flashes) return; this.flash = a; this.flashCol = col; }
 
     // ---------------------------------------------------------------- draw
+    // Background tab: nothing is visible, but episode events still need to play their sounds and be cleared.
+    tickHidden(rdt) {
+      this.time += rdt;
+      this.sfxBudget = Math.max(0, this.sfxBudget - rdt * 30);
+      this.consume();
+      this.parts.length = 0; this.pops.length = 0; this.rings.length = 0;
+    }
     frame(alpha, rdt) {
       this.time += rdt;
       this.sfxBudget = Math.max(0, this.sfxBudget - rdt * 30);

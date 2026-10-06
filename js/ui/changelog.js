@@ -6,6 +6,15 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Keeps mining in background tabs',
+      date: '2026-10-07',
+      items: [
+        'The game now keeps running at full speed (with sound) when its tab is in the background or the window is minimised.',
+        'Settings → “Keep mining in background tabs” turns it off if you’d rather bank the time as Fast-Forward like before.',
+        'If the computer sleeps or the browser freezes the tab (phones do this), that gap still becomes Banked Time.',
+      ],
+    },
+    {
       title: 'Sphynx catgirls, fog lasers, head-start fix',
       date: '2026-10-07',
       items: [

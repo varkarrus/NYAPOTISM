@@ -7,7 +7,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
 - **No build step, no dependencies.** Plain `<script>` tags attach everything to `globalThis.NYA`, so the game also runs from `file://`.
 - **The simulation is DOM-free.** `js/core`, `js/data` and `js/sim` run unchanged in Node for the balance harness. Rendering (`js/render`), audio and UI (`js/ui`) only read sim state and its events.
 - **Adding a file:** put it in `index.html` in dependency order. If it's a data or sim file, also add it to the `require` lists in `tools/harness.js`, `tools/diag.js`, `tools/test_pump.js` and `tools/test_events.js`.
-- **Fixed timestep:** 20 ticks/s (`NYA.TICK`), and the renderer interpolates. Everything runs on sim time (cooldowns, research, Tanuki visits, Catterall), so Fast-Forward and dev speeds just run more ticks.
+- **Fixed timestep:** 20 ticks/s (`NYA.TICK`), and the renderer interpolates. `requestAnimationFrame` drives `step()` while visible; a Web Worker timer drives it when frames stop (background tab), skipping drawing via `view.tickHidden()`. Everything runs on sim time (cooldowns, research, Tanuki visits, Catterall), so Fast-Forward and dev speeds just run more ticks.
 - **Content is data-driven:**
   - Upgrades: `def({...})` in `js/data/upgrades.js`, using `show`, `req`, `costs` or `base`/`growth`, `cur` (currency) and `fx`.
   - Traits: `mods` keys in `js/data/traits.js`. New flag keys must also be added to the flag list in `NYA.buildStats` (`js/sim/catgirl.js`). Give a trait `tier: N` if its text names a mine-specific system, so it can't roll before the player has seen that mine.

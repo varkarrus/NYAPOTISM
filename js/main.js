@@ -103,12 +103,17 @@
   }
 
   // ---------------------------------------------------------------- loop
-  let last = performance.now(), acc = 0, saveT = 30;
-  function loop(now) {
+  // Animation frames drive the game while it's visible. Browsers stop those in background tabs and
+  // throttle normal timers, but not a Web Worker's timer, so a worker ticks the game while hidden:
+  // the sim and its sounds keep going at full speed (Settings: "Keep mining in background tabs").
+  let last = performance.now(), acc = 0, saveT = 30, lastStep = 0;
+  function step(now, visible) {
+    lastStep = now;
     let rdt = (now - last) / 1000;
     last = now;
-    if (rdt > 3 && started) { game.s.bank += rdt * game.bankEff(); ui.toast(`Tab was hidden — banked ${NYA.fmtTime(rdt * game.bankEff())} of Fast-Forward.`); rdt = 0; }
-    rdt = Math.min(rdt, 0.25);
+    // a real gap (computer asleep, phone froze the tab) still becomes Banked Time
+    if (rdt > 3 && started) { game.s.bank += rdt * game.bankEff(); ui.toast(`Game was paused — banked ${NYA.fmtTime(rdt * game.bankEff())} of Fast-Forward.`); rdt = 0; }
+    rdt = Math.min(rdt, visible ? 0.25 : 3);
     if (started && !paused && ui.freeze <= 0) {
       let speed = 1;
       if (game.s.settings.ffOn && game.s.bank > 0) {
@@ -122,13 +127,29 @@
       while (acc >= NYA.TICK && n < maxN) { game.tick(NYA.TICK); acc -= NYA.TICK; n++; }
       if (n >= maxN) acc = 0;
     }
-    view.frame(paused || !started ? 1 : acc / NYA.TICK, rdt);
+    if (visible) view.frame(paused || !started ? 1 : acc / NYA.TICK, rdt);
+    else view.tickHidden(rdt);
     ui.frame(rdt);
     saveT -= rdt;
     if (saveT <= 0 && started) { saveT = 30; save(); }
-    requestAnimationFrame(loop);
   }
+  function loop(now) { step(now, true); requestAnimationFrame(loop); }
   requestAnimationFrame(loop);
+
+  function startBackgroundTicker(ms, fn) {
+    try {
+      const src = `setInterval(() => postMessage(0), ${ms});`;
+      const w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+      w.onmessage = fn;
+      return;
+    } catch (e) { /* no workers (some file:// setups): plain timer, throttled but better than nothing */ }
+    setInterval(fn, ms);
+  }
+  startBackgroundTicker(50, () => {
+    if (game.s.settings.bgRun === false) return;
+    const now = performance.now();
+    if (now - lastStep > 150) step(now, false); // only when animation frames have stopped arriving
+  });
   window.addEventListener('beforeunload', save);
   document.addEventListener('visibilitychange', () => { if (document.hidden && started) save(); });
 })(globalThis.NYA = globalThis.NYA || {});

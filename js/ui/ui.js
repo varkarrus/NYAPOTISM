@@ -768,7 +768,7 @@
             <input type="range" min="0" max="1" step="0.05" value="${s[kind]}" data-vol="${kind}" title="Volume"></div>`).join('')}
           ${tog('nya', 'Soft “nya” per swing (will drive some people up the wall)')}
           ${tog('shake', 'Screen shake')}${tog('flashes', 'Flashes')}${tog('showDQ', 'Show raw d/q numbers on ore')}
-          ${tog('hideAnims', 'Hide pack-up animations (time cost is simulated either way)')}${tog('sci', 'Scientific notation')}${tog('vhs', 'VHS mode (scanlines)')}
+          ${tog('hideAnims', 'Hide pack-up animations (time cost is simulated either way)')}${tog('sci', 'Scientific notation')}${tog('vhs', 'VHS mode (scanlines)')}${tog('bgRun', 'Keep mining in background tabs (off: hidden time becomes Banked Time at ' + Math.round(this.g.bankEff() * 100) + '%)')}
         </div>
         <h3>Save</h3>
         <div class="row"><button data-act="export">Export save</button><button data-act="import">Import save</button><button class="danger" data-act="reset">Hard reset</button>${this.opts.devTools ? '<button id="devSavesBtn">🧪 Dev saves</button>' : ''}</div>

@@ -40,7 +40,7 @@
       nyan: 0,
       gallery: {},
       lastEyecatch: '',
-      settings: { music: 0.35, sfx: 0.6, musicMode: 'on', sfxMode: 'on', nya: false, shake: true, flashes: true, vhs: false, showDQ: false, hideAnims: false, sci: false, ffOn: false },
+      settings: { music: 0.35, sfx: 0.6, musicMode: 'on', sfxMode: 'on', nya: false, shake: true, flashes: true, vhs: false, showDQ: false, hideAnims: false, sci: false, ffOn: false, bgRun: true },
       seasonLog: [],
       tanuki: { nextAt: 0, offer: null, queue: [], rain: null },
       pendingEvent: null,
