@@ -44,6 +44,8 @@
       seasonLog: [],
       tanuki: { nextAt: 0, offer: null, queue: [], rain: null },
       pendingEvent: null,
+      ova: null,       // { id, rel } while an OVA run is in progress
+      ovaDone: {},     // id -> releases cleared (0-3); also the perk level
     };
   }
 
@@ -117,14 +119,56 @@
       if (this.loomColDone(3)) m *= 1.5;
       return m;
     }
-    refineryMult() { return Math.pow(1.5, this.lvl('refinery')); }
+    refineryMult() { return this.ovaIs('budget') ? 1 : Math.pow(1.5, this.lvl('refinery')); }
     fullClearMult() { return 1.25 + 0.15 * this.lvl('perfection') + 0.25 * this.loom('km_clear'); }
-    packUpTime() { return Math.max(1.5, 6 - 0.5 * this.lvl('drills')); }
+    packUpTime() { return Math.max(NYA.OVA_PACKUP_FLOOR[this.ovaPerk('nine')], 6 - 0.5 * this.lvl('drills')); }
     laserMax() { return 3 + this.lvl('batteries'); }
-    crewCap() { return 1 + this.lvl('bunk'); }
+    crewCap() { return this.ovaIs('onecat') ? 1 : 1 + this.lvl('bunk'); }
     reserveCap() { return 2 + this.lvl('lockers'); }
     levelCap() { return NYA.LEVEL_CAPS[this.lvl('montage')]; }
-    polishExp() { return [1, 1.15, 1.3][this.lvl('polisher')]; }
+    polishExp() { return this.ovaIs('budget') ? 1 : [1, 1.15, 1.3][this.lvl('polisher')]; }
+
+    // ------------------------------------------------------------ OVAs (js/data/ovas.js)
+    ovaIs(id) { return !!(this.s.ova && this.s.ova.id === id); }
+    ovaPerk(id) { return (this.s.ovaDone && this.s.ovaDone[id]) || 0; }
+    ovaShelfOpen() { return this.s.season >= NYA.OVA_UNLOCK_SEASON || !!this.s.ova || Object.keys(this.s.ovaDone || {}).length > 0; }
+    ovaUnlocked(id) { const o = NYA.OVA[id]; return this.ovaShelfOpen() && (o.index === 0 || this.ovaPerk(NYA.OVAS[o.index - 1].id) >= 1); }
+    ovaGoal() { const o = this.s.ova && NYA.OVA[this.s.ova.id]; return o ? o.goals[this.s.ova.rel] : null; }
+    ovaCfg() {
+      return { lightsOut: this.ovaIs('lights'), timeLimit: this.ovaIs('nine') ? NYA.OVA_TIME_LIMIT : 0,
+        noLaser: this.ovaIs('nolaser'), loafPower: 0.04 * this.ovaPerk('monday') };
+    }
+    // start an OVA instead of a normal unravel: you still get this run's yarn on the way out
+    startOva(id) {
+      const o = NYA.OVA[id];
+      if (!o || this.s.ova || !this.s.skein.have || !this.ovaUnlocked(id)) return false;
+      const rel = this.ovaPerk(id);
+      if (rel >= 3) return false;
+      this.unravel({ ova: { id, rel } });
+      return true;
+    }
+    abandonOva() {
+      if (!this.s.ova) return false;
+      this.emit('ova', { phase: 'abandon', id: this.s.ova.id, rel: this.s.ova.rel });
+      return this.unravel({ force: true, noYarn: true });
+    }
+    checkOvaGoal() {
+      const ova = this.s.ova, goal = this.ovaGoal();
+      if (!goal || this._ovaClear || goal.cur(this) < goal.need) return;
+      this._ovaClear = true; // handled at the next tick, outside of any episode code
+    }
+    finishOva() {
+      const ova = this.s.ova; this._ovaClear = false;
+      if (!ova) return;
+      const o = NYA.OVA[ova.id];
+      this.s.ovaDone[ova.id] = Math.max(this.ovaPerk(ova.id), ova.rel + 1);
+      this.s.life.ovaClears = (this.s.life.ovaClears || 0) + 1;
+      this.novel('ova:' + ova.id + ':' + ova.rel, 'OVA cleared: ' + o.name + ' (' + NYA.OVA_RELEASES[ova.rel] + ')! ' + o.perk + ' ' + ['', 'I', 'II', 'III'][ova.rel + 1], 'prestige');
+      const next = NYA.OVAS[o.index + 1];
+      if (ova.rel === 0 && next) this.novel('ova:unlock:' + next.id, 'New OVA on the shelf: ' + next.name, 'prestige');
+      this.emit('ova', { phase: 'clear', id: ova.id, rel: ova.rel });
+      this.unravel({ force: true, noYarn: true });
+    }
     bluntPotency() { return 0.30 + 0.05 * this.lvl('pouch'); }
     bombDamage(tier) { return 50 * NYA.tierHP(tier) * (1 + 0.6 * this.lvl('bombdmg')) * Math.pow(1.25, this.lvl('mewclear')); }
     sonarRadius() { return 3 + Math.max(0, this.lvl('mewclear') - 2); }
@@ -183,6 +227,7 @@
     }
     canUseActive(id) {
       if (!this.activeUnlocked(id)) return false;
+      if (id === 'sonar' && this.ovaIs('lights')) return false;
       if (this.phase !== 'shift' || !this.episode || this.episode.ended) return false;
       const a = this.s.act[id];
       return a && a.ch > 0;
@@ -352,6 +397,7 @@
       if (!u) return { ok: false, why: '?' };
       if (!this.s.buildings[u.bld]) return { ok: false, why: 'Building locked' };
       if (this.lvl(id) >= u.max) return { ok: false, why: 'MAX', max: true };
+      if (this.ovaIs('budget') && u.bld === 'refinery' && !u.cur) return { ok: false, why: 'Budget Cuts: the Refinery is frozen', locked: true };
       if (this.s.research && this.s.research.id === id) return { ok: false, why: 'In progress…' };
       if (u.req) { const r = u.req(this); if (r) return { ok: false, why: r, locked: true }; }
       if (u.timer && this.s.research) return { ok: false, why: 'Doc Boom is busy', busy: true };
@@ -574,7 +620,7 @@
       if (t > this.s.life.maxTier) this.s.life.maxTier = t;
       // Schrödinger's Box roll
       let box = false;
-      const boxEligible = !this.s.skein.have && (def.box || (t === 2 && this.loom('sk_hum')));
+      const boxEligible = !this.s.skein.have && !this.s.ova && (def.box || (t === 2 && this.loom('sk_hum')));
       if (boxEligible) {
         let p = (NYA.BOX_CHANCE[t] || 0.005) + 0.02 * this.loom('sk_box') + this.s.skein.pity;
         for (const cg of this.activeCrew()) if (cg.traits.indexOf('box_whisperer') >= 0) p += 0.03;
@@ -600,6 +646,9 @@
         junctions: this.lvl('junctions') > 0,
         purrmit: cost,
       };
+      Object.assign(cfg, this.ovaCfg());
+      cfg.headlamp += this.ovaPerk('lights');
+      if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
       if (this.catterallActive()) this.episode.setCatterall(true);
       this.phase = 'shift';
@@ -667,6 +716,9 @@
         pumpRate: 5 * Math.pow(1.3, this.lvl('pistons')), junctions: this.lvl('junctions') > 0,
         event: q.ev, ghosts: ev.ghosts || 0,
       };
+      Object.assign(cfg, this.ovaCfg());
+      cfg.headlamp += this.ovaPerk('lights');
+      if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
       if (this.catterallActive()) this.episode.setCatterall(true);
       this.phase = 'shift';
@@ -767,6 +819,7 @@
       this.packup = { t: 0, total: this.packUpTime(), result };
       this.emit('episodeEnd', result);
       this.checkUnlocks();
+      if (this.s.ova) this.checkOvaGoal();
     }
 
     makeTitle(ep, o) {
@@ -835,7 +888,7 @@
 
     // ------------------------------------------------------------ player tools (forwarded)
     laser(idx) {
-      if (this.phase !== 'shift' || !this.episode) return false;
+      if (this.phase !== 'shift' || !this.episode || this.ovaIs('nolaser')) return false;
       return this.episode.addMark(idx, false);
     }
     unmark(idx) { return this.episode ? this.episode.removeMark(idx) : false; }
@@ -906,20 +959,24 @@
       return m;
     }
     yarnPreview() {
-      if (!this.s.skein.have) return 0;
+      if (!this.s.skein.have || this.s.ova) return 0;
       return Math.floor(Math.pow(this.s.seasonCatnip / NYA.YARN_DIV, this.yarnExp()) * this.yarnMult());
     }
-    unravel() {
-      if (!this.s.skein.have) return false;
+    // opts.ova: the next run is that OVA. opts.noYarn/force: leave an OVA (cleared or abandoned) for a fresh run.
+    unravel(opts) {
+      opts = opts || {};
+      if (!this.s.skein.have && !opts.force) return false;
       const s = this.s;
-      const gain = this.yarnPreview();
-      s.seasonLog.push({ season: s.season, time: s.seasonTime, catnip: s.seasonCatnip, yarn: gain, eps: s.episodes });
+      const gain = opts.noYarn ? 0 : this.yarnPreview();
+      s.seasonLog.push({ season: s.season, time: s.seasonTime, catnip: s.seasonCatnip, yarn: gain, eps: s.episodes, ova: s.ova ? s.ova.id + ':' + s.ova.rel : undefined });
       s.yarn += gain; s.life.yarn += gain;
       // Timeline Anchors: keep the best N catgirls
       const keepN = this.anchorSlots();
       const kept = s.crew.slice().sort((a, b) => (b.level - a.level) || (b.xp - a.xp)).slice(0, keepN);
       for (const c of kept) { c.anchored = true; c.seasons++; }
       s.season++;
+      s.ova = opts.ova || null;
+      this._ovaClear = false;
       s.seasonCatnip = 0; s.seasonTime = 0; s.episodes = 0;
       s.catnip = this.loom('hs_cash') ? 300 : 0;
       s.milk = 0;
@@ -949,10 +1006,14 @@
       }
       this.syncActives();
       this._faxBonus = null;
-      this.novel('season:' + s.season, 'SEASON ' + s.season + '! A new verse of the opening theme', 'prestige');
+      if (s.ova) {
+        const o = NYA.OVA[s.ova.id];
+        this.novel('ova:start', 'OVA! A special episode with its own rules. Clear the goal for a permanent perk', 'prestige');
+        this.fax('ova:' + o.id, o.fax);
+      } else this.novel('season:' + s.season, 'SEASON ' + s.season + '! A new verse of the opening theme', 'prestige');
       if (s.season === 2) this.fax('season2', NYA.STORY_FAX.season2);
       this.episode = null; this.phase = 'idle'; this.packup = null; this.lastResult = null;
-      this.emit('unravel', { gain, season: s.season });
+      this.emit('unravel', { gain, season: s.season, ova: s.ova, afterOva: !!opts.noYarn });
       this.startEpisode();
       return gain;
     }
@@ -965,6 +1026,10 @@
       if (this.loom('hs_lab')) { up('blunt', 1); up('bomb', 1); up('spray', 1); up('drills', 4); }
       if (this.loom('hs_maps')) { up('mine2', 1); s.tierUnlocked[2] = 1; }
       if (this.loom('nm_desk')) s.buildings.pochi = 1;
+      const bud = this.ovaPerk('budget'); // OVA perk: Expense Account
+      if (bud >= 1) up('refinery', 2);
+      if (bud >= 2) up('polisher', 1);
+      if (bud >= 3) up('centrifuge', 1);
       // new bunks: move reserves up into the free active slots
       while (s.active.length < this.crewCap() && s.reserve.length) s.active.push(s.reserve.shift());
       this.syncActives();
@@ -1024,12 +1089,13 @@
     // ------------------------------------------------------------ tick
     tick(dt) {
       const s = this.s;
+      if (this._ovaClear) { this.finishOva(); return; }
       s.simTime += dt; s.seasonTime += dt;
       this.tickActives(dt);
       this.tickResearch(dt);
       this.tickBlend(dt);
       this.tanukiT = (this.tanukiT || 0) - dt;
-      if (this.tanukiT <= 0) { this.tanukiT = 1; this.tickTanuki(); }
+      if (this.tanukiT <= 0) { this.tanukiT = 1; this.tickTanuki(); if (s.ova) this.checkOvaGoal(); }
       if (this.episode && this.episode.catterall && !this.catterallActive()) this.episode.setCatterall(false);
       if (this.phase === 'shift' && this.episode) {
         if (this.loom('nm_drone') && !this.episode.fullClear) {

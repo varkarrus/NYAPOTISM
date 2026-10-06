@@ -99,6 +99,7 @@
         case 'order': g.toggleOrder(v); this.audio.sfx('stamp'); this.renderPanel(true); this.renderTools(); break;
         case 'defrag': this.audio.sfx('stamp'); this.toast('Pochi looks deeply satisfied.'); break;
         case 'unravel': this.confirmUnravel(); break;
+        case 'ova': if (v === 'abandon') this.confirmAbandonOva(); else this.confirmOva(a.split(':')[2]); break;
         case 'loom': if (g.loomBuy(v)) { this.audio.sfx('buy'); this.renderPanel(true); } else this.audio.sfx('deny'); break;
         case 'blend': if (g.startBlend()) { this.audio.sfx('blend'); this.renderPanel(true); } break;
         case 'tanbuy': if (g.tanukiBuy()) { this.audio.sfx('buy'); this.renderPanel(true); } else this.audio.sfx('deny'); break;
@@ -196,7 +197,7 @@
         this.drag = { mode: 'spray', on };
       } else {
         if (ep.isMarked(i)) { g.unmark(i); this.drag = { mode: 'unmark' }; }
-        else { g.laser(i); this.drag = { mode: 'laser' }; }
+        else { if (!g.laser(i) && g.ovaIs('nolaser') && !this._nlTold) { this._nlTold = true; setTimeout(() => { this._nlTold = false; }, 8000); this.toast('📵 No Laser Zone! The laser pointer has been confiscated.', 'warn'); } this.drag = { mode: 'laser' }; }
       }
     }
     onMove(e) {
@@ -253,7 +254,8 @@
           this.renderTools();
           break;
         case 'skein': this.freeze = 2.2; this.el.stage.classList.add('mono'); setTimeout(() => this.el.stage.classList.remove('mono'), 2600); this.newTabs.office = 1; this.renderTabs(); break;
-        case 'unravel': this.seasonCard(d); this.renderTabs(); this.renderPanel(true); break;
+        case 'unravel': if (d.ova) this.ovaStartCard(d); else if (!d.afterOva) this.seasonCard(d); this.renderTabs(); this.renderPanel(true); break;
+        case 'ova': if (d.phase === 'clear') this.ovaClearCard(d); else this.toast('OVA abandoned. Back to the regular broadcast.', 'warn'); break;
         case 'toast': this.toast(esc(d.text), d.kind); break;
         case 'blend':
           if (d.phase === 'end') { this.banner('blend', d); this.audio.sfx(d.f >= 2 ? 'motherlode' : d.f >= 1 ? 'fullclear' : 'empty'); }
@@ -276,7 +278,8 @@
 
     titleCard(d) {
       const ttl = this.el.title;
-      ttl.innerHTML = `<b>EP ${d.num}</b> · ${d.event ? `<span class="evname">${NYA.EVENTS[d.event].icon} ${esc(NYA.EVENTS[d.event].name)}</span>` : esc(NYA.TIERS[d.tier].name)}`;
+      const ova = this.g.s.ova ? `<span class="ovatag">📼 OVA: ${esc(NYA.OVA[this.g.s.ova.id].name)}</span> ` : '';
+      ttl.innerHTML = `${ova}<b>EP ${d.num}</b> · ${d.event ? `<span class="evname">${NYA.EVENTS[d.event].icon} ${esc(NYA.EVENTS[d.event].name)}</span>` : esc(NYA.TIERS[d.tier].name)}`;
     }
 
     // ---------------------------------------------------------------- overlay (pack-up)
@@ -477,6 +480,12 @@
       if (tl && s.tanuki.offer) tl.textContent = NYA.fmtTime(Math.max(0, s.tanuki.offer.until - s.simTime));
       const tn = p.querySelector('[data-live="tanNext"]');
       if (tn) tn.textContent = NYA.fmtTime(Math.max(0, s.tanuki.nextAt - s.simTime));
+      const ob = p.querySelector('[data-live="ovaBar"]');
+      if (ob && s.ova) {
+        const goal = g.ovaGoal(), cur = Math.min(goal.need, goal.cur(g));
+        ob.style.width = (goal.nip ? Math.min(100, 100 * Math.log10(1 + cur) / Math.log10(1 + goal.need)) : 100 * cur / goal.need).toFixed(1) + '%';
+        const op = p.querySelector('[data-live="ovaProg"]'); if (op) op.textContent = goal.nip ? fmt(cur) : cur;
+      }
       const bp = p.querySelector('[data-live="blendPot"]');
       if (bp && s.blend) { bp.textContent = fmt(s.blend.pot); const bl = p.querySelector('[data-live="blendLeft"]'); if (bl) bl.textContent = NYA.fmtTime(s.blend.until - s.simTime); }
     }
@@ -504,7 +513,7 @@
       else if (tab === 'pochi') parts.push(affOf('pochi'), s.orders.join(), g.runningOrders().join(), NYA.ORDER_ORDER.map(id => g.orderAvailable(id) ? 1 : 0).join(''));
       else if (tab === 'loom') parts.push(Math.floor(s.yarn), JSON.stringify(s.loom));
       else if (tab === 'tanuki') parts.push(JSON.stringify(s.tanuki.offer), JSON.stringify(s.tanuki.rain), s.tanuki.queue.length, s.catnip >= (s.tanuki.offer ? s.tanuki.offer.cost : Infinity), s.catnip >= (s.tanuki.rain ? s.tanuki.rain.cost : Infinity));
-      if (tab === 'office') parts.push(s.tanuki ? s.tanuki.queue.length + ':' + !!s.pendingEvent : '');
+      if (tab === 'office') parts.push(s.tanuki ? s.tanuki.queue.length + ':' + !!s.pendingEvent : '', JSON.stringify(s.ova), JSON.stringify(s.ovaDone), g.ovaShelfOpen());
       return parts.join('|');
     }
     renderPanel(force) {
@@ -738,6 +747,38 @@
     // ---------------------------------------------------------------- modals
     openModal(html) { this.el.modal.innerHTML = `<div class="mbox">${html}</div>`; this.el.modal.hidden = false; }
     closeModal() { this.el.modal.hidden = true; this.el.modal.innerHTML = ''; if (this.opts.onModalClose) this.opts.onModalClose(); }
+    confirmOva(id) {
+      const g = this.g, o = NYA.OVA[id], rel = g.ovaPerk(id), y = g.yarnPreview();
+      if (!o) return;
+      this.openModal(`<h2>${o.icon} OVA: ${esc(o.name)}</h2><p><b>${NYA.OVA_RELEASES[rel]} release.</b> ${esc(o.limiter)}</p>
+        <p>Goal: <b>${esc(o.goals[rel].text)}</b>. Clear it for <b>${esc(o.perk)} ${['I', 'II', 'III'][rel]}</b> (${esc(o.perkText(rel + 1))}).</p>
+        <p>This unravels the timeline as usual (you gain <b>🧶 ${fmt(y)} yarn</b> from this run), but the next run is the OVA. OVAs pay no yarn. When you hit the goal it ends and a fresh regular run begins. You can abandon it any time from the Office.</p>
+        <div class="row"><button class="big danger" id="doOva">📼 Play the tape</button><button class="big ghost" data-act="close">Not yet</button></div>`);
+      document.getElementById('doOva').onclick = () => { this.closeModal(); this.audio.sfx('skein'); g.startOva(id); };
+    }
+    confirmAbandonOva() {
+      const g = this.g;
+      this.openModal(`<h2>Abandon the OVA?</h2><p>This run ends with no yarn and no perk, and a fresh regular run starts. You can play the tape again later.</p>
+        <div class="row"><button class="big danger" id="doAbandon">⏏ Eject the tape</button><button class="big ghost" data-act="close">Keep going</button></div>`);
+      document.getElementById('doAbandon').onclick = () => { this.closeModal(); g.abandonOva(); };
+    }
+    ovaStartCard(d) {
+      const o = NYA.OVA[d.ova.id], goal = o.goals[d.ova.rel];
+      this.openModal(`<div class="season-card"><div class="sc-top">ORIGINAL VIDEO ANIMATION</div><div class="sc-big">${o.icon} ${esc(o.name)}</div>
+        <div class="sc-gain">${NYA.OVA_RELEASES[d.ova.rel]} release${d.gain ? ` · +${fmt(d.gain)} 🧶 yarn banked` : ''}</div>
+        <div class="sc-verse"><div class="sc-vh">Special rules</div>${esc(o.limiter)}<div class="sc-ch">Goal: ${esc(goal.text)}</div></div>
+        <button class="big" data-act="close">Press play ▶</button></div>`);
+      this.audio.sfx('motherlode');
+    }
+    ovaClearCard(d) {
+      const o = NYA.OVA[d.id], L = d.rel + 1;
+      this.openModal(`<div class="season-card"><div class="sc-top">OVA CLEAR!!</div><div class="sc-big">${o.icon} ${esc(o.name)}</div>
+        <div class="sc-gain">${NYA.OVA_RELEASES[d.rel]} release · ${esc(o.perk)} ${['I', 'II', 'III'][d.rel]}</div>
+        <div class="sc-verse"><div class="sc-vh">Permanent perk</div>${esc(o.perkText(L))}${L === 1 && NYA.OVAS[o.index + 1] ? `<div class="sc-ch">New tape on the shelf: ${esc(NYA.OVAS[o.index + 1].name)}</div>` : ''}</div>
+        <p>A fresh regular run starts now.</p>
+        <button class="big" data-act="close">Back to the show ▶</button></div>`);
+      this.audio.sfx('fullclear');
+    }
     confirmUnravel() {
       const g = this.g;
       const y = g.yarnPreview();

@@ -57,6 +57,7 @@
       this.sight = NYA.BASE_SIGHT + (cfg.headlamp || 0) - this.darkness;
       this.noticeRange = Math.max(1, Math.min(NYA.MAX_NOTICE, this.sight));
       this.revealR = Math.max(1, Math.min(NYA.MAX_REVEAL, 1 + (cfg.headlamp || 0) - this.darkness));
+      if (cfg.lightsOut) { this.noticeRange = 1; this.revealR = 1; this.darkness = Math.max(this.darkness, 2); } // OVA: Lights Out
       this.droneT = 2;
       this.fieldDirty = true;
       this.recomputeField();
@@ -191,6 +192,11 @@
       if (this.ended) return;
       this.t += dt;
       const t = this.t;
+      if (this.cfg.timeLimit && t >= this.cfg.timeLimit && !this.fullClear) { // OVA: Nine to Five, bags still count
+        for (const m of this.miners) this.deliver(m);
+        this.end('timeup');
+        return;
+      }
       if (this.chainQ.length) {
         const keep = [];
         for (const c of this.chainQ) {
@@ -519,7 +525,7 @@
         }
         m.timer = 3.5;
       } else if (kind === 'groom') m.timer = 2;
-      else if (kind === 'loaf') m.timer = 3;
+      else if (kind === 'loaf') { m.timer = 3; if (this.cfg.loafPower) m.stamina = Math.min(m.maxSt, m.stamina + m.maxSt * this.cfg.loafPower); } // OVA perk: Loaf Power
       else m.timer = 2;
       this.ev({ t: 'distract', m: m.id, kind });
       if (kind === 'loaf' && this.miners.length >= 3 && !this.st.allLoaf &&
@@ -995,7 +1001,7 @@
     // ---------------------------------------------------------------- player tools
     addMark(idx, drone) {
       const M = this.mine;
-      if (idx < 0 || idx >= this.n) return false;
+      if (idx < 0 || idx >= this.n || this.cfg.noLaser) return false;
       // fog tiles can always be marked (no peeking at what's under them); reveal() clears the mark if it's not mineable
       if (M.revealed[idx] && !M.isMineable(idx) && M.type[idx] !== T.MILK) return false;
       if (M.revealed[idx] && M.isOpen(idx)) return false;

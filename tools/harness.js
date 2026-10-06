@@ -5,7 +5,7 @@
 const path = require('path');
 const root = path.join(__dirname, '..', 'js');
 for (const f of ['core/util.js', 'data/tiers.js', 'data/traits.js', 'data/content.js', 'data/upgrades.js', 'data/faxes.js',
-  'data/loom.js', 'data/events.js', 'sim/minegen.js', 'sim/catgirl.js', 'sim/episode.js', 'sim/game.js', 'sim/bot.js']) {
+  'data/loom.js', 'data/events.js', 'data/ovas.js', 'sim/minegen.js', 'sim/catgirl.js', 'sim/episode.js', 'sim/game.js', 'sim/bot.js']) {
   require(path.join(root, f));
 }
 const NYA = globalThis.NYA;

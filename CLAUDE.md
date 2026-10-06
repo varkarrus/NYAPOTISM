@@ -46,6 +46,8 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - `node tools/test_events.js` and `node tools/test_pump.js` cover the event mines and the Tier 4 pumps.
   - `node tools/diag.js --minutes 30` shows where miner time goes.
   - `node tools/tierjump.js 1` compares staying vs jumping at each tier unlock (target ~1–2×).
+  - `node tools/test_ovas.js 1 90` plays to Season 5, then clears every OVA release and reports how long each took.
+- **OVAs** live in `js/data/ovas.js` (limiter text, three goals, perk). Limiters hook in through `game.ovaIs(id)` / `game.ovaCfg()`, perks through `game.ovaPerk(id)` (0–3). OVAs pay no yarn and end on their goal (`finishOva` → `unravel({ force, noYarn })`).
 - **Syntax check:** run `node --check <file>` on everything you touch, since there is no compiler.
 - **In a cloud session with no browser:** rely on the harness and syntax checks, then ask the user to playtest on GitHub Pages after pushing. `tools/spritetest.html` draws every sprite, pose and eyecatcher on one page.
 - **Deploys:** `.github/workflows/pages.yml` publishes only `index.html`, `css/`, `js/` and `img/` (the link-preview image `img/og.png`), as two builds on one Pages site. `main` goes to the root URL, and the most recently pushed other branch goes to `/dev/` (https://varkarrus.github.io/NYAPOTISM/dev/). A push to any branch rebuilds both. The dev build uses its own save key (`nyapotism.save.dev`) and copies the main save the first time.

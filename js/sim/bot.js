@@ -93,7 +93,7 @@
         pick = 2;
         // if tier 2 full clears are hopeless right now, farm tier 1 for upgrades
         if (ts && ts.recent.length >= 4 && ts.recent.every(r => !r.fc) && (this.tierStats[1] || {}).n) pick = (this.flip = !this.flip) ? 2 : 1;
-      } else if (top >= 3 && !s.skein.have) pick = 3;
+      } else if (top >= 3 && !s.skein.have && !s.ova) pick = 3; // hunt the box (never spawns in an OVA)
       else {
         let bestCps = -1;
         for (const t of un) {
@@ -103,6 +103,9 @@
           if (cps > bestCps) { bestCps = cps; pick = t; }
         }
       }
+      // in an OVA, go where the goal is once it's open (a player chasing the goal would)
+      const goal = g.ovaGoal && g.ovaGoal();
+      if (goal && goal.tier && s.tierUnlocked[goal.tier]) pick = goal.tier;
       if (g.s.catnip < g.purrmitCost(pick) * 2 && pick > 1) pick = Math.max(1, pick - 1);
       g.selectTier(pick);
     }

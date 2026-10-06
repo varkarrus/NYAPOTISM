@@ -713,6 +713,8 @@ NOTE: Order and goal not currently set in stone. Be open to the idea of repeat c
 | 11 | **Hagane's Day Off** | No equipment. | Full-clear Tier 6 | Second Trinket slot |
 | 12 | **The Aunt Strikes Back** | Every 60 s, Auntie faxes a random edict ("ALL MINERS MUST WEAR HATS": −10% Pace, +10 Grit). | Reach Tier 8 | *Edicts:* you can issue your own edicts, trading one stat for another |
 
+**As built (first six):** OVAs pay **no yarn** (no rapid-prestige farming) and **end the moment the goal is met**; each cleared release raises a permanent perk to level I/II/III. They open on the Office's Tape Shelf in Season 5, are started in place of a normal unravel, and unlock in this order, each after the previous VHS: Lights Out (Night Vision: +Sight), Nine to Five (Clock Puncher: lower pack-up floor), Budget Cuts (Expense Account: start runs with Refinery Mk III / Polisher / Centrifuge), No Laser Zone (Sharp Eyes: +Focus), Monday (Loaf Power: loafing restores stamina), and One Cat Army last (Ace Protocol: first catgirl on shift ×1.25/×1.5/×2). Goals are scaled to Tiers 1–4 until deeper content exists; see `js/data/ovas.js`.
+
 Your two examples fit perfectly as OVAs 1 and 2. A later batch (13–20) unlocks after the Reboot and combines limiters ("One Cat Army + Mouse Apocalypse") for the truly unhinged.
 
 ## 16. Spin-Offs

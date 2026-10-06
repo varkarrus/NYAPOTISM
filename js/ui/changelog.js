@@ -6,6 +6,15 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'OVAs: challenge episodes',
+      date: '2026-10-08',
+      items: [
+        'Late in the game, an OVA Tape Shelf appears in the Office: six special episodes with their own rules (no laser, 30-second shifts, a frozen Refinery, a one-cat crew…).',
+        'Each has three releases (VHS, Laserdisc, Director’s Cut) with harder goals. Clearing one gives a permanent perk, and the OVA ends right there.',
+        'Each tape unlocks when you clear the previous one’s VHS release.',
+      ],
+    },
+    {
       title: 'Outlined catgirls',
       date: '2026-10-08',
       items: [
@@ -147,12 +156,13 @@
 
   // What the current build actually contains, so a playtester knows where the content ends.
   NYA.FRONTIER = {
-    summary: 'Roughly 3–4 hours of new things. After that nothing new unlocks yet — just bigger numbers.',
+    summary: 'Roughly 3–4 hours of new things, then the OVA challenges (several more hours). After that, just bigger numbers.',
     items: [
       'Tiers 1–3 in your first run (Tier 3 at about 1 hour).',
       'Something big around the 1h 15m mark. No spoilers!',
       'Tier 4, Dairy Depths (milk pumping), at about 1h 30m.',
       'Tanuki’s limited-time event mines, R&D and MEWCLEAR, standing orders, swing techniques.',
+      'Late game: six OVA challenge episodes, 18 releases in all, each with a permanent perk.',
       'Not built yet: Tiers 5+, equipment, and more late-game content.',
     ],
   };

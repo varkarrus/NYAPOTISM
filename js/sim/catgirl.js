@@ -166,6 +166,17 @@
       }
       if (m.mainChar) { for (const k of ['power', 'haste', 'pace', 'stamina']) sb.mul(k, 1.5, src); f.mainChar = 1; }
     }
+    // OVAs: limiters for the run in progress, perks from cleared releases
+    if (game && game.s && game.s.ova) {
+      if (game.ovaIs('monday')) { f.sleepy = Math.min(f.sleepy || 1, 0.6); sb.mul('whimsy', 5, 'OVA: Monday'); }
+      if (game.ovaIs('onecat')) for (const k of ['power', 'haste', 'pace', 'stamina']) sb.mul(k, NYA.OVA_ONECAT_MULT, 'OVA: One Cat Army');
+    }
+    if (game && game.ovaPerk) {
+      const eyes = game.ovaPerk('nolaser');
+      if (eyes) sb.add('focus', eyes, 'Sharp Eyes (OVA perk)');
+      const ace = game.ovaPerk('onecat');
+      if (ace && game.s.active[0] === cg.id) for (const k of ['power', 'haste', 'pace', 'stamina']) sb.mul(k, NYA.OVA_ACE[ace], 'Ace Protocol (OVA perk)');
+    }
     // Crew synergies
     const crew = ctx.crew || [];
     if (cg.traits.indexOf('loaf_squad') >= 0) {
