@@ -36,7 +36,7 @@ The game autosaves to `localStorage` every 30 s. You can export or import a save
 | ~45 Faxes from Auntie (achievements with bonuses) | 13 | |
 | Schrödinger's Skein → Unravel → Yarn → **Quantum Loom** 5×5 sweater with stripes, Timeline Anchors, Laser Drone | 14 | |
 | **OVAs**: six challenge tapes (Lights Out, Nine to Five, Budget Cuts, No Laser Zone, Monday, One Cat Army) × three releases, each with a permanent perk, spread over Seasons 5–25 | 15 | `js/data/ovas.js` |
-| Episode titles, Tora barks, eyecatchers (11, two of them rare), next-episode previews, opening-theme verses | 21 | |
+| Episode titles, Tora barks, eyecatchers (12, three of them rare), next-episode previews, opening-theme verses | 21 | |
 | City-pop music per mine (FM e-piano, bass, drum machine), synthesized SFX | 22.2 | `js/audio.js` |
 | **Tanuki's Emporium**: limited-time event mines (Golden Week, Tanabata wishes, Obon ghosts, Mochi Pounding, Summer Matsuri goldfish), Rain Checks, queued purrmits, an 8 RP auto-buy order | 9.4 | `js/data/events.js` |
 | **Swing techniques**: Haste never exceeds 4 swings/s. Past that, swings fold into heavier named techniques (Paw Smash, Pounce Strike, Tiger Drop…) | — | your suggestion |

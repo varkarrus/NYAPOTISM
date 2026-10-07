@@ -6,6 +6,13 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'New rare eyecatcher',
+      date: '2026-10-08',
+      items: [
+        'Tickling the Dragon’s Tail: two lab catgirls, one very important screwdriver, and a butterfly. It can turn up once Doc Boom has started Project MEWCLEAR.',
+      ],
+    },
+    {
       title: 'Tier 6: Mousehole Maze',
       date: '2026-10-08',
       items: [

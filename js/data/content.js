@@ -250,6 +250,8 @@
     { id: 'harisen', name: 'The Pickaxe Apologizes', rare: false },
     { id: 'hat', name: 'Hats All the Way Down', rare: true },
     { id: 'ears', name: 'Four Ears?!', rare: true },
+    // only once Doc Boom has started on Project MEWCLEAR, so the glowing core means something
+    { id: 'core', name: 'Tickling the Dragon’s Tail', rare: true, req: g => !!g.s.novel['mewclear:1'] },
   ];
 
   // ---------- Story faxes for system announcements ----------

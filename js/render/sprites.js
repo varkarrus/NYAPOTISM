@@ -206,12 +206,13 @@
         ctx.fillStyle = SKIN; ctx.fillRect(s * 3.5 - 2, ey - 2.4, 4, 2.2);
         ctx.strokeStyle = INK; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(s * 3.5 - 2, ey - 0.2); ctx.lineTo(s * 3.5 + 2, ey - 0.2); ctx.stroke();
       }
-    } else {
+    } else { // 'open', or 'up' (looking up at something)
+      const iy = eyes === 'up' ? -1.6 : 0;
       for (const s of [-1, 1]) {
         ellipse(ctx, s * 3.5, ey, 1.85, 2.5, INK);
-        ellipse(ctx, s * 3.5, ey + 0.7, 1.3, 1.3, look.eyeColor || '#7a4fd6');
-        ellipse(ctx, s * 3.5 + 0.55, ey - 0.9, 0.7, 0.8, '#fff');
-        ellipse(ctx, s * 3.5 - 0.6, ey + 1.1, 0.3, 0.3, '#fff');
+        ellipse(ctx, s * 3.5, ey + 0.7 + iy, 1.3, 1.3, look.eyeColor || '#7a4fd6');
+        ellipse(ctx, s * 3.5 + 0.55, ey - 0.9 + iy * 0.4, 0.7, 0.8, '#fff');
+        ellipse(ctx, s * 3.5 - 0.6, ey + 1.1 + iy, 0.3, 0.3, '#fff');
       }
     }
     ellipse(ctx, -5.6, -16.4, 1.5, 0.8, 'rgba(255,120,160,0.45)');

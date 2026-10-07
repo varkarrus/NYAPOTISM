@@ -899,7 +899,7 @@
     }
     pickEyecatcher() {
       const rng = this.rng;
-      const pool = NYA.EYECATCHERS.map(e => [e.id, e.rare ? 1.5 : 10]).filter(e => e[0] !== this.s.lastEyecatch);
+      const pool = NYA.EYECATCHERS.filter(e => e.id !== this.s.lastEyecatch && (!e.req || e.req(this))).map(e => [e.id, e.rare ? 1.5 : 10]);
       const id = rng.weighted(pool);
       this.s.lastEyecatch = id;
       return id;

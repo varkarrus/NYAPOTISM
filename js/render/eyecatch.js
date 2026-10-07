@@ -188,7 +188,133 @@
       }
       caption(ctx, W, H, f === 0 ? 'wait…' : f === 1 ? 'FOUR EARS?!' : 'novelty headband. phew.');
     },
+    // Rare (after Project MEWCLEAR starts): two lab catgirls hold the core open with a screwdriver, a butterfly
+    // flies past, and… they're remembered fondly.
+    core(ctx, W, H, f, t, L) {
+      const L2 = randLookSeed(11);
+      if (f === 2) { shrine(ctx, W, H, t, L, L2); caption(ctx, W, H, 'rest in purrs'); return; }
+      bg(ctx, W, H, '#25324a', '#4e3f66', t, 'dots');
+      const s = H * 0.62, by = H * 0.86, up = f === 1;
+      D(ctx, W * 0.26, by, s, L, { anim: 'idle', t, eyes: up ? 'up' : 'open', mouth: up ? 'open' : 'flat', noPick: true });
+      D(ctx, W * 0.74, by, s, L2, { anim: 'idle', t, eyes: up ? 'up' : 'open', mouth: up ? 'open' : 'cat', noPick: true, face: -1 });
+      // clipboard and pencil (the note-taker)
+      const u = s / 34, cbx = W * 0.74 - 9 * u, cby = by - 15 * u;
+      ctx.save(); ctx.translate(cbx, cby); ctx.rotate(-0.12);
+      ctx.fillStyle = '#9a6a3e'; ctx.fillRect(-4.5 * u, -6 * u, 9 * u, 12 * u);
+      ctx.fillStyle = '#fffdf5'; ctx.fillRect(-3.8 * u, -4.6 * u, 7.6 * u, 10 * u);
+      ctx.fillStyle = '#c9c3d6'; ctx.fillRect(-2.4 * u, -6.6 * u, 4.8 * u, 1.8 * u);
+      ctx.fillStyle = '#9b93a8'; for (let k = 0; k < 5; k++) ctx.fillRect(-3 * u, (-3 + k * 1.8) * u, (k === 4 && !up ? 3 : 6) * u, 0.4 * u);
+      ctx.restore();
+      // the table
+      ctx.fillStyle = '#6b5a7a'; ctx.fillRect(W * 0.1, H * 0.62, W * 0.8, H * 0.05);
+      ctx.fillStyle = '#4a3d58'; ctx.fillRect(W * 0.14, H * 0.67, W * 0.035, H * 0.33); ctx.fillRect(W * 0.825, H * 0.67, W * 0.035, H * 0.33);
+      // the core: two silver half-shells around a dark sphere, the top one propped open on the left
+      const cx = W * 0.49, r = H * 0.105, cy = H * 0.62 - H * 0.03 - r;
+      ctx.fillStyle = '#3a3346'; ctx.fillRect(cx - r * 0.7, cy + r * 0.6, r * 1.4, H * 0.03 + r * 0.4); // stand
+      ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(cx, cy + r * 1.05, r * 0.22, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#1a1020'; for (let k = 0; k < 3; k++) { const a = -Math.PI / 2 + k * Math.PI * 2 / 3; ctx.beginPath(); ctx.moveTo(cx, cy + r * 1.05); ctx.arc(cx, cy + r * 1.05, r * 0.2, a - 0.45, a + 0.45); ctx.closePath(); ctx.fill(); }
+      ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(cx, cy + r * 1.05, r * 0.05, 0, Math.PI * 2); ctx.fill();
+      const glow = up ? 0.55 + 0.35 * Math.abs(Math.sin(t * 9)) : 0.28;
+      const gg = ctx.createRadialGradient(cx - r * 0.5, cy, 0, cx - r * 0.5, cy, r * (up ? 3.2 : 1.6));
+      gg.addColorStop(0, `rgba(140,200,255,${glow})`); gg.addColorStop(1, 'rgba(140,200,255,0)');
+      ctx.fillStyle = gg; ctx.fillRect(cx - r * 4, cy - r * 4, r * 8, r * 8);
+      ctx.fillStyle = '#4a4458'; ctx.beginPath(); ctx.arc(cx, cy, r * 0.62, 0, Math.PI * 2); ctx.fill(); // the core itself
+      ctx.fillStyle = '#c9d2e0'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI); ctx.closePath(); ctx.fill(); // lower shell
+      ctx.fillStyle = '#e8eef8'; ctx.fillRect(cx - r * 0.7, cy + r * 0.25, r * 0.5, r * 0.12);
+      const open = up ? -0.08 : -0.55; // the gap all but closes while nobody's looking
+      ctx.save(); ctx.translate(cx + r, cy); ctx.rotate(open);
+      ctx.fillStyle = '#d9e1ee'; ctx.beginPath(); ctx.arc(-r, 0, r, Math.PI, Math.PI * 2); ctx.closePath(); ctx.fill(); // upper shell
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(-r * 1.55, -r * 0.62, r * 0.4, r * 0.1);
+      ctx.restore();
+      // the screwdriver, from her paw into the gap
+      const hx = W * 0.26 + 9 * u, hy = by - 13 * u;
+      const tx = cx - r * 0.95, ty = cy - (up ? r * 0.05 : r * 0.32);
+      ctx.strokeStyle = '#9ba4b4'; ctx.lineWidth = Math.max(2, H * 0.012); ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(hx + (tx - hx) * 0.35, hy + (ty - hy) * 0.35); ctx.lineTo(tx, ty); ctx.stroke();
+      ctx.strokeStyle = '#e0304e'; ctx.lineWidth = Math.max(4, H * 0.03);
+      ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + (tx - hx) * 0.35, hy + (ty - hy) * 0.35); ctx.stroke();
+      ctx.lineCap = 'butt';
+      if (up) { // the butterfly
+        const bx = W * 0.5 + Math.sin(t * 2.2) * W * 0.12, byy = H * 0.2 + Math.sin(t * 3.1) * H * 0.04, wing = Math.abs(Math.sin(t * 18));
+        ctx.fillStyle = '#ffd23f';
+        ctx.beginPath(); ctx.ellipse(bx - H * 0.03 * wing, byy, H * 0.035 * wing + 1, H * 0.045, -0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(bx + H * 0.03 * wing, byy, H * 0.035 * wing + 1, H * 0.045, 0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ff9e7a'; ctx.beginPath(); ctx.ellipse(bx - H * 0.025 * wing, byy + H * 0.035, H * 0.02 * wing + 1, H * 0.025, 0.2, 0, Math.PI * 2); ctx.ellipse(bx + H * 0.025 * wing, byy + H * 0.035, H * 0.02 * wing + 1, H * 0.025, -0.2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#2a1f33'; ctx.fillRect(bx - 1.5, byy - H * 0.035, 3, H * 0.08);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        for (let k = 0; k < 4; k++) { const a = t * 3 + k * 1.6; ctx.fillRect(bx + Math.cos(a) * H * 0.09, byy + Math.sin(a) * H * 0.07, 3, 3); }
+      }
+      caption(ctx, W, H, up ? '…ooh, a butterfly!' : 'tickling the dragon’s tail…');
+    },
   };
+  // A Japanese funeral altar: kujira-maku stripes, flower wreaths, white-draped tiers, two framed portraits.
+  function shrine(ctx, W, H, t, La, Lb) {
+    const sw = W / 16;
+    for (let k = 0; k < 16; k++) { ctx.fillStyle = k % 2 ? '#f4f1ea' : '#1a1418'; ctx.fillRect(k * sw, 0, sw + 1, H * 0.74); }
+    ctx.fillStyle = '#7d7a88'; ctx.fillRect(0, H * 0.74, W, H * 0.26);
+    ctx.fillStyle = '#9d9aa8';
+    const tw = H * 0.07;
+    for (let y = H * 0.74, row = 0; y < H; y += tw, row++) for (let x = row % 2 ? 0 : tw / 2; x < W; x += tw) ctx.fillRect(x + 1, y + 1, tw / 2 - 2, tw / 2 - 2);
+    // flower wreaths on stands
+    for (const wx of [W * 0.11, W * 0.89]) {
+      const wy = H * 0.34, R = H * 0.17;
+      ctx.strokeStyle = '#2a1f33'; ctx.lineWidth = Math.max(2, H * 0.01);
+      ctx.beginPath(); ctx.moveTo(wx - R * 0.5, H * 0.78); ctx.lineTo(wx, wy); ctx.lineTo(wx + R * 0.5, H * 0.78); ctx.stroke();
+      ctx.fillStyle = '#3d6fd6'; ctx.beginPath(); ctx.arc(wx, wy, R, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f4f1ea'; for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2; ctx.beginPath(); ctx.arc(wx + Math.cos(a) * R * 0.86, wy + Math.sin(a) * R * 0.86, R * 0.11, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = '#f4f1ea'; ctx.beginPath(); ctx.arc(wx, wy, R * 0.66, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#e0304e'; ctx.beginPath(); ctx.arc(wx, wy, R * 0.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ff9eb5'; for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2 + 0.2; ctx.beginPath(); ctx.arc(wx + Math.cos(a) * R * 0.38, wy + Math.sin(a) * R * 0.38, R * 0.08, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = '#fffdf5'; ctx.fillRect(wx - R * 0.16, wy - R * 0.3, R * 0.32, R * 0.6);
+      ctx.fillStyle = '#2a1f33'; for (let k = 0; k < 3; k++) ctx.fillRect(wx - R * 0.08, wy - R * 0.2 + k * R * 0.17, R * 0.16, R * 0.05);
+    }
+    // the altar: two white-draped tiers
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(W * 0.22, H * 0.56, W * 0.56, H * 0.24);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(W * 0.28, H * 0.48, W * 0.44, H * 0.09);
+    ctx.fillStyle = '#d9d4e2';
+    for (let k = 1; k < 9; k++) ctx.fillRect(W * 0.22 + k * W * 0.062, H * 0.58, 2, H * 0.22);
+    ctx.fillRect(W * 0.22, H * 0.56, W * 0.56, 3); ctx.fillRect(W * 0.28, H * 0.48, W * 0.44, 3);
+    // portraits, smiling, no hard hats (kept below the logo)
+    portrait(ctx, W * 0.4, H * 0.19, H * 0.3, La);
+    portrait(ctx, W * 0.6, H * 0.19, H * 0.3, Lb);
+    // candles, incense, and offerings (a fish, a little heap of catnip)
+    for (const x of [W * 0.31, W * 0.69]) {
+      ctx.fillStyle = '#fffdf5'; ctx.fillRect(x - H * 0.012, H * 0.42, H * 0.024, H * 0.07);
+      ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.ellipse(x, H * 0.405 + Math.sin(t * 9 + x) * 1, H * 0.01, H * 0.02, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = '#5b4a6a'; ctx.beginPath(); ctx.ellipse(W * 0.5, H * 0.6, H * 0.06, H * 0.03, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(W * 0.5 - H * 0.05, H * 0.6, H * 0.1, H * 0.04);
+    ctx.strokeStyle = '#8a6a4a'; ctx.lineWidth = 2;
+    for (const dx of [-1, 0, 1]) { ctx.beginPath(); ctx.moveTo(W * 0.5 + dx * H * 0.015, H * 0.6); ctx.lineTo(W * 0.5 + dx * H * 0.025, H * 0.53); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(220,215,230,0.7)'; ctx.lineWidth = 1.5;
+    for (const dx of [-1, 0, 1]) {
+      ctx.beginPath();
+      for (let k = 0; k <= 10; k++) { const yy = H * 0.53 - k * H * 0.025, xx = W * 0.5 + dx * H * 0.025 + Math.sin(t * 2 + k * 0.7 + dx) * H * 0.015; if (k) ctx.lineTo(xx, yy); else ctx.moveTo(xx, yy); }
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#e8e4ee'; ctx.beginPath(); ctx.ellipse(W * 0.36, H * 0.64, H * 0.07, H * 0.02, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#7ad7f0'; ctx.beginPath(); ctx.ellipse(W * 0.36, H * 0.625, H * 0.05, H * 0.015, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(W * 0.36 + H * 0.045, H * 0.625); ctx.lineTo(W * 0.36 + H * 0.07, H * 0.61); ctx.lineTo(W * 0.36 + H * 0.07, H * 0.64); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#5fe08a'; for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.ellipse(W * 0.64 + (k - 2) * H * 0.018, H * 0.63 - (k % 2) * H * 0.012, H * 0.016, H * 0.009, k * 0.6, 0, Math.PI * 2); ctx.fill(); }
+  }
+  function portrait(ctx, cx, top, h, look) {
+    const w = h * 0.78, x = cx - w / 2, pad = h * 0.07;
+    ctx.fillStyle = '#1a1418'; ctx.fillRect(x, top, w, h);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x + pad, top + pad, w - pad * 2, h - pad * 2); ctx.clip();
+    const g = ctx.createLinearGradient(0, top, 0, top + h); g.addColorStop(0, '#c9d6e8'); g.addColorStop(1, '#8a9ab3');
+    ctx.fillStyle = g; ctx.fillRect(x, top, w, h);
+    const ih = h - pad * 2, u = ih / 28; // show sprite units −34…−6: ears to shoulders
+    D(ctx, cx, top + pad + 34 * u, 34 * u, Object.assign({}, look, { hat: false }), { anim: 'idle', t: 0, eyes: 'happy', noPick: true });
+    ctx.restore();
+    // black mourning ribbon across the top corners
+    ctx.fillStyle = '#000000';
+    ctx.beginPath(); ctx.moveTo(x, top + h * 0.22); ctx.lineTo(x + w * 0.28, top); ctx.lineTo(x + w * 0.4, top); ctx.lineTo(x, top + h * 0.32); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x + w, top + h * 0.22); ctx.lineTo(x + w * 0.72, top); ctx.lineTo(x + w * 0.6, top); ctx.lineTo(x + w, top + h * 0.32); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, top, h * 0.045, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx, top); ctx.lineTo(cx - w * 0.18, top - h * 0.06); ctx.lineTo(cx - w * 0.16, top + h * 0.06); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx, top); ctx.lineTo(cx + w * 0.18, top - h * 0.06); ctx.lineTo(cx + w * 0.16, top + h * 0.06); ctx.closePath(); ctx.fill();
+  }
   function randLookSeed(k) {
     const r = new NYA.RNG('look' + k);
     const fur = r.pick(NYA.FUR_KEYS);
