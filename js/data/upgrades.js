@@ -105,7 +105,7 @@
     if (!b) return null;
     if (b.tier && g.s.maxTierReached < b.tier) return 'Reach Tier ' + b.tier + ' (' + NYA.TIERS[b.tier].name + ') to make room';
     // perfect clears pace crew growth, but never send you back: reaching a deeper mine counts too (playtest)
-    if (b.fc && g.fc(b.fc[0]) < b.fc[1] && g.s.maxTierReached <= b.fc[0]) return 'Full-clear ' + NYA.TIERS[b.fc[0]].name + ' ' + b.fc[1] + ' times (' + g.fc(b.fc[0]) + '/' + b.fc[1] + '), or reach a deeper mine';
+    if (b.fc && g.fc(b.fc[0]) < b.fc[1] && !g.easyClear(b.fc[0]) && g.s.maxTierReached <= b.fc[0]) return NYA.fcReqText(g, b.fc[0], b.fc[1]) + ', or reach a deeper mine';
     return null;
   };
   def({ id: 'bunk', bld: 'barracks', name: 'Bunk Beds', max: NYA.BUNKS.length, costs: NYA.BUNKS.map(b => b.cost),
@@ -243,9 +243,11 @@
     fx: l => (4 * l) + '% +quality' });
   // Surveys ask you to prove yourself (perfect clears of the previous mine) only the first time ever.
   // Once you've been to a mine, later runs just pay for the survey: you know the way down.
+  // One easy clear (crew above half stamina, NYA.EASY_CLEAR) proves it too: no grinding a mine you've outclassed.
+  NYA.fcReqText = (g, t, n) => 'Full-clear ' + NYA.TIERS[t].name + ' ' + n + ' times (' + g.fc(t) + '/' + n + '), or once with the crew above half stamina';
   NYA.surveyReq = function (g, tier, fcTier, n) {
     if ((g.s.life.maxTier || 0) >= tier) return null;
-    return g.fc(fcTier) >= n ? null : 'Full-clear ' + NYA.TIERS[fcTier].name + ' ' + n + ' times (' + g.fc(fcTier) + '/' + n + ')';
+    return g.fc(fcTier) >= n || g.easyClear(fcTier) ? null : NYA.fcReqText(g, fcTier, n);
   };
   def({ id: 'mine2', bld: 'lab', branch: 'Exploration', name: 'Survey: Scratching Post Quarry', max: 1, base: 600, timer: 10,
     show: g => g.s.stats.fullClears >= 1,

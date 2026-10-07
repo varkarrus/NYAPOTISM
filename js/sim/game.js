@@ -78,6 +78,7 @@
     lvl(id) { return this.s.upg[id] || 0; }
     loom(id) { return this.s.loom[id] || 0; }
     fc(t) { return (this.s.mine[t] && this.s.mine[t].fc) || 0; }
+    easyClear(t) { return !!(this.s.mine[t] && this.s.mine[t].easy); } // this run (NYA.EASY_CLEAR)
     hasSRank(t) { return !!(this.s.lifeMine[t] && this.s.lifeMine[t].s); }
     crewById(id) { return this.s.crew.find(c => c.id === id); }
     activeCrew() { return this.s.active.map(id => this.crewById(id)).filter(Boolean); }
@@ -474,6 +475,18 @@
       if (id === 'resume') this.novel('upg:resume', 'Résumé Reader: Aptitudes revealed', 'research');
       this.emit('upgrade', { id, level: l });
     }
+    // An easy clear (NYA.EASY_CLEAR) stands in for every "full-clear this mine n times" requirement this run. Say so
+    // when it's the thing that just opened a survey or a bunk.
+    markEasyClear(t, ms) {
+      const gated = () => NYA.UPGRADES.filter(u => u.req && this.upgVisible(u) && this.lvl(u.id) < (u.max || 1) && u.req(this)).map(u => u.id);
+      const before = gated();
+      ms.easy = 1;
+      const after = gated();
+      const opened = before.filter(id => !after.includes(id));
+      if (!opened.length) return;
+      this.novel('easyclear', 'Easy clear! A perfect clear with the crew above half stamina counts for the whole perfect-clear requirement', 'research');
+      this.emit('toast', { text: 'Doc Boom: \u201cThat barely made them sweat! I\u2019ve seen enough. ' + opened.map(id => NYA.UPG[id].name).join(' and ') + (opened.length > 1 ? ' are' : ' is') + ' ready when you are!\u201d', kind: 'doc' });
+    }
     tickResearch(dt) {
       const r = this.s.research;
       if (!r) return;
@@ -483,22 +496,6 @@
         this.applyUpgrade(r.id);
         this.emit('research', { id: r.id, done: true, line: this.rng.pick(NYA.BARKS.doc_research) });
       }
-    }
-    // Express Lane: a perfect clear opens the next mine for free if you've been there in an earlier run, so a
-    // crew that outgrew the shallow mines cascades straight down instead of grinding surveys (playtest). Never
-    // fires in the first run (nowhere's been reached yet that isn't already open), in event mines or in OVAs.
-    expressLane(ep) {
-      const s = this.s, n = ep.tier + 1, id = 'mine' + n;
-      if (ep.event || s.ova || n > NYA.MAX_TIER || s.tierUnlocked[n] || (s.life.maxTier || 0) < n || !NYA.UPG[id]) return false;
-      if (s.research && s.research.id === id) s.research = null; // already paid for: it just finishes now
-      this.applyUpgrade(id);
-      this.novel('express', 'Express Lane! A perfect clear opens the next mine you’ve been to before', 'mine');
-      const def = NYA.TIERS[n];
-      // only move the crew down if they were heading back to the mine they just cleared and can pay the way in
-      const go = s.selectedTier === ep.tier && s.catnip >= this.purrmitCost(n);
-      if (go) this.selectTier(n);
-      this.emit('toast', { text: 'Doc Boom: “You’ve been down there before! I kept the map. ' + def.name + (go ? ', here we come!”' : ' is open. Bring purrmit money.”'), kind: 'doc' });
-      return true;
     }
 
     // ------------------------------------------------------------ applicant board
@@ -849,6 +846,7 @@
       const lm = s.lifeMine[ep.tier] || (s.lifeMine[ep.tier] = { eps: 0, fc: 0, s: 0, best: 0 });
       ms.eps++; lm.eps++;
       if (fullClear) { ms.fc++; lm.fc++; s.stats.fullClears++; s.life.fullClears++; }
+      if (fullClear && !ep.event && !ms.easy && ep.clearStam >= NYA.EASY_CLEAR) this.markEasyClear(ep.tier, ms);
       if (rating === 'S') { ms.s++; lm.s++; s.life.sRanks++; }
       ms.best = Math.max(ms.best, catnip); lm.best = Math.max(lm.best, catnip);
       const L = s.life, st = ep.st;
@@ -885,7 +883,6 @@
       if (fullClear && s.life.fullClears === 1) {
         this.novel('fullclear:first', 'PERFECT CLEAR!! The Purrmit Office opens', 'milestone');
       }
-      if (fullClear) this.expressLane(ep);
       this.phase = 'packup';
       this.packup = { t: 0, total: this.packUpTime(), result };
       this.emit('episodeEnd', result);

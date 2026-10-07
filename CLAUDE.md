@@ -15,7 +15,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
 - **Per-tier scaling lives in `js/data/tiers.js`:** `tierBase`, `tierHP`, `tierResist`, `tierXP`, `tierDensityP`, `tierCrumble`, `tierDarkness`. New tiers get these for free.
   - Past Tier 4, HP and resist grow an extra `DEEP_HP`/`DEEP_RESIST` per tier, because players only arrive after a few prestiges' worth of multipliers.
   - A tier can override `nipTier` (what its ore pays, read with `NYA.tierNip`) and `diffTier` (how tough it is, may be fractional). The Mousehole Maze uses both to be a cheese sidegrade.
-- **New tiers:** add the `NYA.TIERS[n]` entry and raise `NYA.MAX_TIER`. Gate the survey with `NYA.surveyReq(g, tier, fcTier, n)`, so the perfect-clear requirement only applies to the first unlock. Name it `mine<N>`: Express Lane (`game.expressLane`) grants that id free on a perfect clear of Tier N−1 once Tier N was reached in an earlier run. Add a `STORY_FAX.tierN`, a bunk, music `prog` and a dev-save milestone.
+- **New tiers:** add the `NYA.TIERS[n]` entry and raise `NYA.MAX_TIER`. Gate the survey with `NYA.surveyReq(g, tier, fcTier, n)`, so the perfect-clear requirement only applies to the first unlock. One easy clear (crew above half stamina, `NYA.EASY_CLEAR`) also satisfies it. Add a `STORY_FAX.tierN`, a bunk, music `prog` and a dev-save milestone.
 - **Yarn** comes from `s.seasonYarnNip`, not `seasonCatnip`: catnip earned past Tier 4 counts ÷`NYA.YARN_TIER_DIV` per tier. Any new catnip payout that should count toward yarn adds to both.
 - **Events:**
   - Game → UI: `game.emit(type, data)`.

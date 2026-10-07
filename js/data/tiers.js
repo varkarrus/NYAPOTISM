@@ -202,4 +202,8 @@
   // ...and once everyone still on shift is at a pump (the rest flopped or clocked out), they crank PUMP_RUSH× as
   // fast and tire PUMP_RUSH× as fast: same milk for the same stamina, it just doesn't keep the shift waiting.
   NYA.PUMP_RUSH = 3;
+  // Easy clear: a perfect clear with the crew's total stamina at least this share of full. One counts for a whole
+  // "full-clear X n times" survey/bunk requirement, so an outclassed mine isn't a perfect-clear grind (playtest).
+  // First clears of a new mine in a first run end at ~2–15%; a crew that outclasses the mine, at 60–90%.
+  NYA.EASY_CLEAR = 0.5;
 })(globalThis.NYA = globalThis.NYA || {});

@@ -6,10 +6,10 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
-      title: 'Express Lane',
+      title: 'Easy clears',
       date: '2026-10-09',
       items: [
-        'Express Lane: perfect-clear a mine, and if you’ve been to the next one down in an earlier run, Doc Boom hands you the survey for free and the crew heads straight there (as long as you can pay the purrmit). Outgrown mines no longer hold you up. Doesn’t apply to event mines or OVAs.',
+        'Easy clears: perfect-clear a mine with the crew still above half stamina, and that one clear counts for any “full-clear it N times” requirement (surveys and Bunk Beds). You still pay the catnip; you just don’t have to grind a mine your crew has outclassed. Doc Boom will let you know when it opens something.',
         'Fixed a spoiler: R&D’s Defense section (and its “???” teaser) stays hidden until you’ve met what it defends against. Faxes about a mine’s own surprises also stay a “?” on the board until you reach that mine.',
         'New fax for the truly long-running. The requirement keeps up with the show it’s poking fun at.',
       ],
@@ -257,8 +257,8 @@
       'Something big around the 1h 15m mark. No spoilers!',
       'Tier 4, Dairy Depths (milk pumping), at about 1h 30m.',
       'Tanuki’s limited-time event mines, R&D and MEWCLEAR, standing orders, swing techniques.',
-      'Tier 5, Sushi Grotto (floods and sushi), around 3 hours in.',
-      'Tier 6, Mousehole Maze (mice, turrets and cheese), around 3½–4 hours in.',
+      'Tier 5, Sushi Grotto (floods and sushi), around 3–4 hours in.',
+      'Tier 6, Mousehole Maze (mice, turrets and cheese), around 4–5 hours in.',
       'Late game: seven OVA challenge episodes, 21 releases in all, each with a permanent perk.',
       'Not built yet: Tiers 7+, equipment, and more late-game content.',
     ],

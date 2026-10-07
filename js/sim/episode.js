@@ -45,7 +45,7 @@
       for (let i = 0; i < n; i++) { const c = this.mine.cluster[i]; if (c >= 0 && this.mine.type[i] === T.ORE) this.clusterLeft[c] = (this.clusterLeft[c] || 0) + 1; }
       this.st = { tiles: 0, swings: 0, crits: 0, bestChain: 0, zoomies: 0, distractions: 0, allLoaf: 0, items: 0,
         marks: 0, blunts: 0, bombs: 0, rescues: 0, droneMarks: 0, motherlode: false, box: null, glowing: 0 };
-      this.ended = false; this.endReason = null; this.fullClear = false; this.allOutT = -1;
+      this.ended = false; this.endReason = null; this.fullClear = false; this.clearStam = 0; this.allOutT = -1;
       this.resLeft = 0;
       for (let i = 0; i < n; i++) if (M.isResource(i)) this.resLeft++;
       const rs = M.resourceStats();
@@ -1115,6 +1115,9 @@
         if (!looseLeft) {
           this.fullClear = true;
           this.ev({ t: 'fullclear' });
+          let st = 0, mx = 0; // stamina to spare at the moment of the clear (see NYA.EASY_CLEAR)
+          for (const m of this.miners) { st += Math.max(0, m.stamina); mx += m.maxSt; }
+          this.clearStam = mx > 0 ? st / mx : 0;
           if (this.mice.length) this.scatterMice();
           for (const m of this.miners) {
             m.done = true;
