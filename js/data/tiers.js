@@ -50,6 +50,11 @@
   // Phone a Psychic: every PSYCHIC_GAP s (±) she spends PSYCHIC_CALL s on the phone, then PSYCHIC_TIME s of
   // perfect focus that sees through fog (she heads for the best ore in the mine, seen or not)
   NYA.PSYCHIC_GAP = [20, 35]; NYA.PSYCHIC_CALL = 3; NYA.PSYCHIC_TIME = 12;  // target-score penalty for a Loner on tiles near other miners or their targets
+  // Pace <- footing: from Dairy Depths down the whole floor is slick (spilled milk, then standing water, then worse)
+  // and walking speed is divided by this. Comfy Boots alone is ×1.1 a level, so without it crews crossed a Tier 4-6
+  // mine in under a second (46-84 tiles/s) and walking fell from ~half of crew time to a quarter (playtest).
+  NYA.tierFooting = t => { const d = NYA.tierDiff(t); return d < 4 ? 1 : NYA.FOOTING_T4 * Math.pow(NYA.FOOTING_GROWTH, d - 4); };
+  NYA.FOOTING_T4 = 2; NYA.FOOTING_GROWTH = 1.25;
   NYA.MUD_SLOW = 0.5; NYA.RUBBLE_SLOW = 0.65; NYA.TANGLE_SLOW = 0.4;
   NYA.RUBBLE_STEPS = 2;
 

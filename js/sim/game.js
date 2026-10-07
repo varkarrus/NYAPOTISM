@@ -180,8 +180,8 @@
         noLaser: this.ovaIs('nolaser'), loafPower: 0.04 * this.ovaPerk('monday'), noHats: this.ovaIs('osha') };
     }
     // An OVA is a side story. Playing a tape sets the current run aside exactly as it stands (s.suspended: no
-    // yarn, nothing reset) and starts a fresh OVA run with copies of your anchored catgirls. When the OVA ends,
-    // cleared or ejected, the saved run picks up where it left off, and the OVA crew stays in the OVA (playtest).
+    // yarn, nothing reset) and starts a fresh OVA run with a brand-new crew: Timeline Anchors don't reach into an
+    // OVA (playtest). When the OVA ends, cleared or ejected, the saved run picks up where it left off.
     startOva(id) {
       const o = NYA.OVA[id], s = this.s;
       if (!o || s.ova || !this.ovaReleaseReady(id)) return false;
@@ -194,12 +194,10 @@
         else run.catnip += ep.cfg.purrmit || 0;
       }
       s.suspended = { at: s.simTime, run };
-      const kept = this.anchoredCrew(); // the live objects; the saved run holds its own copies
-      for (const c of kept) c.anchored = true;
       s.ova = { id, rel };
       s.blend = null; s.catterall = 0;
       s.tanuki = { nextAt: s.simTime + 5 * 60, offer: null, queue: [], rain: null };
-      this.freshRun(kept);
+      this.freshRun([]);
       this.novel('ova:start', 'OVA! A special episode with its own rules. Clear the goal for a permanent perk', 'prestige');
       this.fax('ova:' + o.id, o.fax);
       this.episode = null; this.phase = 'idle'; this.packup = null; this.lastResult = null;
@@ -756,6 +754,7 @@
       if (this.catterallActive()) this.episode.setCatterall(true);
       this.phase = 'shift';
       if (NYA.tierMud(t) > 0) this.novel('terrain', 'Rough ground! Mud and rubble slow your crew down. Pace matters now', 'mine');
+      if (NYA.tierFooting(t) > 1) this.novel('footing', 'Slick floors! Walking is ÷' + NYA.tierFooting(t).toFixed(1) + ' down here, and worse deeper. Comfy Boots and Cream Grease help', 'mine');
       this.emit('episodeStart', { ep: this.episode, num: this.s.episodeNum, tier: t });
       return this.episode;
     }

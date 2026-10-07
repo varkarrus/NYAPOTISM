@@ -12,7 +12,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - Upgrades: `def({...})` in `js/data/upgrades.js`, using `show`, `req`, `costs` or `base`/`growth`, `cur` (currency) and `fx`.
   - Traits: `mods` keys in `js/data/traits.js`. New flag keys must also be added to the flag list in `NYA.buildStats` (`js/sim/catgirl.js`). Give a trait `tier: N` if its text names a mine-specific system, so it can't roll before the player has seen that mine. `req(cg)` limits who can roll it, `onGain(cg)` runs once when she gets it, and `ova: 'id'` marks an OVA-only trait that never rolls normally. A trait that applies everywhere but mentions a later system gets a `descMice`-style second description, shown through `NYA.traitDesc(t, g)` once that system has been seen (lifetime).
   - Also data-driven: faxes (`check` functions), the Loom grid, Tanuki events, and tiers.
-- **Per-tier scaling lives in `js/data/tiers.js`:** `tierBase`, `tierHP`, `tierResist`, `tierXP`, `tierDensityP`, `tierCrumble`, `tierDarkness`. New tiers get these for free.
+- **Per-tier scaling lives in `js/data/tiers.js`:** `tierBase`, `tierHP`, `tierResist`, `tierXP`, `tierDensityP`, `tierCrumble`, `tierDarkness`, `tierFooting`. New tiers get these for free.
   - Past Tier 4, HP and resist grow an extra `DEEP_HP`/`DEEP_RESIST` per tier, because players only arrive after a few prestiges' worth of multipliers.
   - A tier can override `nipTier` (what its ore pays, read with `NYA.tierNip`) and `diffTier` (how tough it is, may be fractional). The Mousehole Maze uses both to be a cheese sidegrade.
 - **New tiers:** add the `NYA.TIERS[n]` entry and raise `NYA.MAX_TIER`. Gate the survey with `NYA.surveyReq(g, tier, fcTier, n)`, so the perfect-clear requirement only applies to the first unlock. One easy clear (crew above half stamina, `NYA.EASY_CLEAR`) also satisfies it. Add a `STORY_FAX.tierN`, a bunk, music `prog` and a dev-save milestone.
@@ -32,7 +32,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - Crit folds the same way: past 40%, 30 points of crit become ×1.65 Power (crit focus ranks).
   - Carry vs ore density (from Tier 3, `tierDensityMult` multiplies items per tile and divides their value, HP and XP).
   - Headlamps vs darkness (Sight).
-  - Pace vs mine size and rough ground: mud patches and rubble (`tierMud`, `tierRubble`).
+  - Pace vs mine size, rough ground (mud patches and rubble: `tierMud`, `tierRubble`) and, from Tier 4, slick floors: `tierFooting` divides all walking speed (÷2 at T4, ×1.25 per tier). It costs time only: walking stamina per tile is unchanged.
   - Focus vs decoy tiles (TODO).
 - **Crew size grows slowly.** Bunk Beds are hand-authored and progress-gated (`NYA.BUNKS`). The user wants about 3–5 miners through Tier 2.
 - **Animations must be readable.** Eyecatchers play picture-in-picture on a real-time clock and are never rushed or cut off. Pack-up time is a real sim cost: don't lengthen it for presentation.

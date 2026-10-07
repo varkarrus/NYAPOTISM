@@ -6,6 +6,15 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Slick floors, bomb fix',
+      date: '2026-10-09',
+      items: [
+        'Slick floors: from Dairy Depths down, walking is slower in the whole mine (÷2 in Dairy Depths, ÷2.5 in Sushi Grotto, ÷2.9 in Mousehole Maze). Crews were zipping across deep mines in under a second. Comfy Boots and Cream Grease matter again. It only costs time: walking doesn’t tire them any faster per tile. The mine list shows each mine’s footing.',
+        'Fixed: a Hairball Bomb could break the last ore inside solid rock and end the shift as a perfect clear with the catnip still sitting there. Catnip the crew can dig to now has to be brought home first, and they’ll tunnel toward it on their own.',
+        'OVAs always start with a brand-new crew. None of your veterans come along.',
+      ],
+    },
+    {
       title: 'OVAs save your run',
       date: '2026-10-09',
       items: [

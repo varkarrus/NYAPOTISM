@@ -9,7 +9,7 @@
   NYA.STAT_INFO = {
     power: { name: 'Power', desc: 'Damage per swing.' },
     haste: { name: 'Haste', desc: 'Swings per second.' },
-    pace: { name: 'Pace', desc: 'Tiles per second walking.' },
+    pace: { name: 'Pace', desc: 'Tiles per second walking. From Tier 4 down, slick floors divide it (see the mine list).' },
     stamina: { name: 'Stamina', desc: 'Total swing budget per shift. Swings cost (mine resistance × 0.99^Grit); walking costs 12.5% of that per second.' },
     carry: { name: 'Carry', desc: 'Inventory slots. One catnip item per slot.' },
     focus: { name: 'Focus', desc: 'How many candidate tiles she compares before picking one (K).' },

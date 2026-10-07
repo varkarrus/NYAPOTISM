@@ -776,12 +776,12 @@
     openModal(html) { this.el.modal.innerHTML = `<div class="mbox">${html}</div>`; this.el.modal.hidden = false; }
     closeModal() { this.el.modal.hidden = true; this.el.modal.innerHTML = ''; if (this.opts.onModalClose) this.opts.onModalClose(); }
     confirmOva(id) {
-      const g = this.g, o = NYA.OVA[id], rel = g.ovaPerk(id), n = g.anchorSlots();
+      const g = this.g, o = NYA.OVA[id], rel = g.ovaPerk(id);
       if (!o) return;
       const shift = g.phase === 'shift' && g.episode && !g.episode.ended;
       this.openModal(`<h2>${o.icon} OVA: ${esc(o.name)}</h2><p><b>${NYA.OVA_RELEASES[rel]} release.</b> ${esc(o.limiter)}</p>
         <p>Goal: <b>${esc(o.goals[rel].text)}</b>. Clear it for <b>${esc(o.perk)} ${['I', 'II', 'III'][rel]}</b> (${esc(o.perkText(rel + 1))}).</p>
-        <div class="note">📼 <b>Your current run is saved exactly as it is.</b> No yarn, nothing resets. The OVA is a fresh run of its own${n ? ` with copies of your ${n} anchored catgirl${n > 1 ? 's' : ''}` : ''}, and it pays no yarn.
+        <div class="note">📼 <b>Your current run is saved exactly as it is.</b> No yarn, nothing resets. The OVA is a fresh run of its own with a brand-new crew (Timeline Anchors don’t reach into OVAs), and it pays no yarn.
         When you clear the goal, or eject the tape from the Office, you're back in your saved run right where you left it. Nothing from the OVA comes back with you except the perk.${shift ? ' The shift in progress is called off and its purrmit refunded.' : ''}</div>
         <div class="row"><button class="big danger" id="doOva">📼 Play the tape</button><button class="big ghost" data-act="close">Not yet</button></div>`);
       document.getElementById('doOva').onclick = () => { this.closeModal(); this.audio.sfx('skein'); g.startOva(id); };

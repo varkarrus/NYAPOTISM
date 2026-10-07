@@ -58,6 +58,7 @@
       this.rubbleP = NYA.tierRubble(this.tier);
       this.roughRng = new NYA.RNG('rubble:' + cfg.seed);
       this.darkness = NYA.tierDarkness(this.tier);
+      this.footing = NYA.tierFooting(this.tier); // walking speed ÷ this (Pace's per-tier counter-pressure)
       this.sight = NYA.BASE_SIGHT + (cfg.headlamp || 0) - this.darkness;
       this.noticeRange = Math.max(1, Math.min(NYA.MAX_NOTICE, this.sight));
       this.revealR = Math.max(1, Math.min(NYA.MAX_REVEAL, 1 + (cfg.headlamp || 0) - this.darkness));
@@ -137,6 +138,28 @@
         if (y < h - 1) { const nb = c + w; if (dist[nb] < 0 && (type[nb] === T.OPEN || type[nb] === T.ELEV)) { dist[nb] = d; prev[nb] = c; q[tail++] = nb; } }
       }
       return dist;
+    }
+    // Everything the crew could get to by digging: open ground plus anything that isn't bedrock (milk nodes open
+    // up once pumped). Catnip lying on open ground that isn't connected yet is still theirs to fetch.
+    digReach() {
+      const M = this.mine, seen = this._dig || (this._dig = new Uint8Array(this.n)), q = this._q;
+      seen.fill(0);
+      let head = 0, tail = 0;
+      q[tail++] = M.elev; seen[M.elev] = 1;
+      while (head < tail) {
+        const c = q[head++];
+        for (const nb of M.nbrs(c)) if (!seen[nb] && M.type[nb] !== T.BEDROCK) { seen[nb] = 1; q[tail++] = nb; }
+      }
+      return seen;
+    }
+    // Tiles holding loose catnip the crew can't walk to yet but can dig to (a hairball can break ore inside the rock)
+    strandedTiles() {
+      let any = false;
+      for (const it of this.loose) if (this.homeDist[it.idx] < 0) { any = true; break; }
+      if (!any) return null;
+      const dr = this.digReach(), out = [];
+      for (const it of this.loose) if (this.homeDist[it.idx] < 0 && dr[it.idx] && out.indexOf(it.idx) < 0) out.push(it.idx);
+      return out.length ? out : null;
     }
 
     recomputeField() {
@@ -258,7 +281,7 @@
       return h;
     }
     speedOf(m) {
-      let p = m.s.pace;
+      let p = m.s.pace / this.footing;
       if (m.wetT > 0) p *= this.cfg.wetPace || NYA.WET_PACE;
       if (m.zoomT > this.t) p *= m.zoom;
       if (m.boost3am > 0) p *= 2;
@@ -361,7 +384,7 @@
           else this.toIdle(m);
           return;
         case 'flop': {
-          const arrived = this.move(m, dt, m.s.pace * 0.8, false);
+          const arrived = this.move(m, dt, m.s.pace / this.footing * 0.8, false);
           if (arrived) { this.deliver(m); m.state = 'out'; m.flopped = true; this.emote(m, 'zzz', 99); }
           return;
         }
@@ -384,7 +407,7 @@
           return;
         case 'distract':
           m.timer -= dt;
-          if (m.dkind === 'butterfly' && m.pathI < m.path.length) this.move(m, dt, m.s.pace, false);
+          if (m.dkind === 'butterfly' && m.pathI < m.path.length) this.move(m, dt, m.s.pace / this.footing, false);
           if (m.timer <= 0) {
             if (m.dkind === 'phone') { m.psychicT = this.t + NYA.PSYCHIC_TIME; this.emote(m, 'psychic', 1.5); this.ev({ t: 'psychic', m: m.id }); }
             m.dkind = null; this.toIdle(m);
@@ -408,7 +431,7 @@
         case 'pipe': {
           const p = this.pumps[m.pumpNode];
           if (!p) { this.release(m); this.toIdle(m); return; }
-          const arrived = this.move(m, dt, m.s.pace * 0.6, true);
+          const arrived = this.move(m, dt, m.s.pace / this.footing * 0.6, true);
           if (m.state !== 'pipe') return;
           if (arrived || m.pipeDone) {
             p.laid = true; m.pipeDone = false;
@@ -515,7 +538,8 @@
       }
       if (drain) {
         const full = m.bag.length >= m.s.carry && this.tier >= 3;
-        m.stamina -= this.swingCost(m) * 0.125 * dt * (full ? 1.5 : 1);
+        // ÷ footing: slick floors cost time, not extra stamina per tile walked
+        m.stamina -= this.swingCost(m) * 0.125 * dt * (full ? 1.5 : 1) / this.footing;
         if (m.stamina <= 0) { this.zeroStamina(m); return false; }
       }
       return m.pathI >= m.path.length;
@@ -669,6 +693,13 @@
           }
         }
       }
+      // catnip stranded in a pocket: head for the frontier tile nearest it, like a laser mark buried in rock
+      const stranded = fr.length ? this.strandedTiles() : null;
+      if (stranded) for (const sIdx of stranded) {
+        let bi = -1, bd = 1e9;
+        for (const i of fr) { const d = this.manhattan(i, sIdx); if (d < bd && !M.forbid[i]) { bd = d; bi = i; } }
+        if (bi >= 0) cands.push(bi);
+      }
       let best = null, bestScore = -1e9, blocked = 0;
       const seen = new Set();
       // Loner: other miners and the tiles they're headed for push her away (same 3-tile radius as her bonus)
@@ -696,6 +727,11 @@
         if (farMarks.length) {
           let bonus = 0;
           for (const mk of farMarks) bonus = Math.max(bonus, 6 / (1 + this.manhattan(c, mk.idx) * 0.5));
+          score += bonus;
+        }
+        if (stranded) {
+          let bonus = 0;
+          for (const sIdx of stranded) bonus = Math.max(bonus, 5 / (1 + this.manhattan(c, sIdx) * 0.5));
           score += bonus;
         }
         if (score > bestScore) { bestScore = score; best = { kind: 'tile', c, stand, marked }; }
@@ -1111,6 +1147,7 @@
       if (!this.fullClear && this.resLeft === 0) {
         let looseLeft = false;
         for (const it of this.loose) if (this.homeDist[it.idx] >= 0) { looseLeft = true; break; }
+        if (!looseLeft && this.strandedTiles()) looseLeft = true; // catnip in a pocket they can still dig to (playtest bug)
         let carrying = false;
         if (!looseLeft) {
           this.fullClear = true;
@@ -1236,6 +1273,9 @@
         this.reveal(j);
         this.damage(j, b.dmg * (dx || dy ? 0.75 : 1), null);
       }
+      // catnip blasted somewhere no amount of digging reaches (sealed by bedrock) is blown back to the elevator
+      const sealed = this.loose.some(it => this.homeDist[it.idx] < 0);
+      if (sealed) { const dr = this.digReach(); for (const it of this.loose) if (!dr[it.idx]) it.idx = this.mine.elev; }
       this.ev({ t: 'boom', i: b.i });
       this.fieldDirty = true;
     }
