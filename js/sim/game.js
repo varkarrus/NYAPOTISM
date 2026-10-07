@@ -484,6 +484,22 @@
         this.emit('research', { id: r.id, done: true, line: this.rng.pick(NYA.BARKS.doc_research) });
       }
     }
+    // Express Lane: a perfect clear opens the next mine for free if you've been there in an earlier run, so a
+    // crew that outgrew the shallow mines cascades straight down instead of grinding surveys (playtest). Never
+    // fires in the first run (nowhere's been reached yet that isn't already open), in event mines or in OVAs.
+    expressLane(ep) {
+      const s = this.s, n = ep.tier + 1, id = 'mine' + n;
+      if (ep.event || s.ova || n > NYA.MAX_TIER || s.tierUnlocked[n] || (s.life.maxTier || 0) < n || !NYA.UPG[id]) return false;
+      if (s.research && s.research.id === id) s.research = null; // already paid for: it just finishes now
+      this.applyUpgrade(id);
+      this.novel('express', 'Express Lane! A perfect clear opens the next mine you’ve been to before', 'mine');
+      const def = NYA.TIERS[n];
+      // only move the crew down if they were heading back to the mine they just cleared and can pay the way in
+      const go = s.selectedTier === ep.tier && s.catnip >= this.purrmitCost(n);
+      if (go) this.selectTier(n);
+      this.emit('toast', { text: 'Doc Boom: “You’ve been down there before! I kept the map. ' + def.name + (go ? ', here we come!”' : ' is open. Bring purrmit money.”'), kind: 'doc' });
+      return true;
+    }
 
     // ------------------------------------------------------------ applicant board
     // Three visible applicants instead of a blind roll. Hiring leaves the slot empty until the
@@ -869,6 +885,7 @@
       if (fullClear && s.life.fullClears === 1) {
         this.novel('fullclear:first', 'PERFECT CLEAR!! The Purrmit Office opens', 'milestone');
       }
+      if (fullClear) this.expressLane(ep);
       this.phase = 'packup';
       this.packup = { t: 0, total: this.packUpTime(), result };
       this.emit('episodeEnd', result);

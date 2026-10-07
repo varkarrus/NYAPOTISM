@@ -128,7 +128,7 @@
       <div class="faxgrid">` + NYA.FAXES.map(f => {
         const have = s.faxes[f.id] !== undefined;
         // yarn faxes talk about seasons and unravelling: keep them secret until the Skein is found
-        const spoiler = f.bonus.yarn && !s.skein.have && s.season === 1;
+        const spoiler = (f.bonus.yarn && !s.skein.have && s.season === 1) || (f.tier && Math.max(s.maxTierReached, s.life.maxTier || 0) < f.tier);
         if (!have && (f.hidden || spoiler)) return `<div class="fx-tile hidden" data-act="faxclick">?</div>`;
         return `<div class="fx-tile ${have ? 'have' : ''}" data-tip="fax:${f.id}">${have ? '📠' : '·'}</div>`;
       }).join('') + `</div>`;
@@ -246,6 +246,7 @@
     }
     const branches = ['Excavation', 'Logistics', 'Personnel', 'Ordnance', 'Exploration', 'Defense'];
     for (const b of branches) {
+      if (b === 'Defense' && !(s.cheese > 0 || s.maxTierReached >= 6)) continue; // its teaser would spoil the mice
       const inner = upgList(g, u => u.bld === 'lab' && u.branch === b);
       if (!inner) continue;
       h += b === 'Defense' ? `<h3 class="sec">🧀 Defense <small>paid in cheese · you have ${fmt(s.cheese)}</small></h3><div class="grid">${inner}</div>` : `<h3 class="sec">${b}</h3><div class="grid">${inner}</div>`;

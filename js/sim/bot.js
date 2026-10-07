@@ -180,7 +180,9 @@
       if (s.skein.have && this.unravelAt !== 'never') {
         const since = s.seasonTime - (s.skein.foundAt || 0);
         const y = g.yarnPreview();
-        const ypm = y / (s.seasonTime / 60);
+        // rate from the unrounded yarn: whole-yarn steps made the rate "fall" between steps early in a fast run
+        // and the bot unravelled for 1 yarn
+        const ypm = Math.pow(s.seasonYarnNip / NYA.YARN_DIV, g.yarnExp()) * g.yarnMult() / (s.seasonTime / 60);
         this.ypmPeak = Math.max(this.ypmPeak || 0, ypm);
         if (y >= 1 && (since > 25 * 60 || (since > 5 * 60 && ypm < this.ypmPeak * 0.92))) { this.ypmPeak = 0; g.unravel(); }
       }

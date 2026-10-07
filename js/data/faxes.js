@@ -48,6 +48,7 @@
   fax('m1', 'Millionyaire', 'A MILLION. I’M PUTTING YOU IN THE WILL. (I’M ALREADY IN THE WILL.)', { catnip: 0.03 }, g => life(g).catnip >= 1e6);
   fax('b1', 'Billionyaire', 'A BILLION. THE MINISTRY OF HOLES SENT A FRUIT BASKET.', { catnip: 0.05 }, g => life(g).catnip >= 1e9);
   fax('ep100', 'Syndication', 'EPISODE 100. YOU’RE IN SYNDICATION NOW. WHATEVER THAT MEANS.', { catnip: 0.03 }, g => g.s.episodeNum >= 100);
+  fax('longrun', 'Longer Than The Pirates', 'MORE EPISODES THAN A CERTAIN STRETCHY PIRATE SHOW. THE TREASURE WAS THE CATNIP ALL ALONG. ♡', { catnip: 0.05 }, g => g.s.episodeNum > NYA.longRunnerEps());
   fax('ep404', 'Episode Not Found', 'EPISODE 404. I CAN’T FIND IT EITHER.', { xp: 0.04 }, g => g.s.episodeNum >= 404, true);
   fax('mewclear', 'It Works??', 'I HEARD THE WARHEAD WORKS. I AM CALLING A LAWYER. AND A FIREWORKS GUY.', { catnip: 0.05 }, g => g.lvl('mewclear') >= 10);
   fax('mad', 'Mutually Assured Destruction', 'THE BACKYARD. YOU NUKED THE BACKYARD. FOR NO REASON. ♡', { catnip: 0.03 }, g => life(g).madStarter >= 1, true);
@@ -62,4 +63,13 @@
   NYA.FAXES = F;
   NYA.FAX = {};
   for (const f of F) NYA.FAX[f.id] = f;
+  // faxes about a mine's own gimmick stay a "?" on the board until you've reached that mine (no spoilers)
+  for (const [id, t] of Object.entries({ milk: 4, milk1k: 4, tier4: 4, sushi: 5, flood: 5, mice: 6, cheese: 6, exterminator: 6, nests: 6 })) NYA.FAX[id].tier = t;
+
+  // A certain long-running pirate anime's episode count, kept current without updates: 1180 episodes as of
+  // 2026-09-27, then Toei's 26-episodes-a-year schedule. Never goes below the anchor.
+  NYA.longRunnerEps = function (now) {
+    const years = ((now != null ? now : Date.now()) - Date.UTC(2026, 8, 27)) / (365.25 * 864e5);
+    return 1180 + Math.max(0, Math.floor(years * 26));
+  };
 })(globalThis.NYA = globalThis.NYA || {});
