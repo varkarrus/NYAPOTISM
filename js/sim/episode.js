@@ -30,7 +30,7 @@
       this.chainQ = []; this.chainCounts = {}; this.chainId = 0;
       this.bombs = [];
       this.tunaUntil = 0; this.hotbox = null; this.catterall = false;
-      this.haul = { value: 0, items: 0, byQ: new Array(12).fill(0), glow: 0, motherlode: 0, thread: 0, lost: 0, milk: 0, sushi: 0 };
+      this.haul = { value: 0, items: 0, byQ: new Array(12).fill(0), glow: 0, motherlode: 0, thread: 0, lost: 0, milk: 0, sushi: 0, cheese: 0 };
       // Sushi Grotto water: only simulated while it's moving (a breach wakes it, settling puts it back to sleep)
       this.waterOn = this.mine.water.some(v => v);
       this.waterActive = false; this.waterT = 0; this.waterStamp = new Uint32Array(n); this.waterStepN = 0; this.drainT = 0;
@@ -50,7 +50,7 @@
       for (let i = 0; i < n; i++) if (M.isResource(i)) this.resLeft++;
       const rs = M.resourceStats();
       this.totalValue = rs.value; this.totalItems = rs.items;
-      this.tierBase = NYA.tierBase(this.tier);
+      this.tierBase = NYA.tierNip(this.tier);
       this.resist = NYA.tierResist(this.tier);
       this.motherlodeSeen = false; this.boxSeen = false;
       // Sight: how far miners notice ore on their own, and how far opened tiles reveal fog
@@ -66,6 +66,7 @@
       this.recomputeField();
       this.crewCtx = { mineKey: this.def.key, tier: this.tier, crew: cfg.crew, sRankHere: game.hasSRank ? game.hasSRank(this.tier) : false };
       this.miners = cfg.crew.map((cg, k) => this.makeMiner(cg, k));
+      this.initMice(); // js/sim/mice.js
       if (cfg.ghosts) this.addGhosts(cfg.ghosts);
       if (this.event && this.event.goldfish) this.addGoldfish(this.event.goldfish);
     }
@@ -215,6 +216,7 @@
       }
       if (this.hotbox && t > this.hotbox.until) this.hotbox = null;
       if (this.waterOn) this.tickWater(dt);
+      if (this.miceOn) this.tickMice(dt);
       if (this.fieldDirty) this.recomputeField();
       for (const m of this.miners) {
         m.px = m.x; m.py = m.y;
@@ -268,6 +270,7 @@
       if (m.swingAnim > 0) m.swingAnim -= dt;
       if (m.boost3am > 0) m.boost3am -= dt;
       else if (m.s.flags.zoomies3am && m.state === 'walk' && this.rng.chance(0.015 * dt)) { m.boost3am = 3; this.emote(m, 'zoom', 1.2); }
+      if (this.mice.length && this.mouseFight(m, dt)) return;
 
       if (CAN_DISTRACT[m.state] && this.rng.chance(this.whimsyOf(m) * dt)) { this.distract(m); return; }
 
@@ -564,6 +567,7 @@
         return left * (M.q[i] + (M.glow[i] ? 2 : 0)) * (m.s.flags.scoreOre || 1);
       }
       if (ty === T.BOX) return 6;
+      if (ty === T.NEST) return 7;
       let v = 0.25;
       for (const nb of M.nbrs(i)) if (!M.revealed[nb]) { v += 0.6; break; }
       return v;
@@ -584,7 +588,7 @@
         // local awareness: ore right next to her is hard to miss, even with a short attention span
         for (const i of local) {
           const ty = M.type[i];
-          if ((ty === T.ORE || ty === T.BOX) && Math.abs(M.x(i) - mx) + Math.abs(M.y(i) - my) <= this.noticeRange) cands.push(i);
+          if ((ty === T.ORE || ty === T.BOX || ty === T.NEST) && Math.abs(M.x(i) - mx) + Math.abs(M.y(i) - my) <= this.noticeRange) cands.push(i);
         }
       }
       const markSet = new Set();
@@ -883,7 +887,8 @@
       const M = this.mine, ty = M.type[i];
       M.type[i] = T.OPEN; M.hp[i] = 0;
       if (this.rubbleP > 0 && (ty === T.DIRT || ty === T.STONE || ty === T.HARD || ty === T.GROOVE) && this.roughRng.chance(this.rubbleP)) M.rubble[i] = NYA.RUBBLE_STEPS;
-      if (ty === T.ORE || ty === T.BOX) this.resLeft--;
+      if (ty === T.ORE || ty === T.BOX || ty === T.NEST) this.resLeft--;
+      if (ty === T.NEST) this.nestBroken(i, m);
       if (ty === T.ORE && M.cluster[i] >= 0) {
         const c = M.cluster[i];
         this.clusterLeft[c]--;
@@ -986,6 +991,7 @@
           continue;
         }
         if (it.sushi) { this.haul.sushi += it.sushi; this.haul.items++; delivered++; continue; } // nigiri: sushi, no catnip
+        if (it.cheese) { this.haul.cheese += it.cheese; delivered++; continue; } // mouse crumbs and nest wheels
         const v = this.itemValue(it);
         value += v; delivered++;
         this.haul.value += v; this.haul.items++;
@@ -1014,6 +1020,7 @@
         if (!looseLeft) {
           this.fullClear = true;
           this.ev({ t: 'fullclear' });
+          if (this.mice.length) this.scatterMice();
           for (const m of this.miners) {
             m.done = true;
             if (m.state === 'walk' || m.state === 'mine' || m.state === 'idle' || m.state === 'wait' || m.state === 'distract' || m.state === 'hotbox' || m.state === 'smoke' || m.state === 'pump' || m.state === 'pipe' || m.state === 'pbuild') {

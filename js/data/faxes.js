@@ -31,6 +31,10 @@
   fax('tier3', 'Into The Yarn', 'YOU’RE GETTING CLOSE. TO WHAT? YOU’LL SEE. ♡', { catnip: 0.03 }, g => g.s.maxTierReached >= 3 || life(g).maxTier >= 3);
   fax('milk', 'Got Milk?', 'FRESH FROM THE ROCK. DON\u2019T THINK ABOUT IT. \u2661', { catnip: 0.03 }, g => (g.s.life.milk || 0) >= 1);
   fax('sushi', 'Omakase', 'YOU FOUND SUSHI IN A ROCK. I HAVE QUESTIONS. I ALSO HAVE CHOPSTICKS. ♡', { catnip: 0.03 }, g => (g.s.life.sushi || 0) >= 1);
+  fax('mice', 'Pest Control', 'MICE. IN MY MINE. DO NOT EAT THEM. …FINE, ONE. ♡', { catnip: 0.03 }, g => (g.s.life.mice || 0) >= 1);
+  fax('cheese', 'Say Cheese', 'THE MICE WERE HOARDING CHEESE. NOW WE ARE HOARDING CHEESE. CIRCLE OF LIFE. ♡', { xp: 0.02 }, g => (g.s.life.cheese || 0) >= 1);
+  fax('exterminator', 'Exterminator', 'FIVE HUNDRED MICE. THE OTHER MICE HAVE STARTED A NEWSLETTER ABOUT YOU. ♡', { catnip: 0.05 }, g => (g.s.life.mice || 0) >= 500);
+  fax('nests', 'Home Wrecker', 'TWENTY-FIVE NESTS. THEY HAD MORTGAGES, DEAR. ♡', { xp: 0.03 }, g => (g.s.life.nests || 0) >= 25);
   fax('flood', 'Splash Zone', 'SOMEONE OPENED THE WRONG WALL. EVERYONE IS DAMP AND FURIOUS. ♡', { xp: 0.02 }, g => (g.s.life.floods || 0) >= 1);
   fax('milk1k', 'Dairy Queen', 'A THOUSAND LITERS. OBAA-CHAN WILL WANT SOME. (WHO IS OBAA-CHAN? LATER.)', { xp: 0.03 }, g => (g.s.life.milk || 0) >= 1000);
   fax('tier4', 'Udderly Ridiculous', 'THE DAIRY DEPTHS. I\u2019M SORRY FOR THE FAX TITLE. NOT VERY SORRY.', { catnip: 0.03 }, g => g.s.maxTierReached >= 4 || g.s.life.maxTier >= 4);

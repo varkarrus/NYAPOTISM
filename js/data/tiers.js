@@ -4,19 +4,26 @@
 
   // Tile types
   NYA.T = {
-    OPEN: 0, DIRT: 1, STONE: 2, HARD: 3, BEDROCK: 4, ORE: 5, BOX: 6, ELEV: 7, GROOVE: 8, MILK: 9,
+    OPEN: 0, DIRT: 1, STONE: 2, HARD: 3, BEDROCK: 4, ORE: 5, BOX: 6, ELEV: 7, GROOVE: 8, MILK: 9, NEST: 10,
   };
   const T = NYA.T;
-  NYA.TILE_NAME = ['Open', 'Dirt', 'Stone', 'Hardstone', 'Bedrock', 'Catnip Ore', "Schrödinger's Box", 'Elevator', 'Grooved Stone', 'Milk Node'];
-  NYA.BASE_HP = { [T.DIRT]: 10, [T.STONE]: 25, [T.HARD]: 80, [T.GROOVE]: 25, [T.BOX]: 120 };
+  NYA.TILE_NAME = ['Open', 'Dirt', 'Stone', 'Hardstone', 'Bedrock', 'Catnip Ore', "Schrödinger's Box", 'Elevator', 'Grooved Stone', 'Milk Node', 'Mouse Nest'];
+  NYA.BASE_HP = { [T.DIRT]: 10, [T.STONE]: 25, [T.HARD]: 80, [T.GROOVE]: 25, [T.BOX]: 120, [T.NEST]: 300 };
   NYA.ORE_LAYER_HP = 15;
 
   // Per-tier scaling (GDD §6.3)
   NYA.tierBase = t => Math.pow(10, t - 1);       // nip value
   // HP and resistance outgrow nip value enough that a new mine only pays well once Power and Grit catch
   // up (playtest: moving up shouldn't be an instant big gain). Stay-vs-jump at unlock: ~2x, was 3-4x.
-  NYA.tierHP = t => Math.pow(5, t - 1);         // tile HP
-  NYA.tierResist = t => Math.pow(2.0, t - 1);     // stamina per swing
+  // A tier can set diffTier to be as tough as a (fractional) tier: the Mousehole Maze is a sidegrade.
+  NYA.tierDiff = t => (NYA.TIERS && NYA.TIERS[t] && NYA.TIERS[t].diffTier) || t;
+  NYA.tierHP = t => { const d = NYA.tierDiff(t); return Math.pow(5, d - 1) * Math.pow(NYA.DEEP_HP, Math.max(0, d - 4)); }; // tile HP
+  // Past Dairy Depths you only arrive after a few prestiges' worth of Loom and milk multipliers: on arrival at
+  // Tier 5 the crew broke stone in 0.35 swings and had ~2000 swings of stamina (Tier 4 in Season 1: ~5 and
+  // ~250), so the rock was easier than Dairy Depths. Deep tiers toughen faster to make up for it.
+  NYA.DEEP_HP = 10;
+  NYA.DEEP_RESIST = 5;
+  NYA.tierResist = t => { const d = NYA.tierDiff(t); return Math.pow(2.0, d - 1) * Math.pow(NYA.DEEP_RESIST, Math.max(0, d - 4)); }; // stamina per swing
   NYA.tierXP = t => Math.pow(2.5, t - 1);         // XP per swing / item
 
   // Counter-pressures: every stat faces something that grows each tier, so upgrading it keeps
@@ -125,7 +132,26 @@
     },
     music: { key: 9, bpm: 92, prog: 'sushi' },
   };
-  NYA.MAX_TIER = 5;
+  NYA.TIERS[6] = {
+    tier: 6, key: 'maze', name: 'Mousehole Maze', w: 32, h: 22,
+    comp: { air: 0.15, bedrock: 0.09, ore: 0.06, hard: 0.15, stone: 0.52 },
+    purrmit: 7e5, quirk: 'mice', box: true,
+    nipTier: 5, // the cheese mine: ore pays Tier 5 catnip (GDD: it drops less catnip than Tier 5, deliberately)
+    diffTier: 5.6, // ...and the rock is only a little tougher than Tier 5's, so it's a sidegrade, not a wall
+    blurb: 'A warren of twisty tunnels. Quirk: MOUSE NESTS send out mice that nibble your crew’s stamina. Your crew fights back, turrets help, and smashed nests drop CHEESE.',
+    pal: {
+      floor: '#4a3b2c', floor2: '#564534', fog: '#130e09', fog2: '#1c150e',
+      dirt: '#b08850', dirt2: '#c79d62', dirt3: '#8a683b',
+      stone: '#a8957a', stone2: '#bfac90', stone3: '#86745c',
+      hard: '#6b5a48', hard2: '#7f6c58', hard3: '#4f4134',
+      bed: '#211810', bed2: '#2d2118', bed3: '#3f3022',
+      accent: '#ffd96a', sky: '#ffcf8a',
+    },
+    music: { key: 4, bpm: 112, prog: 'maze' },
+  };
+  NYA.MAX_TIER = 6;
+  // Catnip value per ore item. A tier can pay like a shallower one (nipTier) when it's a resource mine.
+  NYA.tierNip = t => NYA.tierBase((NYA.TIERS[t] && NYA.TIERS[t].nipTier) || t);
 
   // Sushi Grotto water (GDD §9.2): a falling-sand style fluid on open tiles, simulated only while it moves.
   NYA.WATER_STEP = 0.08;   // seconds between flow steps
@@ -133,6 +159,26 @@
   NYA.WET_LINGER = 3;      // seconds a catgirl stays wet after leaving the water
   NYA.WET_PACE = 0.5;      // walking speed while wet (Wetsuits raise it)
   NYA.WET_DRAIN = 2;       // stamina cost multiplier while wet (Wetsuits lower it)
+
+  // Mousehole Maze mice (GDD §10). hp is × tierHP (Power vs mice). A bite takes that share of the victim's max
+  // stamina, so mice stay a threat to strong crews: turrets and Mouser Drills (cheese) are the counter.
+  // speed in tiles/s, cheese dropped on death, w = spawn weight.
+  NYA.MICE = {
+    scout: { name: 'Scout Mouse', hp: 25, speed: 3.0, bite: 0.03, biteCD: 0.9, cheese: 1, w: 60, desc: 'Fast and fragile. Chases the nearest catgirl.' },
+    bruiser: { name: 'Bruiser Rat', hp: 120, speed: 1.6, bite: 0.07, biteCD: 1.3, cheese: 3, w: 22, big: true, desc: 'Slow, tanky, bites hard.' },
+    pickpocket: { name: 'Pickpocket', hp: 40, speed: 2.8, bite: 0, biteCD: 1, cheese: 1, w: 18, thief: true, desc: 'Steals an item from a catgirl’s bag and runs for its nest. Catch it to get the item back.' },
+  };
+  NYA.NEST_BURST = 2;       // mice that pour out the moment a nest is uncovered
+  NYA.NEST_SPAWN = 5;       // seconds between mice after that
+  NYA.NEST_CAP = 4;         // live mice per nest
+  NYA.MICE_CAP = 20;        // live mice per mine
+  NYA.MOUSE_SIGHT = 12;     // path distance at which a mouse notices a catgirl
+  NYA.CHEESE_WHEEL = 10;    // cheese in the wheel a smashed nest drops
+  NYA.TURRET_BASE = 2;      // turret slots at the start
+  NYA.TURRET_RANGE = 4;     // tiles
+  NYA.TURRET_CD = 0.8;      // seconds between shots
+  NYA.TURRET_DMG = 30;      // × tierHP: one hairball drops a scout
+  NYA.CHAN_DELAY = 3;       // Turret-chan waits this long for you to place turrets yourself
 
   // Schrödinger's Box base chance per episode by tier (GDD §14.1)
   NYA.BOX_CHANCE = { 3: 0.05, 4: 0.08, 5: 0.15, 6: 0.35 };

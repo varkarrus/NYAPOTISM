@@ -11,6 +11,7 @@
     menu: [[5, 'M7'], [4, 'm7'], [2, 'm7'], [0, 'M7']],
     dairy: [[0, 'M7'], [5, 'M7'], [2, 'm7'], [7, 'sus']],
     sushi: [[0, 'M7'], [9, 'm7'], [5, 'M7'], [7, '7']],   // breezy seaside city pop
+    maze: [[9, 'm7'], [5, 'M7'], [7, '7'], [4, '7']],     // sneaky minor-key chase
   };
   const CHORD = { M7: [0, 4, 7, 11], m7: [0, 3, 7, 10], '7': [0, 4, 7, 10], sus: [0, 5, 7, 10] };
 
@@ -234,6 +235,14 @@
         case 'throw': this.noiseHit(t, 0.4, 0.12, 'bandpass', 600, null, 2, 2400); break;
         case 'boom': this.noiseHit(t, 0.9, 0.6, 'lowpass', 900, null, 0.7, 80); this.osc('sine', 120, t, 0.6, 0.5, null, { slide: 35 }); break;
         case 'puff': this.noiseHit(t, 0.35, 0.12, 'highpass', 2500, null, 0.5, 900); break;
+        case 'squeak': { // a: 0 nibble, 1 nest, 2 theft, 3 knocked out
+          const base = [1900, 1600, 2300, 2100][a || 0];
+          this.osc('sine', base, t, 0.07, 0.05, null, { slide: base * 1.35 });
+          if (a === 3) this.osc('sine', base * 1.2, t + 0.06, 0.1, 0.04, null, { slide: base * 0.6 });
+          if (a === 1) this.osc('sine', base * 1.15, t + 0.09, 0.06, 0.04, null, { slide: base * 1.5 });
+          break;
+        }
+        case 'pew': this.noiseHit(t, 0.05, 0.08, 'bandpass', 900, null, 2, 400); this.osc('triangle', 520, t, 0.08, 0.05, null, { slide: 260 }); break;
         case 'splash':
           this.noiseHit(t, 0.4, 0.16, 'lowpass', 1400, null, 0.6, 300);
           for (let k = 0; k < 4; k++) this.osc('sine', NOTE(76 - k * 3), t + 0.05 + k * 0.06, 0.08, 0.05);

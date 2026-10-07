@@ -73,7 +73,7 @@
     inb(x, y) { return x >= 0 && y >= 0 && x < this.w && y < this.h; }
     isOpen(i) { const t = this.type[i]; return t === T.OPEN || t === T.ELEV; }
     isMineable(i) { const t = this.type[i]; return t !== T.OPEN && t !== T.ELEV && t !== T.BEDROCK && t !== T.MILK; }
-    isResource(i) { const t = this.type[i]; return t === T.ORE || t === T.BOX || t === T.MILK; }
+    isResource(i) { const t = this.type[i]; return t === T.ORE || t === T.BOX || t === T.MILK || t === T.NEST; }
     nbrs(i) {
       const x = i % this.w, y = (i / this.w) | 0, out = [];
       if (x > 0) out.push(i - 1);
@@ -118,7 +118,7 @@
       // --- Air pockets (blobs + drunkard's walk tunnels)
       const airTarget = Math.round(n * (comp.air + (opts.airAdd || 0)));
       let air = 0, guard = 0;
-      const tunnelBias = def.quirk === 'tangles' ? 0.55 : 0.2;
+      const tunnelBias = def.quirk === 'tangles' ? 0.55 : def.quirk === 'mice' ? 0.75 : 0.2;
       while (air < airTarget && guard++ < 500) {
         let c = rng.int(0, n - 1);
         if (nearElev(c, 3)) continue;
@@ -294,6 +294,35 @@
         }
       }
 
+      // --- Mouse nests (T6 quirk), each set in the wall of a little warren so the mice have somewhere to come
+      // out. Own RNG stream so other tiers' layouts don't change.
+      if (def.quirk === 'mice') {
+        const mr = new NYA.RNG('mice:' + this.seed);
+        const want = Math.max(4, Math.round(n / 120));
+        const nests = [];
+        guard = 0;
+        while (nests.length < want && guard++ < 400) {
+          const c = mr.int(0, n - 1);
+          const cx = this.x(c), cy = this.y(c);
+          if (cy < 2 || cx < 1 || cx > w - 2 || cy > h - 2 || nearElev(c, 6)) continue;
+          if (!(type[c] === T.DIRT || type[c] === T.STONE || type[c] === T.HARD || type[c] === T.BEDROCK)) continue;
+          if (nests.some(o => Math.abs(this.x(o) - cx) + Math.abs(this.y(o) - cy) < 6)) continue;
+          const ok = t => t !== c && type[t] !== T.ELEV && type[t] !== T.NEST && !nearElev(t, 3);
+          const first = this.nbrs(c).filter(ok);
+          if (!first.length) continue;
+          let cur = first[mr.int(0, first.length - 1)];
+          const size = mr.int(2, 5);
+          for (let k = 0; k < size; k++) {
+            type[cur] = T.OPEN; this.mud[cur] = 0;
+            const nb = this.nbrs(cur).filter(ok);
+            if (!nb.length) break;
+            cur = nb[mr.int(0, nb.length - 1)];
+          }
+          type[c] = T.NEST;
+          nests.push(c);
+        }
+      }
+
       // --- Elevator neighbours are never bedrock
       for (const nb of this.nbrs(this.elev)) if (type[nb] === T.BEDROCK) type[nb] = T.DIRT;
 
@@ -358,7 +387,7 @@
         let stuck = -1;
         for (let i = 0; i < this.n; i++) {
           const ty = this.type[i];
-          if (dist[i] < 0 && (ty === T.ORE || ty === T.BOX || ty === T.OPEN)) { stuck = i; break; }
+          if (dist[i] < 0 && (ty === T.ORE || ty === T.BOX || ty === T.OPEN || ty === T.NEST)) { stuck = i; break; }
           if (ty === T.MILK && !this.nbrs(i).some(nb => dist[nb] >= 0)) { stuck = i; break; }
         }
         if (stuck < 0) return;
@@ -385,10 +414,10 @@
 
     resourceStats() {
       let tiles = 0, value = 0, items = 0;
-      const base = NYA.tierBase(this.tier);
+      const base = NYA.tierNip(this.tier);
       for (let i = 0; i < this.n; i++) {
         if (this.type[i] === T.ORE) { tiles++; const left = this.dens[i] - this.dropped[i]; items += left; if (!this.sushi[i]) value += left * this.q[i] * base; }
-        else if (this.type[i] === T.BOX) tiles++;
+        else if (this.type[i] === T.BOX || this.type[i] === T.NEST) tiles++;
       }
       return { tiles, value, items };
     }

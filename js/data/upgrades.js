@@ -67,6 +67,24 @@
     desc: 'Catnip ×1.25 (compounding). The finest cut, served on the ore.', flavor: 'Tora says it brings out the catnip\u2019s "umami." Nobody knows what that means for catnip.',
     fx: l => 'Catnip ×' + NYA.fmt(Math.pow(1.25, l)) });
 
+  // ---------------- Cheese (from the Mousehole Maze): Tora's Cheese Cave and the R&D Defense branch ----------------
+  const cheeseShow = g => g.s.cheese > 0 || g.s.maxTierReached >= 6;
+  def({ id: 'gouda', bld: 'refinery', cur: 'cheese', name: 'Aged Gouda', max: 40, base: 30, growth: 2.3, show: cheeseShow,
+    desc: 'Catnip ×1.25 (compounding), in every mine.', flavor: 'Tora wants it in the Blend. Nobody else does.',
+    fx: l => 'Catnip ×' + NYA.fmt(Math.pow(1.25, l)) });
+  def({ id: 'cannons', bld: 'lab', branch: 'Defense', cur: 'cheese', name: 'Hairball Cannons', max: 4, base: 15, growth: 4, show: cheeseShow,
+    desc: '+1 turret slot in mouse mines.', flavor: 'Doc Boom’s design. The hairballs are locally sourced.',
+    fx: l => (NYA.TURRET_BASE + l) + ' turrets' });
+  def({ id: 'caliber', bld: 'lab', branch: 'Defense', cur: 'cheese', name: 'Bigger Hairballs', max: 30, base: 10, growth: 2.3, show: cheeseShow,
+    desc: 'Turret damage ×1.5 (compounding).', flavor: 'Please don’t ask where the bigger ones come from.',
+    fx: l => 'Turret damage ×' + NYA.fmt(Math.pow(1.5, l)) });
+  def({ id: 'combat', bld: 'lab', branch: 'Defense', cur: 'cheese', name: 'Mouser Drills', max: 30, base: 12, growth: 2.3, show: cheeseShow,
+    desc: 'Your crew hits mice ×1.5 harder (compounding).', flavor: 'Sgt. Paws runs them. There is a lot of shouting about “the pounce.”',
+    fx: l => 'Damage vs mice ×' + NYA.fmt(Math.pow(1.5, l)) });
+  def({ id: 'chan', bld: 'lab', branch: 'Defense', cur: 'cheese', name: 'Turret-chan’s Study Group', max: 2, base: 40, growth: 6, show: cheeseShow,
+    desc: 'Turret-chan places better turrets. Rank 1: no more turret by the elevator “for vibes.” Rank 2: she spreads them across the nests instead of piling them onto the first one.', flavor: '“I-I read a book about chokepoints!”',
+    fx: l => ['Vibes turret, then piles onto one nest', 'No vibes turret', 'Spreads turrets across nests'][Math.min(2, l)] });
+
   // ---------------- Barracks ----------------
   // Crew size is the biggest multiplier in the game, so every bunk is hand-priced and the
   // Barracks only has room for more as you dig deeper. BUNKS[i] is the bunk that takes you
@@ -80,6 +98,7 @@
     { cost: 2.5e7, fc: [3, 5] },
     { cost: 6e8, tier: 4 },
     { cost: 2e11, tier: 5 },
+    { cost: 2e14, tier: 6 },
   ];
   NYA.bunkReq = function (g) {
     const b = NYA.BUNKS[g.lvl('bunk')];
@@ -249,6 +268,11 @@
     req: g => NYA.surveyReq(g, 5, 4, 10),
     desc: 'Unlocks Tier 5 — Sushi Grotto. Flooded chambers, wet catgirls… and wild nigiri: a new resource, SUSHI.', flavor: 'Doc Boom packed a snorkel. And a lunchbox. Mostly the lunchbox.',
     unlock: 'mine:5' });
+  def({ id: 'mine6', bld: 'lab', branch: 'Exploration', name: 'Survey: Mousehole Maze', max: 1, base: 5e12, timer: 50,
+    show: g => g.s.maxTierReached >= 5,
+    req: g => NYA.surveyReq(g, 6, 5, 10),
+    desc: 'Unlocks Tier 6 — Mousehole Maze. Mouse nests, mice, turrets… and a new resource: CHEESE.', flavor: 'Doc Boom’s survey drone came back covered in tiny bite marks.',
+    unlock: 'mine:6' });
   def({ id: 'junctions', bld: 'lab', branch: 'Logistics', name: 'Pipe Junctions', max: 1, base: 6e7, timer: 20,
     show: g => g.s.maxTierReached >= 4,
     desc: 'New pipes connect to an existing line instead of running all the way back. Clustered milk nodes get much cheaper.', flavor: 'It\u2019s a T-shaped bit of pipe. Doc Boom wants a Nobel.' });

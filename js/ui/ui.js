@@ -40,7 +40,7 @@
     // ---------------------------------------------------------------- setup
     bind() {
       this.el = {
-        catnip: $('#catnip'), yarnBox: $('#resYarn'), yarn: $('#yarn'), milkBox: $('#resMilk'), milk: $('#milk'), sushiBox: $('#resSushi'), sushi: $('#sushi'), title: $('#epTitle'),
+        catnip: $('#catnip'), yarnBox: $('#resYarn'), yarn: $('#yarn'), milkBox: $('#resMilk'), milk: $('#milk'), sushiBox: $('#resSushi'), sushi: $('#sushi'), cheeseBox: $('#resCheese'), cheese: $('#cheese'), title: $('#epTitle'),
         hud: $('#hud'), crew: $('#crewList'), actives: $('#actives'), tabs: $('#tabs'), panel: $('#panel'),
         overlay: $('#overlay'), banner: $('#banner'), toasts: $('#toasts'), faxTray: $('#faxTray'), tip: $('#tip'),
         modal: $('#modal'), bank: $('#bank'), ff: $('#btnFF'), pause: $('#btnPause'), tools: $('#toolBtns'), stage: $('#mineWrap'),
@@ -143,6 +143,7 @@
 
     setTool(t) {
       if (t === 'spray' && !this.g.lvl('spray')) return;
+      if (t === 'turret' && !(this.g.episode && this.g.episode.miceOn)) return;
       this.tool = t; this.endTargeting(true);
       this.view.toolMode = t;
       this.renderTools();
@@ -191,6 +192,10 @@
       }
       if (i < 0) return;
       const ep = g.episode;
+      if (this.tool === 'turret') {
+        if (g.turret(i)) this.drag = null; else this.audio.sfx('deny');
+        return;
+      }
       if (this.tool === 'spray') {
         const on = !ep.mine.forbid[i];
         if (g.spray(i, on)) this.audio.sfx('puff');
@@ -219,6 +224,7 @@
       if (k === 'Escape') { if (!this.el.modal.hidden) this.closeModal(); else this.endTargeting(); return; }
       if (k === 'l' || k === 'L') this.setTool('laser');
       else if (k === 's' || k === 'S') this.setTool('spray');
+      else if (k === 't' || k === 'T') this.setTool('turret');
       else if (k === 'w' || k === 'W') { if (g.whistle()) this.audio.sfx('whistle'); }
       else if (k === 'f' || k === 'F') this.opts.toggleFF();
       else if (k === 'n' || k === 'N') g.nextEpisode();
@@ -295,6 +301,9 @@
       if (r.blendCut) extra.push(`${fmt(r.blendCut)} into Tora’s pot`);
       if (r.milk) extra.push(`🥛 +${fmt(r.milk)} milk`);
       if (r.sushi) extra.push(`🍣 +${fmt(r.sushi)} sushi`);
+      if (r.cheese) extra.push(`🧀 +${fmt(r.cheese)} cheese`);
+      if (r.mice) extra.push(`🐭 ${r.mice} mice shooed`);
+      if (r.stolen) extra.push(`${r.stolen} item${r.stolen > 1 ? 's' : ''} stolen by pickpockets`);
       if (r.event) extra.push(`${NYA.EVENTS[r.event].icon} ${NYA.EVENTS[r.event].name}: ×${r.evMult.toFixed(2)}${r.wishes ? ` (${r.wishes} wish${r.wishes > 1 ? 'es' : ''})` : ''}`);
       this.el.overlay.innerHTML = `
         <div class="ov-tally">
@@ -386,6 +395,7 @@
       if (s.yarn > 0 || s.season > 1) { this.el.yarnBox.hidden = false; this.el.yarn.textContent = fmt(s.yarn); }
       if (s.milk > 0 || s.tierUnlocked[4]) { this.el.milkBox.hidden = false; this.el.milk.textContent = fmt(s.milk); } else this.el.milkBox.hidden = true;
       if (s.sushi > 0 || s.tierUnlocked[5]) { this.el.sushiBox.hidden = false; this.el.sushi.textContent = fmt(s.sushi); } else this.el.sushiBox.hidden = true;
+      if (s.cheese > 0 || s.tierUnlocked[6]) { this.el.cheeseBox.hidden = false; this.el.cheese.textContent = fmt(s.cheese); } else this.el.cheeseBox.hidden = true;
       this.el.bank.textContent = NYA.fmtTime(s.bank);
       this.el.ff.classList.toggle('on', !!s.settings.ffOn && s.bank > 0);
       this.el.ff.querySelector('small').textContent = g.ffSpeed() + '×';
@@ -396,7 +406,7 @@
         const left = ep.resLeft;
         const est = ep.haul.value * g.refineryMult() * g.catnipMult();
         const marks = ep.marks.filter(m => !m.drone).length;
-        this.el.hud.innerHTML = `<span>⏱ ${NYA.fmtTime(ep.t)}</span><span>Ore tiles left <b>${left}</b></span><span>Haul <b>${ep.haul.items}</b> items ≈ ${NIP}<b>${fmt(est)}</b></span>${ep.def.quirk === 'milk' ? `<span>🥛 <b>${fmt(ep.haul.milk)}</b></span>` : ''}${ep.waterOn ? `<span>🍣 <b>${fmt(ep.haul.sushi)}</b></span>` : ''}<span class="lz">🔴 ${marks}/${g.laserMax()}</span><span data-tip="sight">👁 Sight <b>${ep.noticeRange}</b>${ep.darkness ? ` <small>(darkness −${ep.darkness})</small>` : ''}</span>${ep.catterall ? '<span class="catt">CATTERALL</span>' : ''}${ep.t < ep.tunaUntil ? '<span class="tuna">TUNA TIME!</span>' : ''}${g.s.research ? `<span>🔨 ${esc(NYA.UPG[g.s.research.id].name)} ${Math.round(100 * (1 - g.s.research.left / g.s.research.total))}%</span>` : ''}`;
+        this.el.hud.innerHTML = `<span>⏱ ${NYA.fmtTime(ep.t)}</span><span>Ore tiles left <b>${left}</b></span><span>Haul <b>${ep.haul.items}</b> items ≈ ${NIP}<b>${fmt(est)}</b></span>${ep.def.quirk === 'milk' ? `<span>🥛 <b>${fmt(ep.haul.milk)}</b></span>` : ''}${ep.waterOn ? `<span>🍣 <b>${fmt(ep.haul.sushi)}</b></span>` : ''}${ep.miceOn ? `<span>🧀 <b>${fmt(ep.haul.cheese)}</b></span><span>🐭 <b>${ep.mice.length}</b></span><span data-tip="tool:turret">🎯 ${ep.turrets.length}/${ep.maxTurrets}</span>` : ''}<span class="lz">🔴 ${marks}/${g.laserMax()}</span><span data-tip="sight">👁 Sight <b>${ep.noticeRange}</b>${ep.darkness ? ` <small>(darkness −${ep.darkness})</small>` : ''}</span>${ep.catterall ? '<span class="catt">CATTERALL</span>' : ''}${ep.t < ep.tunaUntil ? '<span class="tuna">TUNA TIME!</span>' : ''}${g.s.research ? `<span>🔨 ${esc(NYA.UPG[g.s.research.id].name)} ${Math.round(100 * (1 - g.s.research.left / g.s.research.total))}%</span>` : ''}`;
       }
       this.updateTileInfo();
       this.updateCrewLive();
@@ -437,6 +447,7 @@
           if (M.sushi[i]) html = `<b>Wild Nigiri</b> · <b>${left}</b> sushi · grows next to flooded chambers. Break it carefully!${hp}`;
           else html = `<b>Catnip Ore</b>${i === M.motherlode ? ' <b style="color:#ff7eb6">MEOWTHERLODE</b>' : ''}${M.glow[i] ? ' <b style="color:#b4ff78">GLOWING</b>' : ''} · density <b>${left}</b> · quality <b style="color:${qi.color}">${q} ${qi.label}</b> · ≈${fmt(left * ep.itemValue({ q, d: M.dens[i] }))} ore value${hp}`;
         } else if (ty === T.BOX) html = `<b>Schrödinger’s Box</b> — it hums.${hp}`;
+        else if (ty === T.NEST) html = `<b>Mouse Nest</b> — sends out mice once it’s uncovered. Smash it for a Cheese Wheel (${NYA.CHEESE_WHEEL} cheese). Counts toward a perfect clear.${hp}`;
         else if (ty === T.OPEN) {
           const bits = [];
           if (M.tangle[i]) bits.push('<b>Tangle</b> — walkers ×' + NYA.TANGLE_SLOW + ' until cut through');
@@ -447,6 +458,12 @@
         }
         else html = `<b>${NYA.TILE_NAME[ty]}</b>${ty === T.GROOVE ? ' — breaks in a chain' : ty === T.BEDROCK ? ' — indestructible (mostly)' : ''}${hp}`;
         if (M.forbid[i]) html += ' · <b style="color:#8fd0ff">FORBIDDEN</b>';
+      }
+      if (ep.miceOn) {
+        const tu = ep.turrets.find(k => k.idx === i);
+        if (tu) html = `<b>Hairball Cannon</b>${tu.by === 'chan' ? ' (placed by Turret-chan)' : ''} · range ${NYA.TURRET_RANGE} · ${this.tool === 'turret' ? 'click to pick it up' : 'Turret tool to move it'}`;
+        const mo = ep.mice.find(k => k.tile === i);
+        if (mo && M.revealed[i]) { const D = NYA.MICE[mo.kind]; html = `<b>${D.name}</b> — ${esc(D.desc)} · HP <b>${fmt(Math.max(0, mo.hp))}</b>/${fmt(mo.maxHp)}${mo.item ? ' · <b style="color:#ffd96a">carrying your ore!</b>' : ''}`; }
       }
       if (el.innerHTML !== html) el.innerHTML = html;
       el.style.display = '';
@@ -509,11 +526,11 @@
       const affOf = bld => NYA.UPGRADES.filter(u => u.bld === bld && s.buildings[u.bld] && g.upgVisible(u)).map(u => { const c = g.canBuy(u.id); return u.id + (c.ok ? 1 : 0) + (c.busy ? 'b' : '') + g.lvl(u.id); }).join(',');
       const parts = [tab, s.season, Object.keys(s.buildings).join(), s.research ? s.research.id : ''];
       if (tab === 'office') parts.push(s.selectedTier, Object.keys(s.tierUnlocked).join(), s.skein.have, g.yarnPreview() >= 1, Object.keys(s.faxes).length, Object.keys(s.gallery).length, s.seasonLog.length, Math.floor(s.skein.pity * 1000), s.life.episodes);
-      else if (tab === 'refinery') parts.push(affOf('refinery'), Math.floor(Math.log10(1 + s.milk) * 4), Math.floor(Math.log10(1 + s.sushi) * 4), s.blend ? (s.blend.active ? 1 : 0) + ':' + (s.blend.result ? 1 : 0) : '', g.blendAvailable(), s.blend && !s.blend.active ? Math.floor(((s.blend.readyAt || 0) - s.simTime) / 60) : '', Math.round(g.catnipMult() * 100));
+      else if (tab === 'refinery') parts.push(affOf('refinery'), Math.floor(Math.log10(1 + s.milk) * 4), Math.floor(Math.log10(1 + s.sushi) * 4), Math.floor(Math.log10(1 + s.cheese) * 4), s.blend ? (s.blend.active ? 1 : 0) + ':' + (s.blend.result ? 1 : 0) : '', g.blendAvailable(), s.blend && !s.blend.active ? Math.floor(((s.blend.readyAt || 0) - s.simTime) / 60) : '', Math.round(g.catnipMult() * 100));
       else if (tab === 'barracks') parts.push(affOf('barracks'), s.active.join(), s.reserve.join(), s.catnip >= g.hireCost(), g.levelCap(), g.lvl('resume'),
         s.board.apps.map(c => c ? c.id : 0).join(), s.board.turn, s.catnip >= g.adCost(),
         s.crew.map(c => c.level + ':' + c.traits.length + ':' + Math.floor(c.xp / Math.max(1, NYA.xpNeed(c.level)) * 10)).join());
-      else if (tab === 'lab') parts.push(affOf('lab'));
+      else if (tab === 'lab') parts.push(affOf('lab'), Math.floor(Math.log10(1 + s.cheese) * 4));
       else if (tab === 'pochi') parts.push(affOf('pochi'), s.orders.join(), g.runningOrders().join(), NYA.ORDER_ORDER.map(id => g.orderAvailable(id) ? 1 : 0).join(''));
       else if (tab === 'loom') parts.push(Math.floor(s.yarn), JSON.stringify(s.loom));
       else if (tab === 'tanuki') parts.push(JSON.stringify(s.tanuki.offer), JSON.stringify(s.tanuki.rain), s.tanuki.queue.length, s.catnip >= (s.tanuki.offer ? s.tanuki.offer.cost : Infinity), s.catnip >= (s.tanuki.rain ? s.tanuki.rain.cost : Infinity));
@@ -600,9 +617,12 @@
     renderTools() {
       const g = this.g;
       const hasSpray = g.lvl('spray') > 0;
+      const miceOn = !!(g.episode && g.episode.miceOn);
+      if (this.tool === 'turret' && !miceOn) { this.tool = 'laser'; this.view.toolMode = this.targeting || 'laser'; }
       this.el.tools.innerHTML = `
         <button class="tool ${this.tool === 'laser' && !this.targeting ? 'on' : ''}" data-act="tool:laser" data-tip="tool:laser">🔴<span>Laser</span><kbd>L</kbd></button>
         ${hasSpray ? `<button class="tool ${this.tool === 'spray' && !this.targeting ? 'on' : ''}" data-act="tool:spray" data-tip="tool:spray">💦<span>Spray</span><kbd>S</kbd></button>` : ''}
+        ${miceOn ? `<button class="tool ${this.tool === 'turret' && !this.targeting ? 'on' : ''}" data-act="tool:turret" data-tip="tool:turret">🎯<span>Turret</span><kbd>T</kbd></button>` : ''}
         <button class="tool" data-act="whistle" data-tip="tool:whistle">📣<span>Whistle</span><kbd>W</kbd></button>`;
       this.activesSig = '';
       this.renderActives();
@@ -912,11 +932,13 @@
         if (a === 'laser') return `<b>Laser Pointer</b> <kbd>L</kbd><br>Click or drag to mark up to ${g.laserMax()} tiles. Marked tiles score ×10 when miners pick targets. Fresh marks (3 s) give Zoomies. Marking fog makes miners dig toward it. Right-click to remove.`;
         if (a === 'spray') return `<b>Spray Bottle</b> <kbd>S</kbd><br>Click/drag to forbid tiles. Miners refuse to mine them (and make a face). Right-click clears.`;
         if (a === 'whistle') return `<b>The Whistle</b> <kbd>W</kbd><br>Call the shift early. Everyone hurries home with what they're carrying.`;
+        if (a === 'turret') { const ep = g.episode; return `<b>Hairball Cannons</b> <kbd>T</kbd><br>Click an open, uncovered tile to place a turret (${ep && ep.miceOn ? ep.turrets.length + '/' + ep.maxTurrets + ' placed' : NYA.TURRET_BASE + g.lvl('cannons') + ' slots'}). It lobs a hairball at the nearest mouse within ${NYA.TURRET_RANGE} tiles. Click a turret to pick it up.<br><small>Turret-chan places any you haven’t after ${NYA.CHAN_DELAY} s. She tries her best.</small>`; }
       }
       if (k === 'formula') return `<b>Refining</b><br>Each item's value = tier base (×10 per tier) × quality${g.lvl('polisher') ? '^' + g.polishExp() : ''}${g.lvl('centrifuge') ? ' × centrifuge bonus' : ''}.<br>Catnip = ore value × Refinery (×1.5 per Mark) × Full-Clear Bonus (perfect clears only) × global multipliers (faxes, yarn).`;
       if (k === 'catnip') return `<b>Catnip</b><br>Global multiplier ${NYA.fmtMult(g.catnipMult())}<br>${g.catnipMultParts().map(p => esc(p[0]) + ' ' + NYA.fmtMult(p[1])).join('<br>') || 'Earn faxes and yarn to grow it.'}<br>Season total: ${fmt(g.s.seasonCatnip)}`;
       if (k === 'snd') { const m = g.s.settings[a + 'Mode'] || 'on'; return `<b>${a === 'music' ? 'Music' : 'Sound effects'}: ${SND_LABEL[m]}</b><br>Click to cycle: On → Mute when unfocused → Muted.<br><small>Volume lives in Settings ⚙.</small>`; }
       if (k === 'sight') { const ep = g.episode; return `<b>Sight</b> = ${NYA.BASE_SIGHT} base + ${g.lvl('headlamp')} Headlamps − ${ep ? ep.darkness : 0} darkness = <b>${ep ? ep.noticeRange : '?'}</b><br>Miners notice ore within this many tiles on their own, even with a short attention span. Opened tiles reveal fog ${ep ? ep.revealR : 1} tile(s) around them.<br><small>Deeper mines are darker: −1 Sight every two tiers. Buy Headlamps in the R&D Lab.</small>`; }
+      if (k === 'cheese') return `<b>Cheese</b><br>Mice drop crumbs, and every smashed Mouse Nest drops a whole Cheese Wheel. Spend it on turrets in the R&D Lab (Defense) and on Aged Gouda at the Refinery.`;
       if (k === 'sushi') return `<b>Sushi</b><br>Wild nigiri grows on the rocks of the Sushi Grotto, usually right next to the flooded chambers. Spend it at the Refinery's Sushi Bar.`;
       if (k === 'milk') return `<b>Milk</b><br>Pumped from milk nodes in the Dairy Depths. Spend it at the Refinery's Creamery.<br><small>Pump flow = rate ÷ (1 + pipe length ÷ ${NYA.PIPE_HALF}). Short pipes pump faster.</small>`;
       if (k === 'bank') return `<b>Catnap Bank</b><br>Offline time is banked at ${Math.round(g.bankEff() * 100)}% efficiency. Spend it as Fast-Forward (${g.ffSpeed()}×). Press <kbd>F</kbd>.`;

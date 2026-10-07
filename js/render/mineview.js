@@ -123,13 +123,14 @@
       this.banners = null; // set by UI
       this.claw = {};
       this.bombsVis = [];
+      this.shots = []; // turret hairballs in flight (Mousehole Maze)
       this.mushroom = null;
     }
     setEpisode(ep) {
       this.ep = ep;
       this.pal = Object.assign({}, ep.def.pal, ep.event ? ep.event.pal : null);
       this.tex = makeTextures(this.pal, ep.def.key + (ep.eventKey || ''));
-      this.parts.length = 0; this.pops.length = 0; this.rings.length = 0; this.bombsVis.length = 0;
+      this.parts.length = 0; this.pops.length = 0; this.rings.length = 0; this.bombsVis.length = 0; this.shots.length = 0;
       this.resize();
     }
     resize() {
@@ -168,6 +169,12 @@
       for (let k = 0; k < n; k++) {
         const a = Math.random() * Math.PI * 2, v = (0.5 + Math.random()) * (spd || 3);
         this.parts.push({ x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, life: 0.5 + Math.random() * 0.4, max: 0.9, col, size: size || 0.12, g: 9 });
+      }
+    }
+    burstAt(x, y, col, n, spd, size) { // x, y in tile coordinates (top-left), like miner and mouse positions
+      for (let k = 0; k < n; k++) {
+        const a = Math.random() * Math.PI * 2, v = (0.5 + Math.random()) * (spd || 3);
+        this.parts.push({ x: x + 0.5, y: y + 0.6, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, life: 0.5 + Math.random() * 0.4, max: 0.9, col, size: size || 0.12, g: 9 });
       }
     }
     pop(x, y, text, col, big) {
@@ -287,6 +294,25 @@
           case 'pipedone': this.rings.push({ i: e.i, life: 0.6, max: 0.6, col: '#e8f4ff', r0: 0.3, r1: 1.5 }); this.sfx('drop', 2); break;
           case 'milkdry': this.burst(e.i, '#fffaf0', 18, 3, 0.12); if (m) this.pop(m.x + 0.5, m.y - 0.5, 'PUMPED DRY!', '#fffaf0', true); this.sfx('fullclear'); break;
           case 'pipelay': if (Math.random() < 0.4) this.sfx('tink', 2); break;
+          // Mousehole Maze
+          case 'nestwake': this.rings.push({ i: e.i, life: 0.7, max: 0.7, col: '#ffd96a', r0: 0.3, r1: 1.6 }); this.pop(M.x(e.i) + 0.5, M.y(e.i), 'SQUEAK!', '#ffd96a', false); this.sfx('squeak', 1); break;
+          case 'mspawn': this.burst(e.i, '#8a7a6a', 4, 1.5, 0.08); break;
+          case 'bite': if (m) { this.pop(m.x + 0.5, m.y - 0.3, e.kind === 'bruiser' ? 'CHOMP!' : 'nibble!', '#ff9ec4', false); this.burstAt(m.x, m.y - 0.3, '#ff9ec4', 3, 1.4, 0.07); } this.sfx('squeak', 0); break;
+          case 'steal': this.pop(e.x + 0.5, e.y - 0.2, 'YOINK!', '#ffd96a', true); this.sfx('squeak', 2); break;
+          case 'recover': this.pop(e.x + 0.5, e.y - 0.2, 'Got it back!', '#7af0a0', false); break;
+          case 'escape': this.burstAt(e.x, e.y, '#8a7a6a', 5, 1.6, 0.08); break;
+          case 'mswing': this.burstAt(e.x, e.y, e.crit ? '#ff7eb6' : '#fff2dc', e.crit ? 6 : 3, 2, 0.08); if (e.crit) this.pop(e.x + 0.5, e.y - 0.1, 'NYA!', '#ff7eb6', false); this.sfx('tink', 0); break;
+          case 'mkill': this.burstAt(e.x, e.y, '#c9c2d6', 10, 2.6, 0.1); this.burstAt(e.x, e.y, '#ffd96a', 4, 1.8, 0.08); this.pop(e.x + 0.5, e.y - 0.1, e.kind === 'bruiser' ? 'SQUEEEAK!' : 'squeak!', '#fffaf0', e.kind === 'bruiser'); this.sfx('squeak', 3); break;
+          case 'tshot': this.shots.push({ x0: M.x(e.i) + 0.5, y0: M.y(e.i) + 0.35, x1: e.x + 0.5, y1: e.y + 0.6, t: 0, dur: 0.18 }); if (Math.random() < 0.6) this.sfx('pew'); break;
+          case 'turret': this.rings.push({ i: e.i, life: 0.5, max: 0.5, col: e.by === 'chan' ? '#7af0e0' : '#ff9ec4', r0: 0.3, r1: 1.2 }); this.sfx('stamp'); break;
+          case 'turretoff': this.rings.push({ i: e.i, life: 0.4, max: 0.4, col: '#9b93a8', r0: 1.0, r1: 0.3 }); this.sfx('click'); break;
+          case 'nestbreak':
+            this.burst(e.i, '#ffd96a', 18, 4, 0.12); this.burst(e.i, '#a8957a', 10, 3, 0.14);
+            this.rings.push({ i: e.i, life: 0.6, max: 0.6, col: '#ffd96a', r0: 0.3, r1: 2 });
+            this.pop(M.x(e.i) + 0.5, M.y(e.i), 'NEST SMASHED!', '#ffd96a', true); this.sfx('break_ore'); this.sfx('squeak', 3);
+            break;
+          case 'chan': this.pop(M.x(e.i) + 0.5, M.y(e.i) - 0.2, e.line === 'vibes' ? 'for vibes!' : 'eep!', '#7af0e0', false); break;
+          case 'scared': if (m) this.pop(m.x + 0.5, m.y - 0.5, 'EEK!', '#ffd96a', true); break;
         }
       }
     }
@@ -367,6 +393,7 @@
             if (ty === T.ORE && M.mochi[i]) this.drawMochi(ctx, X, Y, ts, i, t);
             else if (ty === T.ORE && M.sushi[i]) this.drawNigiriTile(ctx, X, Y, ts, i, t);
             else if (ty === T.ORE) this.drawOre(ctx, X, Y, ts, i, t, showDQ);
+            else if (ty === T.NEST) this.drawNest(ctx, X, Y, ts, i, t);
             if (ty === T.GROOVE && Math.sin(t * 2 + M.groove[i]) > 0.92) { ctx.fillStyle = 'rgba(255,240,200,0.25)'; ctx.fillRect(X, Y, ts, ts); }
             const f = M.hp[i] / M.maxHp[i];
             if (f < 1) this.drawCracks(ctx, X, Y, ts, f);
@@ -418,6 +445,7 @@
       // loose items
       for (const it of ep.loose) {
         if (it.fish) { this.drawFish(ctx, M.x(it.idx) * ts + ts / 2, M.y(it.idx) * ts + ts * 0.6, ts, t, it.id); continue; }
+        if (it.cheese) { this.drawCheese(ctx, M.x(it.idx) * ts + ts / 2 + ((it.id * 37) % 9 - 4) * ts * 0.04, M.y(it.idx) * ts + ts * 0.66 - Math.abs(Math.sin(t * 4 + it.id)) * ts * 0.05, ts * (it.wheel ? 0.42 : 0.24), it.wheel); continue; }
         if (it.sushi) { this.drawNigiri(ctx, M.x(it.idx) * ts + ts / 2, M.y(it.idx) * ts + ts * 0.66 - Math.abs(Math.sin(t * 4 + it.id)) * ts * 0.06, ts * 0.3, it.id % 3); continue; }
         const q = NYA.qInfo(it.q);
         const X = M.x(it.idx) * ts + ts / 2 + ((it.id * 37) % 9 - 4) * ts * 0.04, Y = M.y(it.idx) * ts + ts * 0.62 + ((it.id * 53) % 7 - 3) * ts * 0.03;
@@ -432,10 +460,21 @@
         if (Math.random() < 0.3) this.parts.push({ x: M.x(ep.hotbox.idx) + 0.5, y: M.y(ep.hotbox.idx) + 0.2, vx: (Math.random() - 0.5) * 0.4, vy: -0.7, life: 1.5, max: 1.5, col: 'rgba(190,255,190,0.5)', size: 0.25, g: -0.2, smoke: true });
       }
 
+      for (const tu of ep.turrets) this.drawTurret(ctx, tu, ts, t, M);
       // miners (y-sorted)
       const ms = ep.miners.slice().sort((a, b) => a.y - b.y);
       const outSlots = {};
       for (const m of ms) this.drawMiner(ctx, m, alpha, ts, t, ep, outSlots);
+      for (const mo of ep.mice) if (M.revealed[mo.tile]) this.drawMouse(ctx, mo, alpha, ts, t);
+      // turret hairballs in flight
+      for (let k = this.shots.length - 1; k >= 0; k--) {
+        const s = this.shots[k];
+        s.t += rdt;
+        if (s.t >= s.dur) { this.shots.splice(k, 1); continue; }
+        const f = s.t / s.dur, X = NYA.lerp(s.x0, s.x1, f) * ts, Y = (NYA.lerp(s.y0, s.y1, f) - Math.sin(f * Math.PI) * 0.5) * ts;
+        ctx.fillStyle = '#9a6a5a'; ctx.beginPath(); ctx.arc(X, Y, Math.max(2, ts * 0.09), 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#c99a86'; ctx.beginPath(); ctx.arc(X - ts * 0.03, Y - ts * 0.03, Math.max(1, ts * 0.04), 0, Math.PI * 2); ctx.fill();
+      }
       if (ep.darkness > 0) this.drawDarkness(ctx, M, ts, alpha, ep);
 
       // bombs in flight
@@ -499,7 +538,13 @@
         const X = M.x(this.hover) * ts, Y = M.y(this.hover) * ts;
         ctx.strokeStyle = this.toolMode === 'spray' ? '#8fd0ff' : this.toolMode === 'laser' ? 'rgba(255,90,120,0.9)' : '#ffd23f';
         ctx.lineWidth = 2;
-        if (this.toolMode === 'bomb' || this.toolMode === 'sonar' || this.toolMode === 'mewclear') {
+        if (this.toolMode === 'turret') {
+          ctx.strokeStyle = ep.canTurret(this.hover) || ep.turrets.some(tu => tu.idx === this.hover) ? '#ff9ec4' : 'rgba(155,147,168,0.7)';
+          ctx.setLineDash([4, 3]);
+          ctx.beginPath(); ctx.arc(X + ts / 2, Y + ts / 2, NYA.TURRET_RANGE * ts, 0, Math.PI * 2); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.strokeRect(X + 1, Y + 1, ts - 2, ts - 2);
+        } else if (this.toolMode === 'bomb' || this.toolMode === 'sonar' || this.toolMode === 'mewclear') {
           const r = this.toolMode === 'bomb' ? 1 : this.toolMode === 'sonar' ? game.sonarRadius() : 5;
           ctx.setLineDash([4, 3]);
           if (this.toolMode === 'mewclear') { ctx.beginPath(); ctx.arc(X + ts / 2, Y + ts / 2, 5.5 * ts, 0, Math.PI * 2); ctx.stroke(); }
@@ -744,6 +789,84 @@
       const spots = left === 1 ? [[0.5, 0.58]] : left === 2 ? [[0.32, 0.4], [0.66, 0.68]] : [[0.3, 0.32], [0.7, 0.42], [0.45, 0.76]];
       spots.forEach(([fx, fy], k) => this.drawNigiri(ctx, X + fx * ts, Y + fy * ts, ts * (left === 1 ? 0.5 : 0.36), (i + k) % 3));
     }
+    // ---------------------------------------------------------------- Mousehole Maze
+    drawNest(ctx, X, Y, ts, i, t) {
+      const cx = X + ts * 0.5, cy = Y + ts * 0.6;
+      ctx.fillStyle = '#e8c56a'; // straw ring
+      ctx.beginPath(); ctx.ellipse(cx, cy, ts * 0.38, ts * 0.27, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#b8903e'; ctx.lineWidth = Math.max(1, ts * 0.04);
+      for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2 + i; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * ts * 0.24, cy + Math.sin(a) * ts * 0.16); ctx.lineTo(cx + Math.cos(a + 0.5) * ts * 0.4, cy + Math.sin(a + 0.5) * ts * 0.28); ctx.stroke(); }
+      ctx.fillStyle = '#1a0f08'; // the hole (an arched mousehole)
+      ctx.beginPath(); ctx.moveTo(cx - ts * 0.2, cy + ts * 0.12); ctx.lineTo(cx - ts * 0.2, cy - ts * 0.02); ctx.arc(cx, cy - ts * 0.02, ts * 0.2, Math.PI, 0); ctx.lineTo(cx + ts * 0.2, cy + ts * 0.12); ctx.closePath(); ctx.fill();
+      if (Math.sin(t * 1.3 + i * 2.1) > 0.45) { // eyes in the dark
+        ctx.fillStyle = '#ffd96a';
+        ctx.fillRect(cx - ts * 0.09, cy - ts * 0.04, Math.max(1, ts * 0.05), Math.max(1, ts * 0.05));
+        ctx.fillRect(cx + ts * 0.04, cy - ts * 0.04, Math.max(1, ts * 0.05), Math.max(1, ts * 0.05));
+      }
+      this.drawCheese(ctx, X + ts * 0.82, Y + ts * 0.85, ts * 0.2, false);
+    }
+    // a cheese wedge (crumbs from mice) or a whole wheel (from a smashed nest), centred at x,y
+    drawCheese(ctx, x, y, w, wheel) {
+      if (wheel) {
+        ctx.fillStyle = '#e0a83a'; ctx.beginPath(); ctx.ellipse(x, y, w * 0.5, w * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffd96a'; ctx.beginPath(); ctx.ellipse(x, y - w * 0.08, w * 0.5, w * 0.26, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff2b0'; ctx.beginPath(); ctx.moveTo(x, y - w * 0.08); ctx.lineTo(x + w * 0.5, y - w * 0.1); ctx.lineTo(x + w * 0.36, y + w * 0.08); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#d99a2a'; ctx.beginPath(); ctx.arc(x - w * 0.2, y - w * 0.1, w * 0.06, 0, Math.PI * 2); ctx.arc(x + w * 0.1, y - w * 0.2, w * 0.05, 0, Math.PI * 2); ctx.fill();
+        return;
+      }
+      ctx.fillStyle = '#ffd96a'; ctx.beginPath(); ctx.moveTo(x - w * 0.5, y + w * 0.25); ctx.lineTo(x + w * 0.5, y + w * 0.25); ctx.lineTo(x + w * 0.35, y - w * 0.3); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#d99a2a'; ctx.beginPath(); ctx.arc(x + w * 0.05, y + w * 0.05, w * 0.08, 0, Math.PI * 2); ctx.arc(x + w * 0.28, y - w * 0.08, w * 0.06, 0, Math.PI * 2); ctx.fill();
+    }
+    drawMouse(ctx, mo, alpha, ts, t) {
+      const D = NYA.MICE[mo.kind];
+      const x = NYA.lerp(mo.px, mo.x, alpha), y = NYA.lerp(mo.py, mo.y, alpha);
+      const moving = Math.abs(mo.x - mo.px) + Math.abs(mo.y - mo.py) > 1e-4;
+      const s = ts * (D.big ? 0.56 : 0.42);
+      const X = (x + 0.5) * ts, Y = (y + 0.86) * ts - (moving ? Math.abs(Math.sin(t * 16 + mo.id)) * ts * 0.05 : 0);
+      const body = mo.hitT > 0 ? '#ffffff' : mo.kind === 'bruiser' ? '#7a5a44' : mo.kind === 'pickpocket' ? '#8d8799' : '#b3adbf';
+      ctx.save(); ctx.translate(X, Y); ctx.scale(mo.face || 1, 1);
+      ctx.strokeStyle = '#ff9ec4'; ctx.lineWidth = Math.max(1, s * 0.1); // tail
+      ctx.beginPath(); ctx.moveTo(-s * 0.5, -s * 0.25); ctx.quadraticCurveTo(-s * 1.0, -s * 0.05 + Math.sin(t * 8 + mo.id) * s * 0.2, -s * 1.05, -s * 0.6); ctx.stroke();
+      ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(0, 0, s * 0.6, s * 0.12, 0, 0, Math.PI * 2); ctx.fill();
+      const shape = () => { // body, head + snout, ear: stroked dark first for an outline, then filled
+        ctx.beginPath(); ctx.ellipse(-s * 0.05, -s * 0.32, s * 0.58, s * 0.34, 0, 0, Math.PI * 2);
+        ctx.moveTo(s * 0.25, -s * 0.66); ctx.quadraticCurveTo(s * 0.8, -s * 0.5, s * 0.86, -s * 0.3); ctx.lineTo(s * 0.25, -s * 0.12); ctx.closePath();
+        ctx.moveTo(s * 0.5, -s * 0.72); ctx.arc(s * 0.3, -s * 0.72, s * 0.2, 0, Math.PI * 2);
+      };
+      ctx.strokeStyle = '#1a1020'; ctx.lineWidth = Math.max(2, s * 0.16); ctx.lineJoin = 'round';
+      shape(); ctx.stroke();
+      ctx.fillStyle = body; shape(); ctx.fill();
+      ctx.fillStyle = '#ff9ec4'; ctx.beginPath(); ctx.arc(s * 0.3, -s * 0.72, s * 0.11, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(s * 0.86, -s * 0.31, s * 0.07, 0, Math.PI * 2); ctx.fill(); // nose
+      if (mo.kind === 'pickpocket') { ctx.fillStyle = '#2a1f33'; ctx.fillRect(s * 0.38, -s * 0.55, s * 0.36, s * 0.13); } // bandit mask
+      ctx.fillStyle = mo.kind === 'pickpocket' ? '#ffd96a' : '#1a1020';
+      ctx.beginPath(); ctx.arc(s * 0.55, -s * 0.49, s * 0.055, 0, Math.PI * 2); ctx.fill(); // eye
+      if (mo.kind === 'bruiser') { ctx.strokeStyle = '#1a1020'; ctx.lineWidth = Math.max(1, s * 0.06); ctx.beginPath(); ctx.moveTo(s * 0.45, -s * 0.62); ctx.lineTo(s * 0.64, -s * 0.56); ctx.stroke(); }
+      ctx.restore();
+      if (mo.item) NYA.drawOreShape(ctx, NYA.qInfo(mo.item.q).shape, X, Y - s * 0.95, ts * 0.1, NYA.qInfo(mo.item.q).color, '#1a1020');
+      if (mo.hp < mo.maxHp) {
+        const f = NYA.clamp(mo.hp / mo.maxHp, 0, 1), bw = s * 1.1;
+        ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(X - bw / 2 - 1, Y - s * 1.2 - 1, bw + 2, Math.max(2, ts * 0.05) + 2);
+        ctx.fillStyle = '#ff5c7a'; ctx.fillRect(X - bw / 2, Y - s * 1.2, bw * f, Math.max(2, ts * 0.05));
+      }
+    }
+    // Hairball Cannon: a little scratching-post tower with a cat-eared cannon head
+    drawTurret(ctx, tu, ts, t, M) {
+      const X = (M.x(tu.idx) + 0.5) * ts, Y = (M.y(tu.idx) + 0.95) * ts;
+      ctx.fillStyle = '#8a6a4a'; ctx.fillRect(X - ts * 0.3, Y - ts * 0.12, ts * 0.6, ts * 0.12);
+      ctx.fillStyle = '#d9b98a'; ctx.fillRect(X - ts * 0.1, Y - ts * 0.5, ts * 0.2, ts * 0.4);
+      ctx.fillStyle = '#b08a5a'; for (let k = 0; k < 4; k++) ctx.fillRect(X - ts * 0.1, Y - ts * (0.46 - k * 0.1), ts * 0.2, Math.max(1, ts * 0.03));
+      const hx = X, hy = Y - ts * 0.6, a = tu.aim == null ? -Math.PI / 2 : tu.aim;
+      const recoil = tu.cd > NYA.TURRET_CD - 0.12 ? 0.06 : 0;
+      ctx.save(); ctx.translate(hx, hy); ctx.rotate(a);
+      ctx.fillStyle = '#5b4a6a'; ctx.fillRect(ts * (0.05 - recoil), -ts * 0.06, ts * 0.3, ts * 0.12);
+      ctx.restore();
+      ctx.fillStyle = '#ff9ec4'; ctx.beginPath(); ctx.arc(hx, hy, ts * 0.17, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(hx - ts * 0.16, hy - ts * 0.05); ctx.lineTo(hx - ts * 0.12, hy - ts * 0.27); ctx.lineTo(hx - ts * 0.02, hy - ts * 0.14); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(hx + ts * 0.16, hy - ts * 0.05); ctx.lineTo(hx + ts * 0.12, hy - ts * 0.27); ctx.lineTo(hx + ts * 0.02, hy - ts * 0.14); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#1a1020'; ctx.fillRect(hx - ts * 0.08, hy - ts * 0.03, Math.max(1, ts * 0.04), Math.max(1, ts * 0.04)); ctx.fillRect(hx + ts * 0.04, hy - ts * 0.03, Math.max(1, ts * 0.04), Math.max(1, ts * 0.04));
+      if (tu.by === 'chan') { ctx.fillStyle = '#7af0e0'; ctx.beginPath(); ctx.moveTo(hx, hy - ts * 0.2); ctx.lineTo(hx - ts * 0.1, hy - ts * 0.27); ctx.lineTo(hx - ts * 0.1, hy - ts * 0.13); ctx.lineTo(hx + ts * 0.1, hy - ts * 0.27); ctx.lineTo(hx + ts * 0.1, hy - ts * 0.13); ctx.closePath(); ctx.fill(); }
+    }
     drawTangle(ctx, X, Y, ts, i, n) {
       ctx.strokeStyle = n > 1 ? 'rgba(255,158,196,0.85)' : 'rgba(255,158,196,0.45)';
       ctx.lineWidth = Math.max(1, ts * 0.05);
@@ -839,7 +962,7 @@
     }
 
     drawEmote(ctx, X, Y, ts, e, t) {
-      const map = { wet: '💧', zoom: '!!', zzz: 'z z Z', dots: '…', yuck: '~_~', oops: '!?', menace: ':3', spark: '✦', blunt: '♪', heart: '♥', flop: '@_@', loaf: 'loaf' };
+      const map = { wet: '💧', mad: '💢', scared: 'EEK!', zoom: '!!', zzz: 'z z Z', dots: '…', yuck: '~_~', oops: '!?', menace: ':3', spark: '✦', blunt: '♪', heart: '♥', flop: '@_@', loaf: 'loaf' };
       const txt = map[e] || e;
       const s = Math.max(9, ts * 0.28);
       ctx.font = `800 ${s}px "M PLUS Rounded 1c", sans-serif`;

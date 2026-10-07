@@ -2,7 +2,7 @@
 // Stay-vs-jump check: at each tier unlock, compare catnip/sec over 6 episodes in the old tier vs the new one.
 // Usage: node tools/tierjump.js [seed]. Target: net ratio ~1-2 (a new mine should wait on Power/Grit upgrades).
 const path = require('path'); const root = path.join(__dirname, '..', 'js') + '/';
-['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js', 'data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
+['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js', 'data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
 const NYA = globalThis.NYA;
 const seed = process.argv[2] || '1';
 // At the moment the bot first unlocks tier t, compare catnip/sec over 6 episodes: stay in t-1 vs jump to t.

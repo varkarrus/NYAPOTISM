@@ -6,7 +6,7 @@
 'use strict';
 const path = require('path');
 for (const f of ['core/util.js', 'data/tiers.js', 'data/traits.js', 'data/content.js', 'data/upgrades.js', 'data/faxes.js',
-  'data/loom.js', 'data/events.js', 'data/ovas.js', 'sim/minegen.js', 'sim/catgirl.js', 'sim/episode.js', 'sim/game.js', 'sim/bot.js']) require(path.join(__dirname, '..', 'js', f));
+  'data/loom.js', 'data/events.js', 'data/ovas.js', 'sim/minegen.js', 'sim/catgirl.js', 'sim/episode.js', 'sim/mice.js', 'sim/game.js', 'sim/bot.js']) require(path.join(__dirname, '..', 'js', f));
 const NYA = globalThis.NYA;
 const seed = process.argv[2] || '1', cap = +(process.argv[3] || 180) * 60;
 const g = new NYA.Game({ headless: true, seed: 'ova-' + seed });

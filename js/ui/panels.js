@@ -13,7 +13,7 @@
     let state = maxed ? 'max' : c.ok ? 'afford' : c.locked ? 'locked' : c.busy ? 'busy' : c.poor ? 'poor' : 'locked';
     if (g.s.research && g.s.research.id === u.id) state = 'researching';
     const cost = maxed ? '' : g.upgCost(u.id);
-    const CUR = u.cur === 'milk' ? '🥛' : u.cur === 'sushi' ? '🍣' : NIP;
+    const CUR = u.cur === 'milk' ? '🥛' : u.cur === 'sushi' ? '🍣' : u.cur === 'cheese' ? '🧀' : NIP;
     const fxNow = u.fx ? u.fx(l) : '';
     const fxNext = u.fx && !maxed ? u.fx(l + 1) : '';
     const lvTxt = u.max > 1 ? `<span class="lv">${maxed ? 'MAX' : 'Lv ' + l}</span>` : (l ? '<span class="lv done">✓</span>' : '');
@@ -23,7 +23,7 @@
       btn = `<div class="rbar"><div data-live="research" style="width:${(100 * (1 - r.left / r.total)).toFixed(1)}%"></div><span>Doc Boom is hammering…</span></div>`;
     } else if (maxed) btn = '';
     else if (state === 'locked') btn = `<div class="req">🔒 ${esc(c.why)}</div><button class="buy" disabled>${CUR}${fmt(cost)}</button>`;
-    else btn = `<button class="buy ${u.cur === 'milk' || u.cur === 'sushi' ? 'milkbuy' : ''}" data-act="buy:${u.id}" ${state === 'afford' ? '' : 'disabled'}>${CUR}${fmt(cost)}${u.timer ? ` <small>⏱${Math.round(u.timer * (g.s.season > 1 ? 0.5 : 1))}s</small>` : ''}</button>`;
+    else btn = `<button class="buy ${u.cur && u.cur !== 'catnip' ? 'milkbuy' : ''}" data-act="buy:${u.id}" ${state === 'afford' ? '' : 'disabled'}>${CUR}${fmt(cost)}${u.timer ? ` <small>⏱${Math.round(u.timer * (g.s.season > 1 ? 0.5 : 1))}s</small>` : ''}</button>`;
     return `<div class="card upg ${state}" data-tip="upg:${u.id}">
       <div class="nm">${esc(u.name)} ${lvTxt}</div>
       <div class="desc">${esc(u.desc)}</div>
@@ -158,6 +158,7 @@
     const cream = upgList(g, u => u.bld === 'refinery' && u.cur === 'milk');
     if (s.milk > 0 || s.maxTierReached >= 4) h += `<h3 class="sec">🥛 Creamery <small>paid in milk · you have ${fmt(s.milk)}</small></h3><div class="grid">${cream}</div>`;
     if (s.sushi > 0 || s.maxTierReached >= 5) h += `<h3 class="sec">🍣 Sushi Bar <small>paid in sushi · you have ${fmt(s.sushi)}</small></h3><div class="grid">${upgList(g, u => u.bld === 'refinery' && u.cur === 'sushi')}</div>`;
+    if (s.cheese > 0 || s.maxTierReached >= 6) h += `<h3 class="sec">🧀 Cheese Cave <small>paid in cheese · you have ${fmt(s.cheese)}</small></h3><div class="grid">${upgList(g, u => u.bld === 'refinery' && u.cur === 'cheese')}</div>`;
     if (g.lvl('blend')) {
       const b = s.blend;
       if (b && b.active) {
@@ -241,11 +242,11 @@
     if (g.upgVisible(NYA.UPG.mewclear)) {
       h += `<div class="warhead"><canvas id="warhead" width="260" height="90"></canvas><div><b>Project MEWCLEAR</b> — stage ${stage}/10<br><i>${esc(NYA.MEWCLEAR_NOTES[stage])}</i></div></div>`;
     }
-    const branches = ['Excavation', 'Logistics', 'Personnel', 'Ordnance', 'Exploration'];
+    const branches = ['Excavation', 'Logistics', 'Personnel', 'Ordnance', 'Exploration', 'Defense'];
     for (const b of branches) {
       const inner = upgList(g, u => u.bld === 'lab' && u.branch === b);
       if (!inner) continue;
-      h += `<h3 class="sec">${b}</h3><div class="grid">${inner}</div>`;
+      h += b === 'Defense' ? `<h3 class="sec">🧀 Defense <small>paid in cheese · you have ${fmt(s.cheese)}</small></h3><div class="grid">${inner}</div>` : `<h3 class="sec">${b}</h3><div class="grid">${inner}</div>`;
     }
     return h;
   }

@@ -30,7 +30,7 @@ The game autosaves to `localStorage` every 30 s. You can export or import a save
 | Refinery Mk, Polisher, Centrifuge, **Tora's Special Blend** gamble | 6.2 | |
 | Actives: Blunt (tolerance), Hairball Bomb, Tuna Time, Sonar, Hotbox, Treat Bag, Catterall, **Mewclear Option** | 7 | |
 | R&D tree (5 branches) and Project MEWCLEAR's 10 stages, with the warhead sprite evolving | 7.1, 8 | |
-| Tiers 1–5: Backyard Burrow, Scratching Post Quarry (grooved chains), Yarnball Caverns (tangles + Schrödinger's Box), **Dairy Depths** (milk nodes, pumpjacks, pipes, Creamery), **Sushi Grotto** (flooded chambers with falling-sand water, wet penalty, wild nigiri → sushi, Sushi Bar). Rough ground (mud, rubble) from Tier 2 | 9 | `js/data/tiers.js` |
+| Tiers 1–6: Backyard Burrow, Scratching Post Quarry (grooved chains), Yarnball Caverns (tangles + Schrödinger's Box), **Dairy Depths** (milk nodes, pumpjacks, pipes, Creamery), **Sushi Grotto** (flooded chambers with falling-sand water, wet penalty, wild nigiri → sushi, Sushi Bar), **Mousehole Maze** (mouse nests, scouts/bruisers/pickpockets, crew fights back, Hairball Cannon turrets, Turret-chan, cheese → R&D Defense and Aged Gouda). Rough ground (mud, rubble) from Tier 2 | 9, 10 | `js/data/tiers.js`, `js/sim/mice.js` |
 | Purrmit Office standing orders, Requisition Points (boot-screen bar), auto-cast, auto-hire | 11 | |
 | Banked Time and Fast-Forward | 12 | |
 | ~45 Faxes from Auntie (achievements with bonuses) | 13 | |
@@ -122,4 +122,4 @@ The simulation layer (`js/sim`, `js/data`, `js/core`) has no DOM access. The bro
 
 ## Not built yet (from the GDD)
 
-Workshop and equipment, mice and defense/turrets, more OVAs, spin-offs (Farm, Fishing, Canteen, Alchemy, Idols), The Movie and the Reboot, NYANZER, The Nine Lives, Tiers 6–12, alternate mines, cave-ins and bamboo, Loom patterns 2–6, and the Fax Macro language.
+Workshop and equipment, more mouse and turret types, more OVAs, spin-offs (Farm, Fishing, Canteen, Alchemy, Idols), The Movie and the Reboot, NYANZER, The Nine Lives, Tiers 7–12, alternate mines, cave-ins and bamboo, Loom patterns 2–6, and the Fax Macro language.

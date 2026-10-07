@@ -4,7 +4,7 @@
 // Usage: node tools/seasons.js [seed] [hours] [--max-tier N]. Target: yarn ~×3 per season early (see docs/HANDOFF.md).
 // --max-tier N hides surveys past tier N, to compare against an economy without the newest mine.
 const path = require('path'); const root = path.join(__dirname, '..', 'js') + '/';
-['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js', 'data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
+['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js', 'data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
 const NYA = globalThis.NYA;
 const args = process.argv.slice(2);
 const mt = args.indexOf('--max-tier');

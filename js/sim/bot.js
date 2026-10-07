@@ -9,7 +9,7 @@
     refinery: 3.2, pick: 2.2, snacks: 2.0, bunk: 12, bags: 1.1, boots: 1.0, grip: 1.6, drills: 0.9, focus: 1.3,
     grit: 1.4, claws: 0.8, blunt: 6, spray: 3, batteries: 0.9, bomb: 6, bombdmg: 0.7, tuna: 5, sonar: 3, treat: 3, catterall: 4, blend: 3,
     hotbox: 5, pouch: 0.9, mine2: 25, mine3: 25, montage: 2.6, perfection: 1.3, radar: 0.5, headlamp: 0.6,
-    enrich: 1.3, mine4: 25, mine5: 25, wetsuit: 2.5, drain: 1.2, wasabi: 2, otoro: 3, junctions: 1.2, milkbath: 3, pistons: 2, cream: 1.5, calcium: 1.5, polisher: 2.2, centrifuge: 1.0, resonance: 1.0, resume: 0.15, lockers: 0.2, mewclear: 0.45, cabinet: 0.6,
+    enrich: 1.3, mine4: 25, mine5: 25, mine6: 25, wetsuit: 2.5, drain: 1.2, wasabi: 2, otoro: 3, gouda: 3, cannons: 3, caliber: 1.5, combat: 1.5, chan: 1, junctions: 1.2, milkbath: 3, pistons: 2, cream: 1.5, calcium: 1.5, polisher: 2.2, centrifuge: 1.0, resonance: 1.0, resume: 0.15, lockers: 0.2, mewclear: 0.45, cabinet: 0.6,
   };
 
   class Bot {
@@ -55,7 +55,7 @@
         for (let i = 0; i < M.n; i++) {
           if (!M.revealed[i] || ep.isMarked(i)) continue;
           const ty = M.type[i];
-          if (ty !== T.ORE && ty !== T.BOX) continue;
+          if (ty !== T.ORE && ty !== T.BOX && ty !== T.NEST) continue;
           let d = 30;
           for (const nb of M.nbrs(i)) if (ep.homeDist[nb] >= 0) d = Math.min(d, ep.homeDist[nb]);
           const v = (ty === T.ORE ? (M.dens[i] - M.dropped[i]) * M.q[i] : 8) - d * 0.15;
@@ -67,6 +67,8 @@
         }
         if (best >= 0) g.laser(best);
       }
+      // turrets go next to the nests as they're uncovered (what Turret-chan does once fully trained)
+      if (ep.miceOn) { while (ep.turrets.length < ep.maxTurrets && ep.autoTurret(2, 'bot')); ep.relocateTurret('bot', 2); }
       if (ep.resLeft > 0 && g.canUseActive('blunt')) {
         const m = ep.miners.find(mm => mm.state === 'flop' || (mm.state === 'out' && mm.flopped));
         if (m) g.useActive('blunt', m.id);
@@ -103,6 +105,12 @@
           const cps = ts.recent.reduce((a, r) => a + r.cps, 0) / ts.recent.length;
           if (cps > bestCps) { bestCps = cps; pick = t; }
         }
+      }
+      // the Mousehole Maze pays less catnip but is the only source of cheese: go back every other episode
+      // while a cheese upgrade is out of reach
+      if (s.tierUnlocked[6] && pick !== 6 && !s.ova && NYA.UPGRADES.some(u => u.cur === 'cheese' && g.upgVisible(u) && g.canBuy(u.id).poor)) {
+        this.cheeseFlip = !this.cheeseFlip;
+        if (this.cheeseFlip) pick = 6;
       }
       // in an OVA, go where the goal is once it's open (a player chasing the goal would)
       const goal = g.ovaGoal && g.ovaGoal();
@@ -149,7 +157,7 @@
         }
       }
       // upgrades: best weight/cost per currency; buy if affordable, else save for it
-      for (const cur of ['catnip', 'milk', 'sushi']) for (let k = 0; k < 20; k++) {
+      for (const cur of ['catnip', 'milk', 'sushi', 'cheese']) for (let k = 0; k < 20; k++) {
         let best = null, bestScore = 0;
         for (const u of NYA.UPGRADES) {
           if ((u.cur || 'catnip') !== cur) continue;

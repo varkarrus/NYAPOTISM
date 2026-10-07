@@ -5,7 +5,7 @@ This picks up development of NYAPOTISM! after the first build sessions. `CLAUDE.
 ## Where things stand
 
 The vertical slice is playable and live on GitHub Pages. `main` is at https://varkarrus.github.io/NYAPOTISM/, and the newest other branch is at https://varkarrus.github.io/NYAPOTISM/dev/. The user is away from their computer for a few days and playtests on `/dev/`, so push playable work to the session branch and add a changelog entry (`js/ui/changelog.js`). The build includes:
-- Tiers 1–5, with grooved chains, tangles + Schrödinger's Box, Dairy Depths pumping, and Sushi Grotto flooding.
+- Tiers 1–6, with grooved chains, tangles + Schrödinger's Box, Dairy Depths pumping, Sushi Grotto flooding, and Mousehole Maze mice and turrets.
 - Six OVA challenge tapes.
 - Traits, the R&D tree and MEWCLEAR, eight actives, standing orders, and Banked Time.
 - Skein prestige into the Quantum Loom.
@@ -52,6 +52,9 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Tier HP ×5/tier (was 3.5), resistance ×2/tier (was 1.6); Sharper Pickaxe and Stamina Snacks growth 2.3 → 2.1 | Playtest: moving to a new mine was an instant big income gain; it should be held back by low Power/Grit. Measured stay-vs-jump income at unlock: median ~2× (was 3–4×). The user rejected an unmined-ore fine as the lever |
 | Mud and rubble drawn as pixel tiles (mud floor texture, rubble overlay) | Playtest: should be tiles, not decals |
 | **Tier 5 Sushi Grotto** (`quirk: 'water'`, 30×20). Minegen carves sealed water chambers (`M.water`, walled in stone) and grows nigiri (`M.sushi`, ORE tiles that drop sushi) beside them. Breaking into a chamber wakes a falling-sand water sim (`tickWater` in `js/sim/episode.js`: volume-conserving, capped moves per step, sleeps when settled). Miners on water get wet (`m.wetT`, `NYA.WET_*`): ×0.5 Pace, ×2 stamina per swing. Sushi Bar (refinery, `cur: 'sushi'`): Wetsuits, Drain Pumps, Wasabi Kick, Otoro Platter. Traits Water Cat / Sushi Snob (`tier: 5`). Bunk 9 at Tier 5. Survey: 20B + 10 T4 perfect clears | User: start on Tiers 5+ |
+| **Tier 6 Mousehole Maze** (`quirk: 'mice'`, 32×22, tunnel-heavy). Nests (`T.NEST`, resource tiles, set in little warrens) wake once uncovered, burst 2 mice, then one every ~5 s (`NYA.NEST_*`, `NYA.MICE_CAP`). Mice (`NYA.MICE`: scout, bruiser, pickpocket) chase catgirls by BFS, bite a share of max stamina, pickpockets steal an item and run home. Catgirls auto-swing at adjacent mice (`mouseFight`). Turrets: Turret tool (T), `NYA.TURRET_*`; Turret-chan fills unused slots after 3 s (untrained: one by the elevator "for vibes", the rest piled on the first nest; Study Group rank 1 drops the vibes turret and relocates idle turrets, rank 2 spreads them). Cheese: nest wheels (10) and mouse crumbs → R&D Defense (`cur: 'cheese'`: Hairball Cannons, Bigger Hairballs, Mouser Drills, Turret-chan's Study Group) and Aged Gouda (Refinery). All in `js/sim/mice.js` (an Episode mixin). `nipTier: 5`, `diffTier: 5.6`, ore 6%: pays like Tier 5, a little tougher. Traits Mouser / Pacifist / Scaredy Cat / Cheese Magnet (`tier: 6`). Bunk 10. Survey 5T + 10 T5 perfect clears. `tools/test_mice.js` | User: start on Tiers 5+ |
+| Deep tiers toughen faster: `NYA.DEEP_HP` 10 and `NYA.DEEP_RESIST` 5 per tier past 4, on top of ×5 HP / ×2 resist | On arrival at Tier 5 (Season 3) the crew broke stone in 0.35 swings with ~2000 swings of stamina (Tier 4 in Season 1: ~5 and ~250), so Tier 5 was easier than Tier 4: stay-vs-jump 21–31×. Now 3–6× (T4's milk pumping drags its catnip/s down) |
+| Per-tier overrides: `nipTier` (catnip value tier, `NYA.tierNip`) and `diffTier` (HP/resist tier, `NYA.tierDiff`, may be fractional) | Lets the Mousehole Maze be a cheese sidegrade instead of the next ×10. Yarn's per-tier divisor follows `nipTier` |
 | Yarn counts catnip earned past Tier 4 ÷`NYA.YARN_TIER_DIV` (100) per tier (`s.seasonYarnNip`, per episode; the Blend pot tracks it too in `potYarn`) | Tier 5 income is ~100–1000× Tier 4 once its catnip buys more multipliers; undivided it took Season 5 from ~700 to ~200K yarn. Now S5 ~2K, S9 ~10K, plateau ~20–45K (seed 4) |
 | Survey perfect-clear requirements only gate the first unlock (`NYA.surveyReq`) | Bug: they were re-checked every season, so post-S4 seasons never got past Tier 3 |
 | Bot resets its per-tier stats on unravel | Harness: stale stats kept the bot in old tiers after a reset |
@@ -70,8 +73,9 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Crew size | 3 at Tier 1, 3–4 at Tier 2, 5–6 at Tier 3, 7–8 at Tier 4 | on target |
 | Season 1 | 90–150 min | ~1h25–1h30 (the bot unravels 25 min after the Skein) |
 | Stay-vs-jump income at a tier unlock | ~1× (new mine held back by Power/Grit) | median ~2× (T2 0.8–4, T3 2–3, T4 1–2.7); `node tools/tierjump.js <seed>` |
-| Tier 5 | a few hours in | 3.1h (seed 4, Season 3) – 4.7h (seed 1, Season 6); 2h25 if you never unravel |
-| Yarn per season | ~×3 growth | S2 ~50, S4 ~100–500, S5 ~600–2K (with T5), then ~5–45K. `node tools/seasons.js <seed> <hours> [--max-tier 4]` |
+| Tier 5 | a few hours in | 3.1h (seed 4, Season 3) – 4.7h (seed 1, Season 6); 2h25 if you never unravel. Stay-vs-jump at unlock 3–6× |
+| Tier 6 | after Tier 5 | 4.0–5.2h (Seasons 4–8). At unlock it pays 0.14–0.3× Tier 5's catnip/s (seed 4's crew: ~1×) plus ~35 cheese/episode; mice ~16/episode, 7–9 bites; smart turrets cut bites 30–45%. `node tools/test_mice.js <seed>` |
+| Yarn per season | ~×3 growth | S2 ~50, S4 ~100–500, then ~2–4K around Seasons 7–8 and ~30–80K by Season 15 (with T5–T6). `node tools/seasons.js <seed> <hours> [--max-tier 4]` |
 
 ## Known issues / watch list
 
@@ -81,10 +85,13 @@ The user has played through Tier 2 and an event mine. They called it "super addi
   - Raise the yarn divisor.
 - **The bot's prestige heuristic is erratic.** It sometimes unravels after 8–12 min. This only affects the harness, not the game, but it adds noise to multi-season numbers.
 - **The test scripts are slower now.** `test_pump.js` and `test_events.js` build crews by buying bunks, which are now progress-gated, so their crews are small. They still pass. Set `g.s.maxTierReached` and full clears in the setup for faster runs.
-- **Darkness is subtle at darkness 1.** The overlay alpha is `0.24 × darkness`, capped at 0.6. Tier 5 is darkness 2.
-- **OVA goals stop at Tier 4.** Director's Cut releases could ask for Sushi Grotto now, but reaching Tier 5 inside an OVA run takes 30+ min. Nine to Five's Director's Cut is the hardest (68 min on seed 1, not cleared in 90 min on seed 4).
+- **Darkness is subtle at darkness 1.** The overlay alpha is `0.24 × darkness`, capped at 0.6. Tiers 5–6 are darkness 2.
+- **Tier 6 difficulty at arrival swings with the crew.** Rock HP is fixed per tier, so a crew just past the one-swing threshold breezes it (seed 4: perfect clears, ~1× Tier 5) while others can't clear it (0.14–0.3×). Mice are a moderate pressure; turrets are a bonus, not required (the GDD calls them required; the "bonus, not tax" rule won).
+- **Tier 7+ will need its own `nipTier`/`diffTier` thinking.** With Tier 6 at nipTier 5, a default Tier 7 would pay ×100 over Tier 6.
+- **Mice not built yet:** Sapper, Medic, Cheese Golem, Commandos, the Four Cheesenals. **Turrets not built yet:** Squeaky Decoy, Yarn Launcher, Mousetrap Mortar, Tesla Scratching Post, Laser Turret. Sushi's second sink (GDD: purrmits for Tiers 7–9) is still open.
+- **OVA goals stop at Tier 4.** Director's Cut releases could ask for Sushi Grotto now, but reaching Tier 5 inside an OVA run takes 30+ min. Nine to Five's Director's Cut is the hardest and swingy for the bot (24–68 min, sometimes not cleared in 90 min).
 - **In the narrow (phone-width) layout the trait-roll card covers much of the mine.**
-- **Content thins out around Season 5.** OVAs and Tier 5 now fill it; Loom Pattern 2 and Tier 6 are next.
+- **Content thins out around Season 5.** OVAs and Tiers 5–6 now fill it; Loom Pattern 2 is next.
 
 ## Next steps (agreed with the user, roughly in priority order)
 
@@ -93,7 +100,7 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 3. **Loom Pattern 2**, unlocked when Pattern 1 is complete. Good home for **Star Search** (GDD §14.3): a repeatable knot giving applicants a chaining +5%/rank aptitude promotion roll (SS, SSS, …).
 4. **Tiers 5–6 (GDD §9.2), built on the per-tier scaling framework:**
    - ~~Sushi Grotto~~ — built. Sushi's second sink should be Tier 6's purrmit (GDD).
-   - Mousehole Maze: mice, nests and cheese, with manual turrets and later Turret-chan.
+   - ~~Mousehole Maze~~ — built (see above). More mouse and turret types are still to come.
    - The Big Haze: a marathon mine with several elevators.
 5. **Focus vs "Fool's Nip".** Shiny worthless decoy tiles in deeper mines that fool low-Focus miners.
 6. **Workshop (Hagane): equipment slots** (Tool / Outfit / Trinket). This is the sink for special resources such as milk and cheese.
@@ -111,5 +118,6 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Stat pipeline | `NYA.buildStats` → `NYA.foldStats` (swing techniques) in `js/sim/catgirl.js` |
 | Pack-up overlay and eyecatcher PiP | `buildOverlay`, `updateOverlay` and `updateEyecatch` in `js/ui/ui.js` |
 | Harness bot | `js/sim/bot.js` |
+| Mice, nests, turrets, Turret-chan | `js/sim/mice.js` (Episode mixin); data in `NYA.MICE` / `NYA.TURRET_*` in `js/data/tiers.js` |
 | Water sim, wet state | `tickWater`, `canHoldWater` in `js/sim/episode.js`; chambers in `js/sim/minegen.js` (`quirk === 'water'`) |
 | Yarn formula | `yarnPreview` in `js/sim/game.js`, constants in `js/data/loom.js` |

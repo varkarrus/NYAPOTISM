@@ -18,7 +18,7 @@
       v: 1,
       seed: String(seed),
       season: 1, episodeNum: 0, episodes: 0,
-      catnip: 0, seasonCatnip: 0, lifetimeCatnip: 0, seasonYarnNip: 0, yarnNipInit: 0, milk: 0, sushi: 0,
+      catnip: 0, seasonCatnip: 0, lifetimeCatnip: 0, seasonYarnNip: 0, yarnNipInit: 0, milk: 0, sushi: 0, cheese: 0,
       yarn: 0,
       upg: {}, loom: {},
       research: null,
@@ -107,6 +107,7 @@
       if (this.loom('km_catnip')) parts.push(['Catnip Cable-Knit', Math.pow(2, this.loom('km_catnip'))]);
       if (this.lvl('milkbath')) parts.push(['Milk Bath', Math.pow(1.25, this.lvl('milkbath'))]);
       if (this.lvl('otoro')) parts.push(['Otoro Platter', Math.pow(1.25, this.lvl('otoro'))]);
+      if (this.lvl('gouda')) parts.push(['Aged Gouda', Math.pow(1.25, this.lvl('gouda'))]);
       if (this.loomRowDone(1)) parts.push(['Multiplier Stripe', 3]);
       if (this.loomColDone(0)) parts.push(['Cast-On Stripe', 1.5]);
       if (this.loomColDone(2)) parts.push(['Cable Stripe', 1.5]);
@@ -136,6 +137,22 @@
       return { wetPace: NYA.WET_PACE + 0.1 * ws, wetDrain: NYA.WET_DRAIN - 0.25 * ws, drain: this.lvl('drain') };
     }
     onFlood() { this.novel('flood', 'FLOOD! Opening a chamber lets the water in. Wet catgirls walk at half speed and tire twice as fast', 'mine'); }
+    // Mousehole Maze: turret slots and damage, crew damage vs mice, Turret-chan's training
+    miceCfg() {
+      return { turrets: NYA.TURRET_BASE + this.lvl('cannons'), turretMult: Math.pow(1.5, this.lvl('caliber')),
+        combatMult: Math.pow(1.5, this.lvl('combat')), chanLvl: this.lvl('chan'), turretChan: true };
+    }
+    onMice() {
+      if (this.novel('mice', 'MICE! They nibble your crew’s stamina. Your crew fights back, and turrets help (Turret tool, T)', 'mine'))
+        this.emit('toast', { text: 'Turret-chan: “H-hi! I’m the defense intern! If you don’t place the turrets, I’ll… I’ll do it! Sorry!”', kind: 'chan' });
+    }
+    onChan(line) { // Turret-chan's commentary, now and then
+      if (this.s.simTime - (this._chanAt || -1e9) < 600) return;
+      this._chanAt = this.s.simTime;
+      const text = line === 'vibes' ? 'Turret-chan: “I put one by the elevator! For… for vibes!”' : 'Turret-chan: “This nest looked scary, so I put them all here. Is that bad? That’s bad, isn’t it.”';
+      this.emit('toast', { text, kind: 'chan' });
+    }
+    turret(idx) { return this.episode && this.episode.miceOn ? this.episode.placeTurret(idx, 'you') : false; }
 
     // ------------------------------------------------------------ OVAs (js/data/ovas.js)
     ovaIs(id) { return !!(this.s.ova && this.s.ova.id === id); }
@@ -655,7 +672,7 @@
         junctions: this.lvl('junctions') > 0,
         purrmit: cost,
       };
-      Object.assign(cfg, this.ovaCfg(), this.waterCfg());
+      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg());
       cfg.headlamp += this.ovaPerk('lights');
       if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
@@ -725,7 +742,7 @@
         pumpRate: 5 * Math.pow(1.3, this.lvl('pistons')), junctions: this.lvl('junctions') > 0,
         event: q.ev, ghosts: ev.ghosts || 0,
       };
-      Object.assign(cfg, this.ovaCfg(), this.waterCfg());
+      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg());
       cfg.headlamp += this.ovaPerk('lights');
       if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
@@ -773,7 +790,7 @@
       let catnip = ore * ref * clearMult * glob * evMult;
       if (ep.event) { s.life.events = (s.life.events || 0) + 1; s.life.wishes = (s.life.wishes || 0) + ep.wishes; }
       let blendCut = 0;
-      const yarnDiv = Math.pow(NYA.YARN_TIER_DIV, Math.max(0, ep.tier - NYA.YARN_TIER_FROM)); // see NYA.YARN_TIER_FROM
+      const yarnDiv = Math.pow(NYA.YARN_TIER_DIV, Math.max(0, (ep.def.nipTier || ep.tier) - NYA.YARN_TIER_FROM)); // see NYA.YARN_TIER_FROM
       if (s.blend && s.blend.active) { blendCut = catnip * 0.5; catnip -= blendCut; s.blend.pot += blendCut; s.blend.potYarn = (s.blend.potYarn || 0) + blendCut / yarnDiv; }
       s.catnip += catnip;
       this.boardEpisodeEnd();
@@ -781,6 +798,11 @@
       if (sushi > 0) {
         s.sushi += sushi; s.life.sushi = (s.life.sushi || 0) + sushi;
         if (this.novel('sushi', 'First sushi! Tora opens a Sushi Bar at the Refinery', 'refinery')) this.emit('toast', { text: 'Tora: \u201cRaw fish growing on ROCKS?! …Pass the soy sauce.\u201d', kind: 'tora' });
+      }
+      const cheese = ep.haul.cheese;
+      if (cheese > 0) {
+        s.cheese += cheese; s.life.cheese = (s.life.cheese || 0) + cheese;
+        if (this.novel('cheese', 'First cheese! Spend it on turrets in R&D (Defense) and at Tora’s Cheese Cave', 'lab')) this.emit('toast', { text: 'Doc Boom: \u201cCHEESE! Do you know what I can build with cheese?! …Turrets. Mostly turrets.\u201d', kind: 'doc' });
       }
       const milk = ep.haul.milk;
       if (milk > 0) {
@@ -803,6 +825,7 @@
       L.marks += st.marks; s.stats.marks += st.marks; L.swings += st.swings; s.stats.swings += st.swings;
       L.items += st.items; L.distractions += st.distractions; L.droneMarks += st.droneMarks; L.glowing += st.glowing;
       L.rescues += st.rescues; L.floods = (L.floods || 0) + (st.floods || 0);
+      if (ep.miceOn) { L.mice = (L.mice || 0) + (st.mice || 0); L.nests = (L.nests || 0) + (st.nests || 0); L.bites = (L.bites || 0) + (st.bites || 0); }
       if (st.allLoaf) L.allLoaf++;
       if (st.bestChain > L.bestChain) L.bestChain = st.bestChain;
       if (ep.endReason === 'whistle') L.whistles++;
@@ -822,7 +845,7 @@
       const result = {
         ep: s.episodeNum, season: s.season, tier: ep.tier, mine: ep.def.name, title, tora, preview, eye,
         reason: ep.endReason, fullClear, rating, extraction: ep.extraction(),
-        oreValue: ore, ref, clearMult, glob, catnip, blendCut, milk, sushi, event: ep.eventKey, evMult, wishes: ep.wishes,
+        oreValue: ore, ref, clearMult, glob, catnip, blendCut, milk, sushi, cheese, mice: st.mice || 0, stolen: st.stolen || 0, event: ep.eventKey, evMult, wishes: ep.wishes,
         items: ep.haul.items, byQ: ep.haul.byQ.slice(), thread: ep.haul.thread, lost: ep.haul.lost,
         motherlode: st.motherlode, box: st.box, chain: st.bestChain, duration: ep.t, purrmit: ep.cfg.purrmit,
         crew: ep.miners.map(m => ({ id: m.id, name: m.name, items: m.items, xp: m.xp, levels: m.levelsGained, flopped: m.flopped, level: m.cg.level })),
@@ -995,7 +1018,7 @@
       this._ovaClear = false;
       s.seasonCatnip = 0; s.seasonYarnNip = 0; s.seasonTime = 0; s.episodes = 0;
       s.catnip = this.loom('hs_cash') ? 300 : 0;
-      s.milk = 0; s.sushi = 0;
+      s.milk = 0; s.sushi = 0; s.cheese = 0;
       s.upg = {};
       s.research = null;
       s.tierUnlocked = { 1: 1 }; s.selectedTier = 1; s.maxTierReached = 1;

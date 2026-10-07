@@ -6,6 +6,20 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Tier 6: Mousehole Maze',
+      date: '2026-10-08',
+      items: [
+        'A new mine past the Sushi Grotto: survey it at R&D after 10 perfect clears of the Sushi Grotto. Twisty tunnels full of mouse nests.',
+        'Once a nest is uncovered, mice pour out: Scout Mice, Bruiser Rats, and Pickpockets that snatch ore from a catgirl’s bag and run for home (catch one to get it back). Bites take a chunk of stamina, and your crew swats any mouse that gets close.',
+        'Turrets! Pick the 🎯 Turret tool (T) and click open floor to place a Hairball Cannon. Click one again to pick it up. Turret-chan, the anxious defense intern, places any you don’t. She tries her best.',
+        'Smashed nests drop Cheese Wheels and mice drop crumbs: CHEESE, a new currency. Spend it on Defense in R&D (more turrets, bigger hairballs, Mouser Drills, Turret-chan’s Study Group) and on Aged Gouda at the Refinery (catnip ×1.25 per level, in every mine).',
+        'It’s the cheese mine: its ore pays like the Sushi Grotto’s, and there’s less of it.',
+        'Four new traits that only turn up once you’ve been there: Mouser, Pacifist, Scaredy Cat and Cheese Magnet.',
+        'One more Bunk Bed, unlocked by reaching Tier 6.',
+        'Rock past Dairy Depths is much tougher now. The Sushi Grotto used to be easier than Dairy Depths when you first got there.',
+      ],
+    },
+    {
       title: 'Tier 5: Sushi Grotto',
       date: '2026-10-08',
       items: [
@@ -176,15 +190,16 @@
 
   // What the current build actually contains, so a playtester knows where the content ends.
   NYA.FRONTIER = {
-    summary: 'Roughly 4–5 hours of new things, then the OVA challenges (several more hours). After that, just bigger numbers.',
+    summary: 'Roughly 5 hours of new things, then the OVA challenges (several more hours). After that, just bigger numbers.',
     items: [
       'Tiers 1–3 in your first run (Tier 3 at about 1 hour).',
       'Something big around the 1h 15m mark. No spoilers!',
       'Tier 4, Dairy Depths (milk pumping), at about 1h 30m.',
       'Tanuki’s limited-time event mines, R&D and MEWCLEAR, standing orders, swing techniques.',
       'Tier 5, Sushi Grotto (floods and sushi), around 3–5 hours in.',
+      'Tier 6, Mousehole Maze (mice, turrets and cheese), around 4–5 hours in.',
       'Late game: six OVA challenge episodes, 18 releases in all, each with a permanent perk.',
-      'Not built yet: Tiers 6+, equipment, and more late-game content.',
+      'Not built yet: Tiers 7+, equipment, and more late-game content.',
     ],
   };
 })(globalThis.NYA = globalThis.NYA || {});
