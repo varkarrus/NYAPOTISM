@@ -58,6 +58,8 @@
       this.mochi = new Uint8Array(n);     // Mochi Pounding tiles
       this.milk = new Float32Array(n);    // milk left in a milk node
       this.milkMax = new Float32Array(n);
+      this.water = new Uint8Array(n);     // Sushi Grotto: 1 = this open tile is flooded
+      this.sushi = new Uint8Array(n);     // Sushi Grotto: this ORE tile is wild nigiri (drops sushi, not catnip)
       this.elev = 0;
       this.motherlode = -1;
       this.box = -1;
@@ -261,6 +263,37 @@
         }
       }
 
+      // --- Flooded chambers + wild nigiri (T5 quirk). Own RNG stream so other tiers' layouts don't change.
+      if (def.quirk === 'water') {
+        const wr = new NYA.RNG('water:' + this.seed);
+        const chambers = Math.max(3, Math.round(n / 110));
+        let made = 0; guard = 0;
+        while (made < chambers && guard++ < 300) {
+          const c = wr.int(0, n - 1);
+          const ok = t => { const tx = this.x(t), ty = this.y(t); return ty >= 3 && tx >= 1 && tx <= w - 2 && ty <= h - 2 && !nearElev(t, 5) && type[t] !== T.MILK; };
+          if (!ok(c)) continue;
+          const size = wr.int(6, 16), set = new Set([c]), cells = [c];
+          for (let tries = 0; cells.length < size && tries < 120; tries++) {
+            const nb = this.nbrs(cells[wr.int(0, cells.length - 1)]);
+            const t = nb[wr.int(0, nb.length - 1)];
+            if (!set.has(t) && ok(t)) { set.add(t); cells.push(t); }
+          }
+          for (const t of cells) { type[t] = T.OPEN; this.water[t] = 1; }
+          // sealed, sturdy walls: dirt and dry air around a chamber become stone
+          for (const t of cells) for (const nb of this.nbrs(t)) if (!set.has(nb) && !this.water[nb] && (type[nb] === T.DIRT || type[nb] === T.OPEN) && nb !== this.elev) type[nb] = T.STONE;
+          made++;
+        }
+        // nigiri grow like barnacles on the rock walls of the chambers (so harvesting them floods things)
+        const want = Math.round(n / 55);
+        const cand = [];
+        for (let i = 0; i < n; i++) if ((type[i] === T.STONE || type[i] === T.HARD) && this.nbrs(i).some(nb => this.water[nb])) cand.push(i);
+        for (let k = cand.length - 1; k > 0; k--) { const j = wr.int(0, k); const tmp = cand[k]; cand[k] = cand[j]; cand[j] = tmp; }
+        for (let k = 0; k < Math.min(want, cand.length); k++) {
+          const i = cand[k];
+          type[i] = T.ORE; this.sushi[i] = 1; this.q[i] = 1; this.dens[i] = wr.int(1, 3);
+        }
+      }
+
       // --- Elevator neighbours are never bedrock
       for (const nb of this.nbrs(this.elev)) if (type[nb] === T.BEDROCK) type[nb] = T.DIRT;
 
@@ -283,7 +316,7 @@
       // --- The Motherlode
       if (opts.motherlodeChance && rng.chance(opts.motherlodeChance)) {
         let best = -1, bestD = -1;
-        for (let i = 0; i < n; i++) if (type[i] === T.ORE && far[i] > bestD && rng.chance(0.6)) { best = i; bestD = far[i]; }
+        for (let i = 0; i < n; i++) if (type[i] === T.ORE && !this.sushi[i] && far[i] > bestD && rng.chance(0.6)) { best = i; bestD = far[i]; }
         if (best >= 0) {
           this.motherlode = best;
           this.dens[best] = rng.int(30, 50);
@@ -354,7 +387,7 @@
       let tiles = 0, value = 0, items = 0;
       const base = NYA.tierBase(this.tier);
       for (let i = 0; i < this.n; i++) {
-        if (this.type[i] === T.ORE) { tiles++; const left = this.dens[i] - this.dropped[i]; items += left; value += left * this.q[i] * base; }
+        if (this.type[i] === T.ORE) { tiles++; const left = this.dens[i] - this.dropped[i]; items += left; if (!this.sushi[i]) value += left * this.q[i] * base; }
         else if (this.type[i] === T.BOX) tiles++;
       }
       return { tiles, value, items };

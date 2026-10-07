@@ -13,6 +13,8 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - Traits: `mods` keys in `js/data/traits.js`. New flag keys must also be added to the flag list in `NYA.buildStats` (`js/sim/catgirl.js`). Give a trait `tier: N` if its text names a mine-specific system, so it can't roll before the player has seen that mine.
   - Also data-driven: faxes (`check` functions), the Loom grid, Tanuki events, and tiers.
 - **Per-tier scaling lives in `js/data/tiers.js`:** `tierBase`, `tierHP`, `tierResist`, `tierXP`, `tierDensityP`, `tierCrumble`, `tierDarkness`. New tiers get these for free.
+- **New tiers:** add the `NYA.TIERS[n]` entry and raise `NYA.MAX_TIER`. Gate the survey with `NYA.surveyReq(g, tier, fcTier, n)`, so the perfect-clear requirement only applies to the first unlock. Add a `STORY_FAX.tierN`, a bunk, music `prog` and a dev-save milestone.
+- **Yarn** comes from `s.seasonYarnNip`, not `seasonCatnip`: catnip earned past Tier 4 counts ÷`NYA.YARN_TIER_DIV` per tier. Any new catnip payout that should count toward yarn adds to both.
 - **Events:**
   - Game → UI: `game.emit(type, data)`.
   - Episode → renderer: `ep.ev({ t: ... })`. These are dropped when running headless.
@@ -43,6 +45,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
 - **After any sim or economy change, run the harness and compare against the targets in `docs/HANDOFF.md`:**
   - `node tools/harness.js --minutes 150 --seed 1` gives the novelty timeline and checkpoints. Add `--quiet --json` for scripting, and check seeds 2–4 too.
   - `node tools/harness.js --minutes 480 --seasons 7 --seed 4` runs a multi-season prestige check.
+  - `node tools/seasons.js 4 8` prints catnip, yarn and tier times per season. Add `--max-tier 4` to compare against the economy without newer mines.
   - `node tools/test_events.js` and `node tools/test_pump.js` cover the event mines and the Tier 4 pumps.
   - `node tools/diag.js --minutes 30` shows where miner time goes.
   - `node tools/tierjump.js 1` compares staying vs jumping at each tier unlock (target ~1–2×).

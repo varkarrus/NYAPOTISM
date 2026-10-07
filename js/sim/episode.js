@@ -30,7 +30,10 @@
       this.chainQ = []; this.chainCounts = {}; this.chainId = 0;
       this.bombs = [];
       this.tunaUntil = 0; this.hotbox = null; this.catterall = false;
-      this.haul = { value: 0, items: 0, byQ: new Array(12).fill(0), glow: 0, motherlode: 0, thread: 0, lost: 0, milk: 0 };
+      this.haul = { value: 0, items: 0, byQ: new Array(12).fill(0), glow: 0, motherlode: 0, thread: 0, lost: 0, milk: 0, sushi: 0 };
+      // Sushi Grotto water: only simulated while it's moving (a breach wakes it, settling puts it back to sleep)
+      this.waterOn = this.mine.water.some(v => v);
+      this.waterActive = false; this.waterT = 0; this.waterStamp = new Uint32Array(n); this.waterStepN = 0; this.drainT = 0;
       // T4 pumping (GDD §9.2): pumps keyed by milk-node index
       this.pipe = new Uint8Array(n); this.pipeConn = new Uint8Array(n);
       this.pumps = {}; this.milkFront = [];
@@ -211,6 +214,7 @@
         this.bombs = keep;
       }
       if (this.hotbox && t > this.hotbox.until) this.hotbox = null;
+      if (this.waterOn) this.tickWater(dt);
       if (this.fieldDirty) this.recomputeField();
       for (const m of this.miners) {
         m.px = m.x; m.py = m.y;
@@ -228,6 +232,7 @@
     }
     swingCost(m) {
       let c = this.resist * Math.pow(0.99, m.s.grit);
+      if (m.wetT > 0) c *= this.cfg.wetDrain || NYA.WET_DRAIN; // swings and walking both cost double while wet
       if (m.s.flags.nightOwl && m.stamina < 0.25 * m.maxSt) c *= 0.5;
       return c;
     }
@@ -243,6 +248,7 @@
     }
     speedOf(m) {
       let p = m.s.pace;
+      if (m.wetT > 0) p *= this.cfg.wetPace || NYA.WET_PACE;
       if (m.zoomT > this.t) p *= m.zoom;
       if (m.boost3am > 0) p *= 2;
       if (this.catterall) p *= 1.5;
@@ -253,6 +259,12 @@
 
     updateMiner(m, dt) {
       if (m.emoteT > 0) { m.emoteT -= dt; if (m.emoteT <= 0) m.emote = null; }
+      if (this.waterOn) {
+        if (this.mine.water[m.tile] && !m.s.flags.waterproof) {
+          if (!(m.wetT > 0)) { this.emote(m, 'wet', 1.2); this.ev({ t: 'wet', m: m.id }); this.st.wet = (this.st.wet || 0) + 1; }
+          m.wetT = NYA.WET_LINGER;
+        } else if (m.wetT > 0) m.wetT -= dt;
+      }
       if (m.swingAnim > 0) m.swingAnim -= dt;
       if (m.boost3am > 0) m.boost3am -= dt;
       else if (m.s.flags.zoomies3am && m.state === 'walk' && this.rng.chance(0.015 * dt)) { m.boost3am = 3; this.emote(m, 'zoom', 1.2); }
@@ -805,6 +817,7 @@
       const copies = (f.doubleDrop && rng.chance(f.doubleDrop)) ? 2 : 1;
       for (let k = 0; k < copies; k++) {
         const it = { id: this.itemId++, q, d: M.dens[i], ml: i === M.motherlode, glow: !!M.glow[i], mochi: !!M.mochi[i], claim: 0, idx: -1 };
+        if (M.sushi[i]) { it.sushi = 1 + (f.sushiSnob ? 1 : 0); it.q = 1; }
         this.st.items++;
         if (m && m.bag.length < m.s.carry) {
           m.bag.push(it); m.items++;
@@ -825,6 +838,47 @@
       this.ev({ t: 'loose', i: idx, q: it.q });
     }
 
+    // ---------------------------------------------------------------- water (T5)
+    // Falling-sand fluid: water drops into an empty open tile below, or slides sideways when it can fall
+    // from there or has water stacked on top (so pools level out and then stop moving). Volume is conserved.
+    canHoldWater(j) { const M = this.mine; return M.type[j] === T.OPEN && !M.water[j]; }
+    tickWater(dt) {
+      const M = this.mine;
+      if (this.cfg.drain) { // Drain Pumps: skim the highest water tile every few seconds
+        this.drainT -= dt;
+        if (this.drainT <= 0) {
+          this.drainT = 10 / this.cfg.drain;
+          for (let i = 0; i < M.n; i++) if (M.water[i]) { M.water[i] = 0; this.waterActive = true; this.ev({ t: 'drain', i }); break; }
+        }
+      }
+      if (!this.waterActive) return;
+      this.waterT -= dt;
+      if (this.waterT > 0) return;
+      this.waterT = NYA.WATER_STEP;
+      const W = M.water, w = M.w, h = M.h, stamp = ++this.waterStepN, flip = stamp & 1;
+      let moves = 0;
+      for (let y = h - 1; y >= 0 && moves < NYA.WATER_MOVES; y--) {
+        for (let k = 0; k < w; k++) {
+          const x = flip ? k : w - 1 - k, i = y * w + x;
+          if (!W[i] || this.waterStamp[i] === stamp) continue;
+          let to = -1;
+          if (y < h - 1 && this.canHoldWater(i + w)) to = i + w;
+          else {
+            const dirs = this.rng.chance(0.5) ? [1, -1] : [-1, 1];
+            const pressed = y > 0 && W[i - w];
+            for (const d of dirs) {
+              const nx = x + d;
+              if (nx < 0 || nx >= w) continue;
+              const j = i + d;
+              if (this.canHoldWater(j) && (pressed || (y < h - 1 && this.canHoldWater(j + w)))) { to = j; break; }
+            }
+          }
+          if (to >= 0) { W[i] = 0; W[to] = 1; this.waterStamp[to] = stamp; moves++; }
+        }
+      }
+      if (!moves) this.waterActive = false;
+    }
+
     breakTile(i, m) {
       const M = this.mine, ty = M.type[i];
       M.type[i] = T.OPEN; M.hp[i] = 0;
@@ -838,6 +892,11 @@
       this.claims[i] = 0;
       M.forbid[i] = 0;
       this.st.tiles++;
+      if (this.waterOn && !this.waterActive && M.nbrs(i).some(nb => M.water[nb])) {
+        this.waterActive = true; this.st.floods = (this.st.floods || 0) + 1;
+        this.ev({ t: 'flood', i });
+        if (this.game.onFlood) this.game.onFlood(this);
+      }
       for (let k = this.marks.length - 1; k >= 0; k--) if (this.marks[k].idx === i) this.marks.splice(k, 1);
       this.ev({ t: 'break', i, ty });
       this.revealAround(i);
@@ -926,6 +985,7 @@
           this.ev({ t: 'menace', m: m.id });
           continue;
         }
+        if (it.sushi) { this.haul.sushi += it.sushi; this.haul.items++; delivered++; continue; } // nigiri: sushi, no catnip
         const v = this.itemValue(it);
         value += v; delivered++;
         this.haul.value += v; this.haul.items++;

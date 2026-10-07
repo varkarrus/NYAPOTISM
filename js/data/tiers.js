@@ -110,7 +110,29 @@
     },
     music: { key: 7, bpm: 96, prog: 'dairy' },
   };
-  NYA.MAX_TIER = 4;
+  NYA.TIERS[5] = {
+    tier: 5, key: 'sushi', name: 'Sushi Grotto', w: 30, h: 20,
+    comp: { air: 0.08, bedrock: 0.08, ore: 0.10, hard: 0.15, stone: 0.55 },
+    purrmit: 7e4, quirk: 'water', box: true,
+    blurb: 'Flooded caverns with wild nigiri growing on the rocks. Quirk: WATER floods in when you open a chamber; wet catgirls walk at half speed and tire twice as fast. Nigiri drops SUSHI.',
+    pal: {
+      floor: '#2b3c4c', floor2: '#34485a', fog: '#0a121a', fog2: '#111c26',
+      dirt: '#c2a77a', dirt2: '#d6bd92', dirt3: '#9c8560',
+      stone: '#6f97a3', stone2: '#87b0bb', stone3: '#557883',
+      hard: '#3f5f75', hard2: '#4f7189', hard3: '#2f4a5c',
+      bed: '#141e2a', bed2: '#1c2a3a', bed3: '#2b3f55',
+      accent: '#7ad7f0', sky: '#8fd6e8',
+    },
+    music: { key: 9, bpm: 92, prog: 'sushi' },
+  };
+  NYA.MAX_TIER = 5;
+
+  // Sushi Grotto water (GDD §9.2): a falling-sand style fluid on open tiles, simulated only while it moves.
+  NYA.WATER_STEP = 0.08;   // seconds between flow steps
+  NYA.WATER_MOVES = 160;   // cap on cell moves per step (performance)
+  NYA.WET_LINGER = 3;      // seconds a catgirl stays wet after leaving the water
+  NYA.WET_PACE = 0.5;      // walking speed while wet (Wetsuits raise it)
+  NYA.WET_DRAIN = 2;       // stamina cost multiplier while wet (Wetsuits lower it)
 
   // Schrödinger's Box base chance per episode by tier (GDD §14.1)
   NYA.BOX_CHANCE = { 3: 0.05, 4: 0.08, 5: 0.15, 6: 0.35 };

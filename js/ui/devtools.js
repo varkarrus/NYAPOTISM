@@ -17,6 +17,7 @@
     { id: 't3', label: 'Tier 3: Yarnball Caverns', hint: '~55 min', done: g => g.s.maxTierReached >= 3 },
     { id: 'skein', label: 'Big discovery (spoiler!)', hint: '~75 min', done: g => g.s.skein.have },
     { id: 't4', label: 'Tier 4: Dairy Depths', hint: '~90 min', done: g => g.s.maxTierReached >= 4 },
+    { id: 't5', label: 'Tier 5: Sushi Grotto', hint: 'a few hours', seasons: true, done: g => g.s.maxTierReached >= 5 },
     { id: 's2', label: 'After the discovery: stage 2 (spoiler!)', hint: '~1h30', seasons: true, done: g => g.s.season >= 2 },
     { id: 's3', label: 'After the discovery: stage 3 (spoiler!)', hint: '~2h30', seasons: true, done: g => g.s.season >= 3 },
     { id: 's5', label: 'After the discovery: stage 5 (spoiler!)', hint: '~3h30', seasons: true, done: g => g.s.season >= 5 },

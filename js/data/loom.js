@@ -3,7 +3,13 @@
 (function (NYA) {
   'use strict';
 
-  NYA.YARN_DIV = 1e6;      // yarn = floor((seasonCatnip / YARN_DIV) ^ exp × mult)
+  NYA.YARN_DIV = 1e6;      // yarn = floor((seasonYarnNip / YARN_DIV) ^ exp × mult)
+  // Catnip earned past Dairy Depths counts ÷YARN_TIER_DIV per tier toward yarn (s.seasonYarnNip). A tier's
+  // base pay is only ×10, but the extra income buys more multiplier upgrades, so a season spent in a new mine
+  // ends up with ~100–1000× the catnip. Undivided, Tier 5 took Season 5 from ~700 to ~200K yarn. It's applied
+  // per episode, so entering a deeper mine never lowers the yarn preview.
+  NYA.YARN_TIER_FROM = 4;
+  NYA.YARN_TIER_DIV = 100;
   NYA.YARN_EXP = 0.4;
 
   NYA.LOOM_ROWS = ['Head Start', 'Knit Multipliers', 'Timeline Anchors', 'New Mechanics', 'Skein Tuning'];
@@ -15,7 +21,7 @@
       { id: 'hs_cash', name: 'Seed Money', cost: 2, desc: 'Start every season with 300 Catnip.' },
       { id: 'hs_refinery', name: 'Refinery Blueprints', cost: 4, desc: 'Start every season with Refinery Mk IV.' },
       { id: 'hs_lab', name: 'Lab Notebooks', cost: 10, desc: 'Start with Catnip Blunt, Hairball Bomb, Spray Bottle and Pack-Up Drills ×4 already researched.' },
-      { id: 'hs_maps', name: 'Old Survey Maps', cost: 25, desc: 'Start with the Scratching Post Quarry surveyed. Yarnball Caverns needs only 2 Quarry full clears.' },
+      { id: 'hs_maps', name: 'Old Survey Maps', cost: 25, desc: 'Start with the Scratching Post Quarry surveyed.' },
     ],
     [
       { id: 'km_catnip', name: 'Catnip Cable-Knit', cost: 1, growth: 4, max: 30, desc: 'Catnip ×2 per rank.', fx: l => 'Catnip ×' + NYA.fmt(Math.pow(2, l)) },

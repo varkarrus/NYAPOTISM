@@ -30,11 +30,12 @@ The game autosaves to `localStorage` every 30 s. You can export or import a save
 | Refinery Mk, Polisher, Centrifuge, **Tora's Special Blend** gamble | 6.2 | |
 | Actives: Blunt (tolerance), Hairball Bomb, Tuna Time, Sonar, Hotbox, Treat Bag, Catterall, **Mewclear Option** | 7 | |
 | R&D tree (5 branches) and Project MEWCLEAR's 10 stages, with the warhead sprite evolving | 7.1, 8 | |
-| Tiers 1–4: Backyard Burrow, Scratching Post Quarry (grooved chains), Yarnball Caverns (tangles + Schrödinger's Box), **Dairy Depths** (milk nodes, pumpjacks, pipes, Creamery). Rough ground (mud, rubble) from Tier 2 | 9 | |
+| Tiers 1–5: Backyard Burrow, Scratching Post Quarry (grooved chains), Yarnball Caverns (tangles + Schrödinger's Box), **Dairy Depths** (milk nodes, pumpjacks, pipes, Creamery), **Sushi Grotto** (flooded chambers with falling-sand water, wet penalty, wild nigiri → sushi, Sushi Bar). Rough ground (mud, rubble) from Tier 2 | 9 | `js/data/tiers.js` |
 | Purrmit Office standing orders, Requisition Points (boot-screen bar), auto-cast, auto-hire | 11 | |
 | Banked Time and Fast-Forward | 12 | |
 | ~45 Faxes from Auntie (achievements with bonuses) | 13 | |
 | Schrödinger's Skein → Unravel → Yarn → **Quantum Loom** 5×5 sweater with stripes, Timeline Anchors, Laser Drone | 14 | |
+| **OVAs**: six challenge tapes (Lights Out, Nine to Five, Budget Cuts, No Laser Zone, Monday, One Cat Army) × three releases, each with a permanent perk, spread over Seasons 5–25 | 15 | `js/data/ovas.js` |
 | Episode titles, Tora barks, eyecatchers (11, two of them rare), next-episode previews, opening-theme verses | 21 | |
 | City-pop music per mine (FM e-piano, bass, drum machine), synthesized SFX | 22.2 | `js/audio.js` |
 | **Tanuki's Emporium**: limited-time event mines (Golden Week, Tanabata wishes, Obon ghosts, Mochi Pounding, Summer Matsuri goldfish), Rain Checks, queued purrmits, an 8 RP auto-buy order | 9.4 | `js/data/events.js` |
@@ -121,4 +122,4 @@ The simulation layer (`js/sim`, `js/data`, `js/core`) has no DOM access. The bro
 
 ## Not built yet (from the GDD)
 
-Workshop and equipment, mice and defense/turrets, OVAs, spin-offs (Farm, Fishing, Canteen, Alchemy, Idols), The Movie and the Reboot, NYANZER, The Nine Lives, Tiers 5–12, alternate mines, cave-ins and bamboo, Loom patterns 2–6, and the Fax Macro language.
+Workshop and equipment, mice and defense/turrets, more OVAs, spin-offs (Farm, Fishing, Canteen, Alchemy, Idols), The Movie and the Reboot, NYANZER, The Nine Lives, Tiers 6–12, alternate mines, cave-ins and bamboo, Loom patterns 2–6, and the Fax Macro language.

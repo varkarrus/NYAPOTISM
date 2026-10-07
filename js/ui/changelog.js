@@ -6,6 +6,19 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Tier 5: Sushi Grotto',
+      date: '2026-10-08',
+      items: [
+        'A new mine past Dairy Depths: survey it at R&D after 10 perfect clears of Dairy Depths.',
+        'Flooded chambers hide behind the rock. Break into one and the water pours out and settles into the low ground. Wet catgirls walk at half speed and tire twice as fast until they dry off.',
+        'Wild nigiri grows on the rocks beside the water. Mine it for SUSHI, a new currency.',
+        'Tora opens a Sushi Bar at the Refinery: Wetsuits, Drain Pumps, Wasabi Kick (Power) and Otoro Platter (catnip).',
+        'Two new traits that only turn up once you’ve been there: Water Cat (never gets wet) and Sushi Snob (double sushi).',
+        'One more Bunk Bed, unlocked by reaching Tier 5.',
+        'Fixed: Auntie’s fax for reaching Dairy Depths arrived blank.',
+      ],
+    },
+    {
       title: 'Loaf fix',
       date: '2026-10-08',
       items: [
@@ -163,14 +176,15 @@
 
   // What the current build actually contains, so a playtester knows where the content ends.
   NYA.FRONTIER = {
-    summary: 'Roughly 3–4 hours of new things, then the OVA challenges (several more hours). After that, just bigger numbers.',
+    summary: 'Roughly 4–5 hours of new things, then the OVA challenges (several more hours). After that, just bigger numbers.',
     items: [
       'Tiers 1–3 in your first run (Tier 3 at about 1 hour).',
       'Something big around the 1h 15m mark. No spoilers!',
       'Tier 4, Dairy Depths (milk pumping), at about 1h 30m.',
       'Tanuki’s limited-time event mines, R&D and MEWCLEAR, standing orders, swing techniques.',
+      'Tier 5, Sushi Grotto (floods and sushi), around 3–5 hours in.',
       'Late game: six OVA challenge episodes, 18 releases in all, each with a permanent perk.',
-      'Not built yet: Tiers 5+, equipment, and more late-game content.',
+      'Not built yet: Tiers 6+, equipment, and more late-game content.',
     ],
   };
 })(globalThis.NYA = globalThis.NYA || {});

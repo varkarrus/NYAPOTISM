@@ -128,6 +128,7 @@
     sb.mul('pace', Math.pow(1.1, lv('cream')), 'Cream Grease (milk)');
     sb.mul('stamina', Math.pow(1.1, lv('calcium')), 'Calcium Supplements (milk)');
     sb.add('grit', 2 * lv('calcium'), 'Calcium Supplements (milk)');
+    sb.mul('power', Math.pow(1.1, lv('wasabi')), 'Wasabi Kick (sushi)');
     // Loom
     const lm = id => game.loom(id);
     sb.mul('power', Math.pow(1.5, lm('km_power')), 'Muscle Mittens (yarn)');
@@ -161,7 +162,7 @@
       if (m.xpMult) f.xpMult *= m.xpMult;
       for (const k of ['scoreOre', 'luckyPaw', 'doubleDrop', 'zoomMult', 'whimsyNoLaser', 'ignoreLaser', 'boxSitter', 'zoomies3am',
         'powerNap', 'sleepy', 'nightOwl', 'butterfingers', 'menace', 'teamPlayer', 'loner', 'yarnWrangler', 'mudPuppy', 'boxWhisperer',
-        'nineLives', 'midas', 'crackSpread', 'lactose']) {
+        'nineLives', 'midas', 'crackSpread', 'lactose', 'waterproof', 'sushiSnob']) {
         if (m[k] !== undefined) f[k] = m[k];
       }
       if (m.mainChar) { for (const k of ['power', 'haste', 'pace', 'stamina']) sb.mul(k, 1.5, src); f.mainChar = 1; }

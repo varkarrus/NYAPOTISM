@@ -52,6 +52,21 @@
     desc: '+10% Stamina (compounding) and +2 Grit.', flavor: 'Strong bones, strong swings, strong opinions about cheese.',
     fx: l => 'Stamina ×' + NYA.fmt(Math.pow(1.1, l)) + ', +' + (2 * l) + ' Grit' });
 
+  // ---------------- Refinery: Sushi Bar (paid in SUSHI, from the Sushi Grotto) ----------------
+  const sushiShow = g => g.s.sushi > 0 || g.s.maxTierReached >= 5;
+  def({ id: 'wetsuit', bld: 'refinery', cur: 'sushi', name: 'Wetsuits', max: 3, base: 25, growth: 4, show: sushiShow,
+    desc: 'Wet catgirls walk faster (half speed → 60/70/80%) and tire less (stamina ×2 → ×1.75/1.5/1.25).', flavor: 'Neoprene, with little ear holes. Hagane insisted on the ear holes.',
+    fx: l => 'Wet: ' + Math.round(100 * (NYA.WET_PACE + 0.1 * l)) + '% speed, ×' + (NYA.WET_DRAIN - 0.25 * l) + ' stamina' });
+  def({ id: 'drain', bld: 'refinery', cur: 'sushi', name: 'Drain Pumps', max: 5, base: 40, growth: 3, show: sushiShow,
+    desc: 'Pumps skim the highest flooded tile every 10 s (÷ rank). Slowly drains a flooded mine.', flavor: 'They go "glorp." Tora finds this soothing.',
+    fx: l => l ? 'One tile every ' + (10 / l).toFixed(1) + ' s' : 'No pumps' });
+  def({ id: 'wasabi', bld: 'refinery', cur: 'sushi', name: 'Wasabi Kick', max: 30, base: 30, growth: 2.3, show: sushiShow,
+    desc: '+10% Power for every miner (compounding).', flavor: 'Clears the sinuses. And the bedrock, apparently.',
+    fx: l => 'Power ×' + NYA.fmt(Math.pow(1.1, l)) });
+  def({ id: 'otoro', bld: 'refinery', cur: 'sushi', name: 'Otoro Platter', max: 40, base: 60, growth: 2.3, show: sushiShow,
+    desc: 'Catnip ×1.25 (compounding). The finest cut, served on the ore.', flavor: 'Tora says it brings out the catnip\u2019s "umami." Nobody knows what that means for catnip.',
+    fx: l => 'Catnip ×' + NYA.fmt(Math.pow(1.25, l)) });
+
   // ---------------- Barracks ----------------
   // Crew size is the biggest multiplier in the game, so every bunk is hand-priced and the
   // Barracks only has room for more as you dig deeper. BUNKS[i] is the bunk that takes you
@@ -64,6 +79,7 @@
     { cost: 1e6, tier: 3 },
     { cost: 2.5e7, fc: [3, 5] },
     { cost: 6e8, tier: 4 },
+    { cost: 2e11, tier: 5 },
   ];
   NYA.bunkReq = function (g) {
     const b = NYA.BUNKS[g.lvl('bunk')];
@@ -204,14 +220,20 @@
     show: g => g.s.maxTierReached >= 2,
     desc: '+4% chance each catnip tile rolls +1 quality at generation.', flavor: 'Doc Boom whispers encouragement to the bedrock.',
     fx: l => (4 * l) + '% +quality' });
+  // Surveys ask you to prove yourself (perfect clears of the previous mine) only the first time ever.
+  // Once you've been to a mine, later runs just pay for the survey: you know the way down.
+  NYA.surveyReq = function (g, tier, fcTier, n) {
+    if ((g.s.life.maxTier || 0) >= tier) return null;
+    return g.fc(fcTier) >= n ? null : 'Full-clear ' + NYA.TIERS[fcTier].name + ' ' + n + ' times (' + g.fc(fcTier) + '/' + n + ')';
+  };
   def({ id: 'mine2', bld: 'lab', branch: 'Exploration', name: 'Survey: Scratching Post Quarry', max: 1, base: 600, timer: 10,
     show: g => g.s.stats.fullClears >= 1,
-    req: g => (g.fc(1) >= 3 ? null : 'Full-clear the Backyard Burrow 3 times (' + g.fc(1) + '/3)'),
+    req: g => NYA.surveyReq(g, 2, 1, 3),
     desc: 'Unlocks Tier 2 — Scratching Post Quarry. Grooved stone shatters in chains.', flavor: 'Prove you’re ready before you’re allowed to be underprepared.',
     unlock: 'mine:2' });
   def({ id: 'mine3', bld: 'lab', branch: 'Exploration', name: 'Survey: Yarnball Caverns', max: 1, base: 1.5e5, timer: 20,
     show: g => g.s.maxTierReached >= 2,
-    req: g => (g.fc(2) >= 5 ? null : 'Full-clear the Scratching Post Quarry 5 times (' + g.fc(2) + '/5)'),
+    req: g => NYA.surveyReq(g, 3, 2, 5),
     desc: 'Unlocks Tier 3 — Yarnball Caverns. Tangles, air pockets… and Schrödinger’s Box.', flavor: 'Somewhere down there, something hums.',
     unlock: 'mine:3' });
 
@@ -219,9 +241,14 @@
     show: g => g.s.maxTierReached >= 3,
     // no Skein gate (spoiler, and the user wants Dairy Depths reachable first run), but priced so the
     // Skein usually turns up first (check with tools/skeinrace.js)
-    req: g => (g.fc(3) >= 10 ? null : 'Full-clear Yarnball Caverns 10 times (' + g.fc(3) + '/10)'),
+    req: g => NYA.surveyReq(g, 4, 3, 10),
     desc: 'Unlocks Tier 4 — Dairy Depths. Milk nodes, pumpjacks and pipes… and a new resource: MILK.', flavor: 'Doc Boom swears the cave is "lactating." Nobody asked her to elaborate.',
     unlock: 'mine:4' });
+  def({ id: 'mine5', bld: 'lab', branch: 'Exploration', name: 'Survey: Sushi Grotto', max: 1, base: 2e10, timer: 40,
+    show: g => g.s.maxTierReached >= 4,
+    req: g => NYA.surveyReq(g, 5, 4, 10),
+    desc: 'Unlocks Tier 5 — Sushi Grotto. Flooded chambers, wet catgirls… and wild nigiri: a new resource, SUSHI.', flavor: 'Doc Boom packed a snorkel. And a lunchbox. Mostly the lunchbox.',
+    unlock: 'mine:5' });
   def({ id: 'junctions', bld: 'lab', branch: 'Logistics', name: 'Pipe Junctions', max: 1, base: 6e7, timer: 20,
     show: g => g.s.maxTierReached >= 4,
     desc: 'New pipes connect to an existing line instead of running all the way back. Clustered milk nodes get much cheaper.', flavor: 'It\u2019s a T-shaped bit of pipe. Doc Boom wants a Nobel.' });

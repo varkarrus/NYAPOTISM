@@ -30,6 +30,8 @@
   fax('tier2', 'Grooving', 'THE QUARRY. I USED TO SHARPEN MY CLAWS THERE. LONG STORY.', { catnip: 0.02 }, g => g.s.maxTierReached >= 2 || life(g).maxTier >= 2);
   fax('tier3', 'Into The Yarn', 'YOU’RE GETTING CLOSE. TO WHAT? YOU’LL SEE. ♡', { catnip: 0.03 }, g => g.s.maxTierReached >= 3 || life(g).maxTier >= 3);
   fax('milk', 'Got Milk?', 'FRESH FROM THE ROCK. DON\u2019T THINK ABOUT IT. \u2661', { catnip: 0.03 }, g => (g.s.life.milk || 0) >= 1);
+  fax('sushi', 'Omakase', 'YOU FOUND SUSHI IN A ROCK. I HAVE QUESTIONS. I ALSO HAVE CHOPSTICKS. ♡', { catnip: 0.03 }, g => (g.s.life.sushi || 0) >= 1);
+  fax('flood', 'Splash Zone', 'SOMEONE OPENED THE WRONG WALL. EVERYONE IS DAMP AND FURIOUS. ♡', { xp: 0.02 }, g => (g.s.life.floods || 0) >= 1);
   fax('milk1k', 'Dairy Queen', 'A THOUSAND LITERS. OBAA-CHAN WILL WANT SOME. (WHO IS OBAA-CHAN? LATER.)', { xp: 0.03 }, g => (g.s.life.milk || 0) >= 1000);
   fax('tier4', 'Udderly Ridiculous', 'THE DAIRY DEPTHS. I\u2019M SORRY FOR THE FAX TITLE. NOT VERY SORRY.', { catnip: 0.03 }, g => g.s.maxTierReached >= 4 || g.s.life.maxTier >= 4);
   fax('tanuki', 'Limited Time Only', 'A RACCOON-DOG SOLD YOU A HOLE. I\u2019M NOT MAD. I\u2019M A LITTLE MAD. \u2661', { catnip: 0.02 }, g => (g.s.life.events || 0) >= 1);

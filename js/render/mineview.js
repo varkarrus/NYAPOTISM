@@ -268,6 +268,9 @@
           case 'treat': if (m) this.pop(m.x + 0.5, m.y - 0.6, '2× XP!', '#ff7eb6', true); this.sfx('treat'); break;
           case 'catterall': if (e.on && this.banners) this.banners('catterall'); if (this.audio) this.audio.duck(e.on); break;
           case 'tangle': this.burst(e.i, '#ff9ec4', 3, 1.5, 0.08); break;
+          case 'flood': this.burst(e.i, '#7ad7f0', 16, 3, 0.14); this.shake = Math.max(this.shake, 0.25); this.sfx('splash'); break;
+          case 'wet': if (m) this.burst(m.tile, '#bfefff', 5, 1.6, 0.08); break;
+          case 'drain': this.burst(e.i, '#d8f6ff', 4, 1.2, 0.08); break;
           case 'rubble': this.burst(e.i, '#b8a890', 2, 1.2, 0.06); break;
           case 'wish':
             this.pop(M.x(e.i) + 0.5, M.y(e.i) - 0.2, '★ WISH ' + e.n + ' ★', '#c9e3ff', true);
@@ -343,6 +346,7 @@
             if (M.rubble[i]) ctx.drawImage((M.rubble[i] > 1 ? tex.rubble : tex.rubbleLite)[v], X, Y, ts, ts);
             if (y > 0 && !M.isOpen(i - M.w) && M.type[i - M.w] !== T.BOX) { ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(X, Y, ts, ts * 0.22); }
             if (M.tangle[i]) this.drawTangle(ctx, X, Y, ts, i, M.tangle[i]);
+            if (M.water[i]) this.drawWater(ctx, X, Y, ts, i, t, y === 0 || !M.water[i - M.w]);
             if (ty === T.BOX) {
               ctx.save(); ctx.translate(X + ts / 2, Y + ts * 0.9); ctx.scale(ts / 20, ts / 20);
               NYA.drawBox(ctx, 0, 0, 17, t, true);
@@ -361,6 +365,7 @@
             const base = ty === T.DIRT ? tex.dirt : ty === T.HARD ? tex.hard : ty === T.GROOVE ? tex.groove : tex.stone;
             ctx.drawImage(base[v], X, Y, ts, ts);
             if (ty === T.ORE && M.mochi[i]) this.drawMochi(ctx, X, Y, ts, i, t);
+            else if (ty === T.ORE && M.sushi[i]) this.drawNigiriTile(ctx, X, Y, ts, i, t);
             else if (ty === T.ORE) this.drawOre(ctx, X, Y, ts, i, t, showDQ);
             if (ty === T.GROOVE && Math.sin(t * 2 + M.groove[i]) > 0.92) { ctx.fillStyle = 'rgba(255,240,200,0.25)'; ctx.fillRect(X, Y, ts, ts); }
             const f = M.hp[i] / M.maxHp[i];
@@ -413,6 +418,7 @@
       // loose items
       for (const it of ep.loose) {
         if (it.fish) { this.drawFish(ctx, M.x(it.idx) * ts + ts / 2, M.y(it.idx) * ts + ts * 0.6, ts, t, it.id); continue; }
+        if (it.sushi) { this.drawNigiri(ctx, M.x(it.idx) * ts + ts / 2, M.y(it.idx) * ts + ts * 0.66 - Math.abs(Math.sin(t * 4 + it.id)) * ts * 0.06, ts * 0.3, it.id % 3); continue; }
         const q = NYA.qInfo(it.q);
         const X = M.x(it.idx) * ts + ts / 2 + ((it.id * 37) % 9 - 4) * ts * 0.04, Y = M.y(it.idx) * ts + ts * 0.62 + ((it.id * 53) % 7 - 3) * ts * 0.03;
         const b = Math.abs(Math.sin(t * 4 + it.id)) * ts * 0.06;
@@ -705,6 +711,39 @@
       ctx.stroke();
     }
 
+    // Sushi Grotto water: translucent blue with a wavy, brighter surface line
+    drawWater(ctx, X, Y, ts, i, t, surface) {
+      ctx.fillStyle = 'rgba(70,170,230,0.42)';
+      if (surface) {
+        const top = Y + ts * 0.18;
+        ctx.beginPath(); ctx.moveTo(X, Y + ts);
+        for (let k = 0; k <= 6; k++) ctx.lineTo(X + ts * k / 6, top + Math.sin(t * 3 + i * 0.7 + k * 1.1) * ts * 0.04);
+        ctx.lineTo(X + ts, Y + ts); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(210,245,255,0.7)'; ctx.lineWidth = Math.max(1, ts * 0.05);
+        ctx.beginPath();
+        for (let k = 0; k <= 6; k++) { const px = X + ts * k / 6, py = top + Math.sin(t * 3 + i * 0.7 + k * 1.1) * ts * 0.04; if (k) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
+        ctx.stroke();
+      } else ctx.fillRect(X, Y, ts, ts);
+      // a lazy bubble now and then
+      const ph = (t * 0.6 + i * 0.37) % 1;
+      if ((i * 7) % 5 === 0) { ctx.fillStyle = 'rgba(220,250,255,0.55)'; ctx.beginPath(); ctx.arc(X + ts * (0.3 + 0.4 * ((i * 13) % 10) / 10), Y + ts * (0.9 - 0.6 * ph), ts * 0.05, 0, Math.PI * 2); ctx.fill(); }
+    }
+    // one nigiri: rice block + topping (0 salmon, 1 tuna, 2 tamago with a nori band), centred at x,y, width w
+    drawNigiri(ctx, x, y, w, kind) {
+      const h = w * 0.42;
+      ctx.fillStyle = '#fffdf5'; NYA.rrect(ctx, x - w / 2, y - h / 2, w, h, h * 0.45); ctx.fill();
+      ctx.fillStyle = 'rgba(200,190,170,0.6)'; ctx.fillRect(x - w * 0.3, y + h * 0.1, w * 0.06, w * 0.06); ctx.fillRect(x + w * 0.15, y - h * 0.05, w * 0.06, w * 0.06);
+      const top = ['#ff8a5c', '#e0405a', '#ffd23f'][kind];
+      ctx.fillStyle = top; NYA.rrect(ctx, x - w * 0.56, y - h * 0.95, w * 1.12, h * 0.75, h * 0.35); ctx.fill();
+      if (kind === 0) { ctx.strokeStyle = 'rgba(255,240,230,0.85)'; ctx.lineWidth = Math.max(1, w * 0.06); for (const k of [-0.25, 0.05, 0.35]) { ctx.beginPath(); ctx.moveTo(x + w * k, y - h * 0.9); ctx.lineTo(x + w * (k + 0.12), y - h * 0.3); ctx.stroke(); } }
+      if (kind === 2) { ctx.fillStyle = '#1f3b2a'; ctx.fillRect(x - w * 0.1, y - h, w * 0.2, h * 1.45); }
+      ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fillRect(x - w * 0.35, y - h * 0.8, w * 0.18, Math.max(1, h * 0.12));
+    }
+    drawNigiriTile(ctx, X, Y, ts, i, t) {
+      const M = this.ep.mine, left = M.dens[i] - M.dropped[i];
+      const spots = left === 1 ? [[0.5, 0.58]] : left === 2 ? [[0.32, 0.4], [0.66, 0.68]] : [[0.3, 0.32], [0.7, 0.42], [0.45, 0.76]];
+      spots.forEach(([fx, fy], k) => this.drawNigiri(ctx, X + fx * ts, Y + fy * ts, ts * (left === 1 ? 0.5 : 0.36), (i + k) % 3));
+    }
     drawTangle(ctx, X, Y, ts, i, n) {
       ctx.strokeStyle = n > 1 ? 'rgba(255,158,196,0.85)' : 'rgba(255,158,196,0.45)';
       ctx.lineWidth = Math.max(1, ts * 0.05);
@@ -785,6 +824,14 @@
         ctx.fillStyle = f > 0.5 ? '#7af0a0' : f > 0.2 ? '#ffd23f' : '#ff5c7a';
         ctx.fillRect(bx, by, bw * f, Math.max(3, ts * 0.08));
       }
+      // dripping wet (Sushi Grotto)
+      if (m.wetT > 0) {
+        ctx.fillStyle = 'rgba(140,215,255,0.9)';
+        for (let k = 0; k < 2; k++) {
+          const ph = (t * 1.6 + k * 0.5 + m.id * 0.3) % 1;
+          ctx.beginPath(); ctx.arc(X + (k ? 0.22 : -0.2) * ts, Y - ts * (0.7 - 0.6 * ph), Math.max(1, ts * 0.045), 0, Math.PI * 2); ctx.fill();
+        }
+      }
       // emote bubble
       if (m.emote) this.drawEmote(ctx, X, Y - ts * 1.05, ts, m.emote, t);
       else if (m.state === 'out' && m.flopped || m.state === 'nap') this.drawEmote(ctx, X, Y - ts * 0.9, ts, 'zzz', t);
@@ -792,7 +839,7 @@
     }
 
     drawEmote(ctx, X, Y, ts, e, t) {
-      const map = { zoom: '!!', zzz: 'z z Z', dots: '…', yuck: '~_~', oops: '!?', menace: ':3', spark: '✦', blunt: '♪', heart: '♥', flop: '@_@', loaf: 'loaf' };
+      const map = { wet: '💧', zoom: '!!', zzz: 'z z Z', dots: '…', yuck: '~_~', oops: '!?', menace: ':3', spark: '✦', blunt: '♪', heart: '♥', flop: '@_@', loaf: 'loaf' };
       const txt = map[e] || e;
       const s = Math.max(9, ts * 0.28);
       ctx.font = `800 ${s}px "M PLUS Rounded 1c", sans-serif`;

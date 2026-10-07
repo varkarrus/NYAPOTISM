@@ -18,7 +18,7 @@
       v: 1,
       seed: String(seed),
       season: 1, episodeNum: 0, episodes: 0,
-      catnip: 0, seasonCatnip: 0, lifetimeCatnip: 0, milk: 0,
+      catnip: 0, seasonCatnip: 0, lifetimeCatnip: 0, seasonYarnNip: 0, yarnNipInit: 0, milk: 0, sushi: 0,
       yarn: 0,
       upg: {}, loom: {},
       research: null,
@@ -67,6 +67,7 @@
       if (ids.length) NYA.setNextCatgirlId(Math.max(...ids) + 1);
       this.openBoard();
       if (this.s.season > 1) this.applyHeadStarts(); // floors only; fixes saves that bought head starts mid-season
+      if (!this.s.yarnNipInit) { this.s.seasonYarnNip = this.s.seasonCatnip; this.s.yarnNipInit = 1; } // saves from before seasonYarnNip
       NYA.settingsRef.sci = !!this.s.settings.sci;
     }
 
@@ -105,6 +106,7 @@
       if (fb.catnip) parts.push(['Faxes from Auntie', 1 + fb.catnip]);
       if (this.loom('km_catnip')) parts.push(['Catnip Cable-Knit', Math.pow(2, this.loom('km_catnip'))]);
       if (this.lvl('milkbath')) parts.push(['Milk Bath', Math.pow(1.25, this.lvl('milkbath'))]);
+      if (this.lvl('otoro')) parts.push(['Otoro Platter', Math.pow(1.25, this.lvl('otoro'))]);
       if (this.loomRowDone(1)) parts.push(['Multiplier Stripe', 3]);
       if (this.loomColDone(0)) parts.push(['Cast-On Stripe', 1.5]);
       if (this.loomColDone(2)) parts.push(['Cable Stripe', 1.5]);
@@ -127,6 +129,13 @@
     reserveCap() { return 2 + this.lvl('lockers'); }
     levelCap() { return NYA.LEVEL_CAPS[this.lvl('montage')]; }
     polishExp() { return this.ovaIs('budget') ? 1 : [1, 1.15, 1.3][this.lvl('polisher')]; }
+
+    // Sushi Grotto water: Wetsuits soften being wet, Drain Pumps skim flooded tiles
+    waterCfg() {
+      const ws = this.lvl('wetsuit');
+      return { wetPace: NYA.WET_PACE + 0.1 * ws, wetDrain: NYA.WET_DRAIN - 0.25 * ws, drain: this.lvl('drain') };
+    }
+    onFlood() { this.novel('flood', 'FLOOD! Opening a chamber lets the water in. Wet catgirls walk at half speed and tire twice as fast', 'mine'); }
 
     // ------------------------------------------------------------ OVAs (js/data/ovas.js)
     ovaIs(id) { return !!(this.s.ova && this.s.ova.id === id); }
@@ -646,7 +655,7 @@
         junctions: this.lvl('junctions') > 0,
         purrmit: cost,
       };
-      Object.assign(cfg, this.ovaCfg());
+      Object.assign(cfg, this.ovaCfg(), this.waterCfg());
       cfg.headlamp += this.ovaPerk('lights');
       if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
@@ -716,7 +725,7 @@
         pumpRate: 5 * Math.pow(1.3, this.lvl('pistons')), junctions: this.lvl('junctions') > 0,
         event: q.ev, ghosts: ev.ghosts || 0,
       };
-      Object.assign(cfg, this.ovaCfg());
+      Object.assign(cfg, this.ovaCfg(), this.waterCfg());
       cfg.headlamp += this.ovaPerk('lights');
       if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
@@ -764,14 +773,21 @@
       let catnip = ore * ref * clearMult * glob * evMult;
       if (ep.event) { s.life.events = (s.life.events || 0) + 1; s.life.wishes = (s.life.wishes || 0) + ep.wishes; }
       let blendCut = 0;
-      if (s.blend && s.blend.active) { blendCut = catnip * 0.5; catnip -= blendCut; s.blend.pot += blendCut; }
+      const yarnDiv = Math.pow(NYA.YARN_TIER_DIV, Math.max(0, ep.tier - NYA.YARN_TIER_FROM)); // see NYA.YARN_TIER_FROM
+      if (s.blend && s.blend.active) { blendCut = catnip * 0.5; catnip -= blendCut; s.blend.pot += blendCut; s.blend.potYarn = (s.blend.potYarn || 0) + blendCut / yarnDiv; }
       s.catnip += catnip;
       this.boardEpisodeEnd();
+      const sushi = ep.haul.sushi;
+      if (sushi > 0) {
+        s.sushi += sushi; s.life.sushi = (s.life.sushi || 0) + sushi;
+        if (this.novel('sushi', 'First sushi! Tora opens a Sushi Bar at the Refinery', 'refinery')) this.emit('toast', { text: 'Tora: \u201cRaw fish growing on ROCKS?! …Pass the soy sauce.\u201d', kind: 'tora' });
+      }
       const milk = ep.haul.milk;
       if (milk > 0) {
         s.milk += milk; s.life.milk = (s.life.milk || 0) + milk;
         if (this.novel('milk', 'First milk! The Creamery opens at the Refinery', 'refinery')) this.emit('toast', { text: 'Tora: \u201cMilk?! In MY refinery?! …Fine. I\u2019ll make it work.\u201d', kind: 'tora' });
       } s.seasonCatnip += catnip; s.lifetimeCatnip += catnip;
+      s.seasonYarnNip += catnip / yarnDiv;
       s.life.catnip += catnip; s.stats.catnip += catnip;
       const rating = ep.rating();
       // stats
@@ -786,7 +802,7 @@
       L.episodes++; L.tiles += st.tiles; L.crits += st.crits; L.zoomies += st.zoomies;
       L.marks += st.marks; s.stats.marks += st.marks; L.swings += st.swings; s.stats.swings += st.swings;
       L.items += st.items; L.distractions += st.distractions; L.droneMarks += st.droneMarks; L.glowing += st.glowing;
-      L.rescues += st.rescues;
+      L.rescues += st.rescues; L.floods = (L.floods || 0) + (st.floods || 0);
       if (st.allLoaf) L.allLoaf++;
       if (st.bestChain > L.bestChain) L.bestChain = st.bestChain;
       if (ep.endReason === 'whistle') L.whistles++;
@@ -806,7 +822,7 @@
       const result = {
         ep: s.episodeNum, season: s.season, tier: ep.tier, mine: ep.def.name, title, tora, preview, eye,
         reason: ep.endReason, fullClear, rating, extraction: ep.extraction(),
-        oreValue: ore, ref, clearMult, glob, catnip, blendCut, milk, event: ep.eventKey, evMult, wishes: ep.wishes,
+        oreValue: ore, ref, clearMult, glob, catnip, blendCut, milk, sushi, event: ep.eventKey, evMult, wishes: ep.wishes,
         items: ep.haul.items, byQ: ep.haul.byQ.slice(), thread: ep.haul.thread, lost: ep.haul.lost,
         motherlode: st.motherlode, box: st.box, chain: st.bestChain, duration: ep.t, purrmit: ep.cfg.purrmit,
         crew: ep.miners.map(m => ({ id: m.id, name: m.name, items: m.items, xp: m.xp, levels: m.levelsGained, flopped: m.flopped, level: m.cg.level })),
@@ -960,7 +976,7 @@
     }
     yarnPreview() {
       if (!this.s.skein.have || this.s.ova) return 0;
-      return Math.floor(Math.pow(this.s.seasonCatnip / NYA.YARN_DIV, this.yarnExp()) * this.yarnMult());
+      return Math.floor(Math.pow(this.s.seasonYarnNip / NYA.YARN_DIV, this.yarnExp()) * this.yarnMult());
     }
     // opts.ova: the next run is that OVA. opts.noYarn/force: leave an OVA (cleared or abandoned) for a fresh run.
     unravel(opts) {
@@ -977,9 +993,9 @@
       s.season++;
       s.ova = opts.ova || null;
       this._ovaClear = false;
-      s.seasonCatnip = 0; s.seasonTime = 0; s.episodes = 0;
+      s.seasonCatnip = 0; s.seasonYarnNip = 0; s.seasonTime = 0; s.episodes = 0;
       s.catnip = this.loom('hs_cash') ? 300 : 0;
-      s.milk = 0;
+      s.milk = 0; s.sushi = 0;
       s.upg = {};
       s.research = null;
       s.tierUnlocked = { 1: 1 }; s.selectedTier = 1; s.maxTierReached = 1;
@@ -1068,7 +1084,7 @@
     blendAvailable() { const b = this.s.blend; return this.lvl('blend') > 0 && !(b && (b.active || this.s.simTime < (b.readyAt || 0))); }
     startBlend() {
       if (!this.blendAvailable()) return false;
-      this.s.blend = { active: 1, until: this.s.simTime + NYA.BLEND_TIME, readyAt: this.s.simTime + NYA.BLEND_COOLDOWN, pot: 0, season: this.s.season, lineT: 0 };
+      this.s.blend = { active: 1, until: this.s.simTime + NYA.BLEND_TIME, readyAt: this.s.simTime + NYA.BLEND_COOLDOWN, pot: 0, potYarn: 0, season: this.s.season, lineT: 0 };
       this.novel('blend', 'Tora’s Special Blend is brewing!', 'refinery');
       this.emit('blend', { phase: 'start', line: this.rng.pick(NYA.BLEND_LINES.start) });
       return true;
@@ -1083,6 +1099,7 @@
         const f = this.rng.weighted(NYA.BLEND_TABLE);
         const payout = b.pot * f;
         this.s.catnip += payout; this.s.seasonCatnip += payout; this.s.lifetimeCatnip += payout; this.s.life.catnip += payout;
+        this.s.seasonYarnNip += (b.potYarn != null ? b.potYarn : b.pot) * f; // pot catnip from deep mines counts less toward yarn
         const L = NYA.BLEND_LINES;
         const line = this.rng.pick(f < 1 ? L.bad : f === 1 ? L.even : f >= 4 ? L.jackpot : L.good);
         b.result = { f, pot: b.pot, payout };
