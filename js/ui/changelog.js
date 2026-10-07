@@ -6,6 +6,13 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Blend exploit fix',
+      date: '2026-10-09',
+      items: [
+        'Fixed: Tora’s Special Blend could keep brewing through a fresh start and pay out a huge pot early in the next run. An unfinished pot is now settled at face value before the reset.',
+      ],
+    },
+    {
       title: 'Pumping fix',
       date: '2026-10-09',
       items: [

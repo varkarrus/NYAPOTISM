@@ -1021,6 +1021,14 @@
       opts = opts || {};
       if (!this.s.skein.have && !opts.force) return false;
       const s = this.s;
+      // Tora's Blend can't brew across timelines (playtest exploit: a pot started before unravelling paid out
+      // millions early in the next run). An unfinished pot counts at face value toward this run instead.
+      const b = s.blend;
+      if (b && b.active) {
+        b.active = 0;
+        s.seasonCatnip += b.pot; s.seasonYarnNip += b.potYarn != null ? b.potYarn : b.pot;
+        b.pot = 0; b.potYarn = 0; b.result = null;
+      }
       const gain = opts.noYarn ? 0 : this.yarnPreview();
       s.seasonLog.push({ season: s.season, time: s.seasonTime, catnip: s.seasonCatnip, yarn: gain, eps: s.episodes, ova: s.ova ? s.ova.id + ':' + s.ova.rel : undefined });
       s.yarn += gain; s.life.yarn += gain;
@@ -1133,6 +1141,7 @@
     tickBlend(dt) {
       const b = this.s.blend;
       if (!b || !b.active) return;
+      if (b.season !== undefined && b.season !== this.s.season) { b.active = 0; b.pot = 0; b.potYarn = 0; return; } // a pot left over from an earlier run (saves from before the fix)
       b.lineT += dt;
       if (b.lineT > 120) { b.lineT = 0; this.emit('blend', { phase: 'mid', pot: b.pot, line: this.rng.pick(NYA.BLEND_LINES.mid) }); }
       if (this.s.simTime >= b.until) {
