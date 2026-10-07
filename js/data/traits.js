@@ -31,6 +31,7 @@
 
     // --- Movement and attention
     { id: 'laser_brained', name: 'Laser-Brained', kind: 'mixed', rarity: 'uncommon', desc: 'Triple Zoomies from the laser, but +50% Whimsy when no laser mark is active.', flavor: 'The red dot is her whole personality.', mods: { zoomMult: 3, whimsyNoLaser: 1.5 } },
+    { id: 'phone_a_psychic', name: 'Phone a Psychic', kind: 'mixed', rarity: 'rare', desc: 'Periodically calls a psychic for eerily accurate advice. Reduced focus otherwise.', flavor: 'The hotline is $4.99 a minute. Corporate is paying. Corporate doesn’t know.', mods: { focusMult: 0.5, psychic: 1 } },
     { id: 'tunnel_vision', name: 'Tunnel Vision', kind: 'mixed', rarity: 'uncommon', desc: '+4 Focus, ignores laser marks entirely.', flavor: 'Has a plan. Will not be sharing it.', mods: { focusAdd: 4, ignoreLaser: 1 } },
     { id: 'box_obsessed', name: 'Box Obsessed', kind: 'neg', rarity: 'common', desc: 'Stops to sit in any dead-end nook for 5 seconds. Every time.', flavor: 'If it fits, she sits. It always fits.', mods: { boxSitter: 1 } },
     { id: 'zoomies_3am', name: 'Zoomies at 3AM', kind: 'pos', rarity: 'uncommon', desc: 'Random bursts of +100% Pace.', flavor: 'It is always 3AM somewhere.', mods: { zoomies3am: 1 } },

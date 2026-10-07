@@ -594,7 +594,7 @@
       const ep = this.g.episode;
       if (!ep || !this.railEls) return;
       const names = { idle: 'thinking', wait: 'waiting', walk: 'walking', mine: 'mining', return: 'hauling', drop: 'dropping off', flop: 'flopped!', out: 'clocked out', nap: 'power nap', smoke: 'puffing', distract: '', rescue: 'RESCUE CLAW', hotbox: 'to the hotbox!', pbuild: 'building a pumpjack', pipe: 'laying pipe', pump: 'pumping milk 🥛' };
-      const dk = { butterfly: 'chasing a butterfly 🦋', groom: 'grooming', loaf: 'is a loaf 🍞', pebble: 'batting a pebble', box: 'sitting in a nook 📦' };
+      const dk = { phone: 'calling a psychic 📞', butterfly: 'chasing a butterfly 🦋', groom: 'grooming', loaf: 'is a loaf 🍞', pebble: 'batting a pebble', box: 'sitting in a nook 📦' };
       for (const m of ep.miners) {
         const r = this.railEls[m.id];
         if (!r) continue;

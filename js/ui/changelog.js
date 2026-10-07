@@ -12,6 +12,7 @@
         'From Yarnball Caverns on, every ore tile holds more catnip items (×2 in Tier 3, ×3 in Tier 4, and so on), each worth proportionally less. A tile still pays the same and takes as long to break, but bags actually fill up and catgirls start bringing catnip home early in the shift instead of halfway through.',
         'Bigger Bags is cheaper (×2.1 per level, was ×2.3) and goes up to 30 levels, since Carry matters more now.',
         'Pump crews: a catgirl with nothing left to dig now comes back to help crank a pump someone’s already running (up to 3 helpers, each adding her own flow). No more watching the whole crew clock out while one catgirl pumps the last node alone.',
+        'New rare trait: Phone a Psychic. Periodically calls a psychic for eerily accurate advice. Reduced focus otherwise. (Watch where she digs after hanging up.)',
         'Résumé Reader (R&D) shows up after your first 3 hires as before, and from the very start of any later run, so carrying veterans over doesn’t hide it.',
         'Fixed: Bunk Beds that ask for perfect clears of a mine no longer make you go back to it once you’ve moved on to a deeper mine.',
         'Event mines keep their rules on show in the Office (and on Tanuki’s purrmit list): while one is queued, up next, or running, with its current catnip bonus.',

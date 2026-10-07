@@ -978,6 +978,14 @@
         ctx.fillStyle = f > 0.5 ? '#7af0a0' : f > 0.2 ? '#ffd23f' : '#ff5c7a';
         ctx.fillRect(bx, by, bw * f, Math.max(3, ts * 0.08));
       }
+      // psychic vision: a slow violet shimmer around her while it lasts
+      if (m.psychicT > ep.t) {
+        ctx.fillStyle = 'rgba(190,140,255,0.85)';
+        for (let k = 0; k < 3; k++) {
+          const a = t * 2.4 + k * 2.1 + m.id;
+          ctx.fillRect(X + Math.cos(a) * ts * 0.42 - 1, Y - ts * 0.55 + Math.sin(a) * ts * 0.22 - 1, Math.max(2, ts * 0.07), Math.max(2, ts * 0.07));
+        }
+      }
       // dripping wet (Sushi Grotto)
       if (m.wetT > 0) {
         ctx.fillStyle = 'rgba(140,215,255,0.9)';
@@ -993,7 +1001,7 @@
     }
 
     drawEmote(ctx, X, Y, ts, e, t) {
-      const map = { wet: '💧', mad: '💢', scared: 'EEK!', zoom: '!!', zzz: 'z z Z', dots: '…', yuck: '~_~', oops: '!?', menace: ':3', spark: '✦', blunt: '♪', heart: '♥', flop: '@_@', loaf: 'loaf' };
+      const map = { phone: '📞 …', psychic: '🔮!', wet: '💧', mad: '💢', scared: 'EEK!', zoom: '!!', zzz: 'z z Z', dots: '…', yuck: '~_~', oops: '!?', menace: ':3', spark: '✦', blunt: '♪', heart: '♥', flop: '@_@', loaf: 'loaf' };
       const txt = map[e] || e;
       const s = Math.max(9, ts * 0.28);
       ctx.font = `800 ${s}px "M PLUS Rounded 1c", sans-serif`;

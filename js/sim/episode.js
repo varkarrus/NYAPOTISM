@@ -67,6 +67,7 @@
       this.recomputeField();
       this.crewCtx = { mineKey: this.def.key, tier: this.tier, crew: cfg.crew, sRankHere: game.hasSRank ? game.hasSRank(this.tier) : false };
       this.miners = cfg.crew.map((cg, k) => this.makeMiner(cg, k));
+      for (const m of this.miners) if (m.s.flags.psychic) m.psychicNext = NYA.PSYCHIC_GAP[0] * 0.5 + this.rng.next() * NYA.PSYCHIC_GAP[0];
       this.initMice(); // js/sim/mice.js
       if (cfg.ghosts) this.addGhosts(cfg.ghosts);
       if (this.event && this.event.goldfish) this.addGoldfish(this.event.goldfish);
@@ -280,6 +281,14 @@
       else if (m.s.flags.zoomies3am && m.state === 'walk' && this.rng.chance(0.015 * dt)) { m.boost3am = 3; this.emote(m, 'zoom', 1.2); }
       if (this.mice.length && this.mouseFight(m, dt)) return;
 
+      if (m.s.flags.psychic && this.t >= m.psychicNext && CAN_DISTRACT[m.state] && m.state !== 'pump') { // Phone a Psychic
+        this.release(m);
+        m.state = 'distract'; m.dkind = 'phone'; m.timer = NYA.PSYCHIC_CALL; m.path = []; m.pathI = 0;
+        m.psychicNext = this.t + NYA.PSYCHIC_CALL + NYA.PSYCHIC_TIME + NYA.PSYCHIC_GAP[0] + this.rng.next() * (NYA.PSYCHIC_GAP[1] - NYA.PSYCHIC_GAP[0]);
+        this.emote(m, 'phone', NYA.PSYCHIC_CALL);
+        this.ev({ t: 'distract', m: m.id, kind: 'phone' });
+        return;
+      }
       if (CAN_DISTRACT[m.state] && this.rng.chance(this.whimsyOf(m) * dt)) { this.distract(m); return; }
 
       const M = this.mine;
@@ -376,7 +385,10 @@
         case 'distract':
           m.timer -= dt;
           if (m.dkind === 'butterfly' && m.pathI < m.path.length) this.move(m, dt, m.s.pace, false);
-          if (m.timer <= 0) { m.dkind = null; this.toIdle(m); }
+          if (m.timer <= 0) {
+            if (m.dkind === 'phone') { m.psychicT = this.t + NYA.PSYCHIC_TIME; this.emote(m, 'psychic', 1.5); this.ev({ t: 'psychic', m: m.id }); }
+            m.dkind = null; this.toIdle(m);
+          }
           return;
         case 'pbuild': {
           const p = this.pumps[m.pumpNode];
@@ -614,7 +626,24 @@
       const cands = [];
       const fr = this.frontier;
       const K = m.s.focus;
-      if (fr.length) {
+      // Phone a Psychic, after the call: weighs every frontier tile, and knows where the best ore is even under fog
+      const psychic = m.psychicT > this.t;
+      let psyStep = -1;
+      if (psychic && fr.length) {
+        let goal = -1, gv = -1e9;
+        for (let i = 0; i < M.n; i++) {
+          if (M.type[i] !== T.ORE || M.forbid[i]) continue;
+          const v = this.valueOf(i, m) - this.manhattan(i, m.tile) * 0.25;
+          if (v > gv) { gv = v; goal = i; }
+        }
+        if (goal >= 0) {
+          if (this.isFront[goal]) psyStep = goal;
+          else { let bd = 1e9; for (const i of fr) { if (M.forbid[i]) continue; const d = this.manhattan(i, goal); if (d < bd) { bd = d; psyStep = i; } } }
+          if (psyStep >= 0) cands.push(psyStep);
+        }
+        for (const i of fr) cands.push(i);
+      }
+      if (fr.length && !psychic) {
         const local = [];
         const mx = M.x(m.tile), my = M.y(m.tile);
         const localR = Math.max(6, this.noticeRange);
@@ -661,6 +690,7 @@
         let score = this.valueOf(c, m) * 1.4 - sd * 0.18 + rng.next() * 0.8 - this.claims[c] * 1.5;
         if (M.mochi[c] && this.claims[c] === 1) score += 4.5; // a lone pounder needs a partner
         if (crowd.length) for (const k of crowd) if (this.manhattan(c, k) <= 3) { score -= NYA.LONER_PENALTY; break; }
+        if (c === psyStep) score = Math.max(score, 0.2) * 3 + 10;
         const marked = markSet.has(c);
         if (marked) score = Math.max(score, 0.2) * 10 + 8;
         if (farMarks.length) {

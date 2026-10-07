@@ -46,7 +46,10 @@
   NYA.tierMud = t => t < 2 ? 0 : Math.min(0.3, 0.06 * (t - 1));     // share of the mine floor that's mud
   NYA.tierRubble = t => t < 2 ? 0 : Math.min(0.6, 0.12 * (t - 1));  // chance a broken rock tile leaves rubble
   NYA.RAMPAGE_TIRED = 0.2; // Destructive Urges heads home with her bag below this share of her stamina
-  NYA.LONER_PENALTY = 3;  // target-score penalty for a Loner on tiles near other miners or their targets
+  NYA.LONER_PENALTY = 3;
+  // Phone a Psychic: every PSYCHIC_GAP s (±) she spends PSYCHIC_CALL s on the phone, then PSYCHIC_TIME s of
+  // perfect focus that sees through fog (she heads for the best ore in the mine, seen or not)
+  NYA.PSYCHIC_GAP = [20, 35]; NYA.PSYCHIC_CALL = 3; NYA.PSYCHIC_TIME = 12;  // target-score penalty for a Loner on tiles near other miners or their targets
   NYA.MUD_SLOW = 0.5; NYA.RUBBLE_SLOW = 0.65; NYA.TANGLE_SLOW = 0.4;
   NYA.RUBBLE_STEPS = 2;
 
