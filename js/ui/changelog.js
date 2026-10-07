@@ -17,7 +17,7 @@
         'Fixed: Bunk Beds that ask for perfect clears of a mine no longer make you go back to it once you’ve moved on to a deeper mine.',
         'Event mines keep their rules on show in the Office (and on Tanuki’s purrmit list): while one is queued, up next, or running, with its current catnip bonus.',
         'Last one standing: once everyone still on shift is at a pump (the rest have flopped), they crank 3× as fast and tire 3× as fast. Same milk for the same stamina, minus the waiting.',
-        'New trait: Destructive Urges. +15% Power and hits mice harder, but she won’t head home with a full bag until she’s tired. Catnip that won’t fit is left on the floor for the rest of the crew, and she never works a pump.',
+        'New trait: Destructive Urges. +15% Power, but she won’t head home with a full bag until she’s tired. Catnip that won’t fit is left on the floor for the rest of the crew, and she never works a pump.',
         'Loner now really is a loner: she avoids tiles near other miners and wherever they’re headed, even if it means a longer walk. She gets her +25% Power bonus far more often (76% of her swings, up from about half).',
       ],
     },

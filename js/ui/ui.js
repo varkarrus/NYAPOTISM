@@ -711,7 +711,7 @@
         <div class="tc-front"><div class="tc-top">TRAIT GET! <small>Lv ${d.level || d.cg.level}</small></div><div class="tc-por"></div>
           <div class="tc-who">${esc(d.cg.name)}</div><div class="tc-name">${esc(t.name)}</div>
           <div class="tc-rar">${R.name} · ${t.kind === 'pos' ? 'Positive' : t.kind === 'neg' ? 'Negative' : 'Mixed'}</div>
-          <div class="tc-desc">${esc(t.desc)}</div><div class="tc-flav">${esc(t.flavor)}</div>
+          <div class="tc-desc">${esc(NYA.traitDesc(t, this.g))}</div><div class="tc-flav">${esc(t.flavor)}</div>
           ${mine ? `<div class="tc-mine">rolled in ${esc(mine.name)}</div>` : ''}</div></div></div>`;
       el.querySelector('.tc-por').appendChild(NYA.portrait('cg' + d.cg.id, { fur: d.cg.fur, hair: d.cg.hair, outfit: d.cg.outfit, hat: true }, 64));
       el.className = 'show';
@@ -912,7 +912,7 @@
         const u = NYA.UPG[a]; const l = g.lvl(a);
         return `<b>${esc(u.name)}</b>${u.max > 1 ? ` <small>Lv ${l}/${u.max}</small>` : ''}<br>${esc(u.desc)}${u.fx ? `<br><span class="tfx">Now: ${esc(u.fx(l) || '—')}${l < u.max ? ' → ' + esc(u.fx(l + 1)) : ''}</span>` : ''}<div class="tfl">${esc(u.flavor || '')}</div>`;
       }
-      if (k === 'trait') { const t = NYA.TRAIT[a]; return `<b style="color:${NYA.RARITY[t.rarity].color}">${esc(t.name)}</b> <small>${NYA.RARITY[t.rarity].name}</small><br>${esc(t.desc)}<div class="tfl">${esc(t.flavor)}</div>`; }
+      if (k === 'trait') { const t = NYA.TRAIT[a]; return `<b style="color:${NYA.RARITY[t.rarity].color}">${esc(t.name)}</b> <small>${NYA.RARITY[t.rarity].name}</small><br>${esc(NYA.traitDesc(t, g))}<div class="tfl">${esc(t.flavor)}</div>`; }
       if (k === 'stat') {
         const cg = g.crewById(+a); if (!cg) return '';
         const st = g.statsFor(cg); const parts = st.parts[b]; const info = NYA.STAT_INFO[b];
