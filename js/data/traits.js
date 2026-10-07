@@ -13,6 +13,8 @@
   // kind: pos | mixed | neg
   // mines: weight multipliers keyed by mine key — "mine-flavored rolls"
   // tier: can't roll until you've ever reached that tier (no naming tangles, boxes or milk before you've seen them)
+  // req(cg): only catgirls who pass can roll it. onGain(cg): runs once when she gets it.
+  // ova: never rolls normally; handed out by that OVA's limiter and removed when it ends
   NYA.TRAITS = [
     // --- Mining
     { id: 'chunky', name: 'Chunky', kind: 'mixed', rarity: 'common', desc: '+30% Power, −15% Pace.', flavor: 'A thicc queen.', mods: { powerMult: 1.3, paceMult: 0.85 } },
@@ -70,13 +72,29 @@
     { id: 'milk_mustache', tier: 4, name: 'Milk Mustache', kind: 'mixed', rarity: 'common', desc: '+20% Stamina, −10% Haste.', flavor: 'Has not noticed. Nobody will tell her.', mods: { staminaMult: 1.2, hasteMult: 0.9 }, mines: { dairy: 4 } },
 
     // --- Box
+    // --- Breed and aptitude
+    { id: 'hot_water_bottle', name: 'Hot Water Bottle', kind: 'pos', rarity: 'uncommon', req: cg => !!(NYA.FURS[cg.fur] && NYA.FURS[cg.fur].sphynx),
+      desc: 'Sphynx only. Runs warm: anyone who loafs within 2 tiles of her (her too) cuddles up and gets 6% stamina back.', flavor: 'No fur, all heat. The crew fights over who gets to nap on her.', mods: { hotWater: 1 } },
+    { id: 'underdog', name: 'Underdog', kind: 'pos', rarity: 'rare', req: cg => cg.apt === 0,
+      desc: 'C-rank aptitude only. Her aptitude jumps straight to SS.', flavor: 'Everyone said she’d never make it. Everyone is now very quiet.', mods: {}, onGain: cg => { cg.apt = NYA.APT_SS; } },
+
+    // --- Box
     { id: 'box_whisperer', tier: 3, name: 'Box Whisperer', kind: 'pos', rarity: 'rare', desc: '+3% Schrödinger’s Box chance per episode while she’s on shift.', flavor: 'Hears a hum nobody else hears.', mods: { boxWhisperer: 0.03 }, mines: { yarn: 5 } },
 
     // --- Legendary
     { id: 'nine_lives', name: 'Nine-Lives Energy', kind: 'pos', rarity: 'legendary', desc: 'Once per shift, a flop instantly restores 100% stamina.', flavor: 'Has died zero times. Plans to use all nine anyway.', mods: { nineLives: 1 } },
     { id: 'main_character', name: 'Main Character Syndrome', kind: 'pos', rarity: 'legendary', desc: '+50% all stats; every other miner gets −5% for being a side character.', flavor: 'Has an opening theme. Hums it constantly.', mods: { mainChar: 1 } },
+    { id: 'caffeine_addict', name: 'Caffeine Addict', kind: 'pos', rarity: 'legendary', desc: 'Does everything twice as fast (swings, walking, pumping, even loafing). Stamina drains 2.2× as fast.', flavor: 'Has not blinked since Tuesday.', mods: { hasteMult: 2, paceMult: 2, caffeine: 1 } },
     { id: 'midas_paw', name: 'Midas Paw', kind: 'pos', rarity: 'legendary', desc: '10% chance any catnip item drops at +2 quality.', flavor: 'Everything she touches turns to slightly better catnip.', mods: { midas: 0.1 } },
+
+    // --- OVA: No OSHA Compliance injuries (they heal when the OVA ends)
+    { id: 'concussed', ova: 'osha', name: 'Concussed', kind: 'neg', rarity: 'common', desc: '−2 Focus, +50% Whimsy.', flavor: 'Sees little birds. Is chasing the little birds.', mods: { focusAdd: -2, whimsyMult: 1.5 } },
+    { id: 'punch_drunk', ova: 'osha', name: 'Punch Drunk', kind: 'neg', rarity: 'common', desc: '−25% Pace, −15% Haste.', flavor: 'Walks in a straight line. A very wobbly straight line.', mods: { paceMult: 0.75, hasteMult: 0.85 } },
+    { id: 'drain_bamage', ova: 'osha', name: 'Drain Bamage', kind: 'neg', rarity: 'common', desc: '−40% XP.', flavor: 'Has forgotten what XP stands for. And what a pickaxe is. Mostly the pickaxe.', mods: { xpMult: 0.6 } },
+    { id: 'toofless', ova: 'osha', name: 'Toofless', kind: 'neg', rarity: 'common', desc: '−25% Power.', flavor: 'Lost a fang to a rock. Every “nya” is now a “nyath.”', mods: { powerMult: 0.75 } },
   ];
+  NYA.OSHA_INJURIES = ['concussed', 'punch_drunk', 'drain_bamage', 'toofless'];
+  NYA.OSHA_INJURY = 0.4; // chance per level-up in the No OSHA Compliance OVA
 
   NYA.TRAIT = {};
   for (const t of NYA.TRAITS) NYA.TRAIT[t.id] = t;
@@ -84,8 +102,8 @@
   NYA.TRAIT_LEVELS = [3, 8, 15, 25, 40];
 
   // Roll a trait for a catgirl in a given mine. Kinds 55/25/20, rarity-weighted, mine-flavored.
-  NYA.rollTrait = function (rng, owned, mineKey, luck, maxTier) {
-    const known = t => !t.tier || (maxTier || 1) >= t.tier;
+  NYA.rollTrait = function (rng, owned, mineKey, luck, maxTier, cg) {
+    const known = t => !t.ova && (!t.tier || (maxTier || 1) >= t.tier) && (!t.req || (cg && t.req(cg)));
     const kind = rng.weighted([['pos', 55 + (luck || 0)], ['mixed', 25], ['neg', Math.max(5, 20 - (luck || 0))]]);
     const pool = [];
     for (const t of NYA.TRAITS) {

@@ -235,6 +235,7 @@
     swingCost(m) {
       let c = this.resist * Math.pow(0.99, m.s.grit);
       if (m.wetT > 0) c *= this.cfg.wetDrain || NYA.WET_DRAIN; // swings and walking both cost double while wet
+      if (m.s.flags.caffeine) c *= 1.1; // Caffeine Addict: twice as fast, 2.2× the drain
       if (m.s.flags.nightOwl && m.stamina < 0.25 * m.maxSt) c *= 0.5;
       return c;
     }
@@ -370,8 +371,9 @@
         case 'pbuild': {
           const p = this.pumps[m.pumpNode];
           if (!p || M.type[m.pumpNode] !== T.MILK) { this.release(m); this.toIdle(m); return; }
-          m.timer -= dt; m.swingAnim = 0.25 * (Math.sin(this.t * 14) > 0 ? 1 : 0);
-          m.stamina -= this.swingCost(m) * dt;
+          const cafB = m.s.flags.caffeine ? 2 : 1;
+          m.timer -= dt * cafB; m.swingAnim = 0.25 * (Math.sin(this.t * 14) > 0 ? 1 : 0);
+          m.stamina -= this.swingCost(m) * dt * cafB;
           if (m.stamina <= 0) { this.zeroStamina(m); return; }
           if (m.timer <= 0) {
             p.built = true;
@@ -402,9 +404,10 @@
           const node = m.pumpNode, p = this.pumps[node];
           if (!p || M.type[node] !== T.MILK) { this.release(m); this.toIdle(m); return; }
           m.swingAnim = 0.25 * (0.5 + 0.5 * Math.sin(this.t * 6));
-          m.stamina -= this.swingCost(m) * 0.6 * dt;
+          const cafP = m.s.flags.caffeine ? 2 : 1;
+          m.stamina -= this.swingCost(m) * 0.6 * dt * cafP;
           const L = Math.max(1, this.homeDist[p.stand]);
-          let flow = this.pumpRate * dt * (m.s.flags.lactose ? 1.3 : 1) / (1 + L / NYA.PIPE_HALF);
+          let flow = this.pumpRate * dt * cafP * (m.s.flags.lactose ? 1.3 : 1) / (1 + L / NYA.PIPE_HALF);
           flow = Math.min(flow, M.milk[node]);
           M.milk[node] -= flow; this.haul.milk += flow; m.milk += flow;
           p.pumping = this.t;
@@ -542,6 +545,11 @@
       } else if (kind === 'groom') m.timer = 2;
       else if (kind === 'loaf') { m.timer = 3; if (this.cfg.loafPower) m.stamina = Math.min(m.maxSt, m.stamina + m.maxSt * this.cfg.loafPower); } // OVA perk: Loaf Power
       else m.timer = 2;
+      if (m.s.flags.caffeine) m.timer *= 0.5; // even her loafing is fast
+      if (kind === 'loaf' && this.miners.some(o => o.s.flags.hotWater && Math.abs(o.x - m.x) + Math.abs(o.y - m.y) <= 2.01)) { // Hot Water Bottle
+        m.stamina = Math.min(m.maxSt, m.stamina + m.maxSt * 0.06);
+        this.emote(m, 'heart', 1.5);
+      }
       this.ev({ t: 'distract', m: m.id, kind });
       if (kind === 'loaf' && this.miners.length >= 3 && !this.st.allLoaf &&
         this.miners.every(o => o.state === 'distract' && o.dkind === 'loaf')) {
@@ -982,7 +990,7 @@
 
     deliver(m) {
       if (!m.bag.length) return 0;
-      let delivered = 0, value = 0;
+      let delivered = 0, value = 0, sushi = 0, cheese = 0;
       for (const it of m.bag) {
         if (m.s.flags.menace && this.rng.chance(m.s.flags.menace)) {
           this.haul.lost++;
@@ -990,8 +998,8 @@
           this.ev({ t: 'menace', m: m.id });
           continue;
         }
-        if (it.sushi) { this.haul.sushi += it.sushi; this.haul.items++; delivered++; continue; } // nigiri: sushi, no catnip
-        if (it.cheese) { this.haul.cheese += it.cheese; delivered++; continue; } // mouse crumbs and nest wheels
+        if (it.sushi) { this.haul.sushi += it.sushi; sushi += it.sushi; this.haul.items++; delivered++; continue; } // nigiri: sushi, no catnip
+        if (it.cheese) { this.haul.cheese += it.cheese; cheese += it.cheese; delivered++; continue; } // mouse crumbs and nest wheels
         const v = this.itemValue(it);
         value += v; delivered++;
         this.haul.value += v; this.haul.items++;
@@ -1000,7 +1008,7 @@
         if (it.glow) this.haul.glow++;
       }
       m.bag = [];
-      this.ev({ t: 'drop', m: m.id, n: delivered, value });
+      this.ev({ t: 'drop', m: m.id, n: delivered, value, sushi, cheese });
       return delivered;
     }
 

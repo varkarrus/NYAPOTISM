@@ -115,11 +115,16 @@
       return parts;
     }
     catnipMult() { return this.catnipMultParts().reduce((a, p) => a * p[1], 1); }
+    // Catnip per point of ore value, before the Full-Clear Bonus (Refinery × global × event mine). Ore labels,
+    // drop-off pops and the running haul total all use it.
+    nipMult(ep) { return this.refineryMult() * this.catnipMult() * (ep && ep.event ? 1.5 * (1 + 0.15 * ep.wishes) : 1); }
+    haulCatnip(ep) { return (ep.haul.value + ep.haul.thread * 40 * ep.tierBase) * this.nipMult(ep); }
     xpMult() {
       let m = 1 + this.faxBonus().xp;
       m *= Math.pow(2, this.loom('km_xp'));
       if (this.loomColDone(1)) m *= 1.5;
       if (this.loomColDone(3)) m *= 1.5;
+      m *= 1 + 0.15 * this.ovaPerk('osha'); // OVA perk: Hazard Pay
       return m;
     }
     refineryMult() { return this.ovaIs('budget') ? 1 : Math.pow(1.5, this.lvl('refinery')); }
@@ -163,7 +168,7 @@
     ovaGoal() { const o = this.s.ova && NYA.OVA[this.s.ova.id]; return o ? o.goals[this.s.ova.rel] : null; }
     ovaCfg() {
       return { lightsOut: this.ovaIs('lights'), timeLimit: this.ovaIs('nine') ? NYA.OVA_TIME_LIMIT : 0,
-        noLaser: this.ovaIs('nolaser'), loafPower: 0.04 * this.ovaPerk('monday') };
+        noLaser: this.ovaIs('nolaser'), loafPower: 0.04 * this.ovaPerk('monday'), noHats: this.ovaIs('osha') };
     }
     // start an OVA instead of a normal unravel: you still get this run's yarn on the way out
     startOva(id) {
@@ -555,8 +560,8 @@
       this.s.catnip -= cost;
       if (this.loom('ta_fresh')) {
         cg.level = 3;
-        const tid = NYA.rollTrait(this.rng, cg.traits, 'burrow', 0, Math.max(this.s.maxTierReached, this.s.life.maxTier || 0));
-        if (tid) { cg.traits.push(tid); cg.traitMines.push('burrow'); }
+        const tid = NYA.rollTrait(this.rng, cg.traits, 'burrow', 0, Math.max(this.s.maxTierReached, this.s.life.maxTier || 0), cg);
+        if (tid) { cg.traits.push(tid); cg.traitMines.push('burrow'); if (NYA.TRAIT[tid].onGain) NYA.TRAIT[tid].onGain(cg); }
       }
       this.s.crew.push(cg);
       (roomActive ? this.s.active : this.s.reserve).push(cg.id);
@@ -603,15 +608,25 @@
         cg.level++;
         gained++;
         if (NYA.TRAIT_LEVELS.indexOf(cg.level) >= 0) {
-          const tid = NYA.rollTrait(this.rng, cg.traits, mineKey, 0, Math.max(this.s.maxTierReached, this.s.life.maxTier || 0));
+          const tid = NYA.rollTrait(this.rng, cg.traits, mineKey, 0, Math.max(this.s.maxTierReached, this.s.life.maxTier || 0), cg);
           if (tid) {
             cg.traits.push(tid); cg.traitMines.push(mineKey);
+            if (NYA.TRAIT[tid].onGain) NYA.TRAIT[tid].onGain(cg);
             this.s.life.traits++;
             const t = NYA.TRAIT[tid];
             if (t.rarity === 'legendary') this.s.life.legendaries++;
             this.novel('trait:first', 'First trait roll! ' + cg.name + ' rolled ' + t.name, 'trait');
             if (t.rarity === 'legendary') this.novel('trait:legendary', 'LEGENDARY TRAIT: ' + t.name, 'trait');
             this.emit('trait', { cg, tid, mineKey, level: cg.level });
+          }
+        }
+        if (this.ovaIs('osha') && this.rng.chance(NYA.OSHA_INJURY)) { // OVA: No OSHA Compliance
+          const hurt = NYA.OSHA_INJURIES.filter(id => cg.traits.indexOf(id) < 0);
+          if (hurt.length) {
+            const tid = this.rng.pick(hurt);
+            cg.traits.push(tid); cg.traitMines.push(mineKey);
+            this.s.life.injuries = (this.s.life.injuries || 0) + 1;
+            this.emit('toast', { text: '💥 ' + cg.name + ' leveled up… and is now ' + NYA.TRAIT[tid].name + '. (No hard hats!)', kind: 'warn' });
           }
         }
       }
@@ -1013,6 +1028,9 @@
       const keepN = this.anchorSlots();
       const kept = s.crew.slice().sort((a, b) => (b.level - a.level) || (b.xp - a.xp)).slice(0, keepN);
       for (const c of kept) { c.anchored = true; c.seasons++; }
+      if (s.ova && s.ova.id === 'osha') { // No OSHA Compliance is over: the injuries heal
+        for (const c of kept) for (let k = c.traits.length - 1; k >= 0; k--) if ((NYA.TRAIT[c.traits[k]] || {}).ova) { c.traits.splice(k, 1); c.traitMines.splice(k, 1); }
+      }
       s.season++;
       s.ova = opts.ova || null;
       this._ovaClear = false;

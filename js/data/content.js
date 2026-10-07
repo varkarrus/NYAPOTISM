@@ -103,7 +103,9 @@
     { g: 'B', mult: 0.9, w: 36 },
     { g: 'A', mult: 1.1, w: 22 },
     { g: 'S', mult: 1.35, w: 8 },
+    { g: 'SS', mult: 1.6, w: 0 }, // never rolled: only the Underdog trait gets you here
   ];
+  NYA.APT_SS = 4;
 
   // ---------- Cast ----------
   NYA.CAST = {

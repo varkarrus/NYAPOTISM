@@ -223,8 +223,15 @@
             this.sfx('ore', e.q);
             break;
           }
-          case 'drop':
-            if (m && e.n) { this.pop(m.x + 0.5, m.y - 0.3, '+' + e.n + ' nip', '#7af0a0', false); this.sfx('drop', e.n); }
+          case 'drop': // what she just delivered, in catnip after multipliers (before the Full-Clear Bonus)
+            if (m && e.n) {
+              const nip = e.value * this.game.nipMult(ep);
+              if (nip > 0) this.pop(m.x + 0.5, m.y - 0.3, '+' + NYA.fmt(nip), '#7af0a0', false);
+              if (e.sushi) this.pop(m.x + 0.5, m.y - (nip > 0 ? 0.75 : 0.3), '+' + e.sushi + ' sushi', '#ff8a5c', false);
+              if (e.cheese) this.pop(m.x + 0.5, m.y - (nip > 0 || e.sushi ? 0.75 : 0.3), '+' + e.cheese + ' cheese', '#ffd96a', false);
+              this.haulBump = 0.35;
+              this.sfx('drop', e.n);
+            }
             break;
           case 'pickup': this.sfx('ore', e.q); break;
           case 'distract': if (e.kind === 'loaf' && Math.random() < 0.5) this.sfx('mew'); break;
@@ -345,7 +352,8 @@
       const tex = this.tex, t = this.time;
       const game = this.game;
       this.drawSurface(ctx, M, ts, t);
-      const showDQ = game.s.settings.showDQ;
+      this.drawHaulTotal(ctx, M, ts, rdt, game.haulCatnip(ep));
+      const valMult = game.s.settings.showDQ ? game.nipMult(ep) : 0; // "Show catnip value on ore"
       const sparkles = game.lvl('sonar') > 0;
 
       // tiles
@@ -392,7 +400,7 @@
             ctx.drawImage(base[v], X, Y, ts, ts);
             if (ty === T.ORE && M.mochi[i]) this.drawMochi(ctx, X, Y, ts, i, t);
             else if (ty === T.ORE && M.sushi[i]) this.drawNigiriTile(ctx, X, Y, ts, i, t);
-            else if (ty === T.ORE) this.drawOre(ctx, X, Y, ts, i, t, showDQ);
+            else if (ty === T.ORE) this.drawOre(ctx, X, Y, ts, i, t, valMult);
             else if (ty === T.NEST) this.drawNest(ctx, X, Y, ts, i, t);
             if (ty === T.GROOVE && Math.sin(t * 2 + M.groove[i]) > 0.92) { ctx.fillStyle = 'rgba(255,240,200,0.25)'; ctx.fillRect(X, Y, ts, ts); }
             const f = M.hp[i] / M.maxHp[i];
@@ -595,7 +603,24 @@
       }
     }
 
-    drawOre(ctx, X, Y, ts, i, t, showDQ) {
+    // Running total of this shift's catnip (after multipliers, before the Full-Clear Bonus), up in the sky strip.
+    drawHaulTotal(ctx, M, ts, rdt, total) {
+      const H = Math.min(this.oy + 2, ts * 3);
+      if (H < ts * 0.9) return;
+      if (this.haulBump > 0) this.haulBump = Math.max(0, this.haulBump - rdt);
+      const s = Math.max(12, Math.min(ts * 0.6, H * 0.36)) * (1 + 0.5 * (this.haulBump || 0));
+      const X = ts * 0.35, Y = -H * 0.42;
+      ctx.textAlign = 'left';
+      ctx.font = `700 ${Math.max(9, s * 0.48)}px "M PLUS Rounded 1c", sans-serif`;
+      ctx.lineWidth = 3; ctx.strokeStyle = '#1a1020';
+      ctx.strokeText('THIS SHIFT', X, Y - s * 0.95); ctx.fillStyle = '#fff2dc'; ctx.fillText('THIS SHIFT', X, Y - s * 0.95);
+      ctx.font = `900 ${s}px "Mochiy Pop One", sans-serif`;
+      const txt = NYA.fmt(total) + ' nip';
+      ctx.lineWidth = Math.max(3, s * 0.2); ctx.strokeText(txt, X, Y);
+      ctx.fillStyle = '#7af0a0'; ctx.fillText(txt, X, Y);
+    }
+
+    drawOre(ctx, X, Y, ts, i, t, valMult) {
       const M = this.ep.mine;
       const left = M.dens[i] - M.dropped[i];
       const q = Math.min(9, M.q[i] + (M.glow[i] ? 2 : 0));
@@ -623,11 +648,12 @@
         ctx.lineWidth = 3; ctx.strokeStyle = '#1a1020'; ctx.strokeText(String(left), X + ts * 0.96, Y + ts * 0.34);
         ctx.fillStyle = ml ? '#ff7eb6' : '#fff'; ctx.fillText(String(left), X + ts * 0.96, Y + ts * 0.34);
       }
-      if (showDQ) {
-        const s = Math.max(8, ts * 0.24);
-        ctx.font = `700 ${s}px monospace`; ctx.textAlign = 'left';
-        ctx.lineWidth = 2.5; ctx.strokeStyle = '#000'; ctx.strokeText('d' + left + 'q' + q, X + 2, Y + ts - 3);
-        ctx.fillStyle = '#fff'; ctx.fillText('d' + left + 'q' + q, X + 2, Y + ts - 3);
+      if (valMult) { // catnip this tile is still worth, after multipliers (before the Full-Clear Bonus)
+        const txt = NYA.fmt(left * this.ep.itemValue({ q, d: M.dens[i] }) * valMult);
+        const s = Math.max(8, Math.min(ts * 0.27, ts * 1.7 / Math.max(3, txt.length)));
+        ctx.font = `800 ${s}px "M PLUS Rounded 1c", sans-serif`; ctx.textAlign = 'center';
+        ctx.lineWidth = 2.5; ctx.strokeStyle = '#000'; ctx.strokeText(txt, X + ts / 2, Y + ts - 2);
+        ctx.fillStyle = '#b8ffcf'; ctx.fillText(txt, X + ts / 2, Y + ts - 2);
       }
       if (Math.sin(t * 2.5 + i * 1.7) > 0.95) {
         ctx.fillStyle = '#fff';
@@ -916,7 +942,7 @@
       const X = (x + 0.5) * ts, Y = (y + 0.92) * ts - lift * ts;
       const look = m.cg;
       if (m.ghost) { ctx.globalAlpha = 0.55 + 0.15 * Math.sin(t * 3 + m.id); }
-      NYA.drawCatgirl(ctx, X, Y - (m.ghost ? ts * 0.08 * (1 + Math.sin(t * 2 + m.id)) : 0), ts * 0.98, { fur: look.fur, hair: look.hair, outfit: look.outfit, hat: true }, {
+      NYA.drawCatgirl(ctx, X, Y - (m.ghost ? ts * 0.08 * (1 + Math.sin(t * 2 + m.id)) : 0), ts * 0.98, { fur: look.fur, hair: look.hair, outfit: look.outfit, hat: !ep.cfg.noHats }, {
         lantern: !!m.ghost || this.ep.eventKey === 'obon',
         anim, t: t + m.id * 0.37, face, swing, eyes, mouth, droop, bag: m.bag.length, lamp: true, fold: m.s.fold || 0, ghost: m.ghost,
       });

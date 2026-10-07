@@ -404,9 +404,9 @@
       const ep = g.episode;
       if (ep) {
         const left = ep.resLeft;
-        const est = ep.haul.value * g.refineryMult() * g.catnipMult();
+        const est = g.haulCatnip(ep); // after multipliers, before the Full-Clear Bonus
         const marks = ep.marks.filter(m => !m.drone).length;
-        this.el.hud.innerHTML = `<span>⏱ ${NYA.fmtTime(ep.t)}</span><span>Ore tiles left <b>${left}</b></span><span>Haul <b>${ep.haul.items}</b> items ≈ ${NIP}<b>${fmt(est)}</b></span>${ep.def.quirk === 'milk' ? `<span>🥛 <b>${fmt(ep.haul.milk)}</b></span>` : ''}${ep.waterOn ? `<span>🍣 <b>${fmt(ep.haul.sushi)}</b></span>` : ''}${ep.miceOn ? `<span>🧀 <b>${fmt(ep.haul.cheese)}</b></span><span>🐭 <b>${ep.mice.length}</b></span><span data-tip="tool:turret">🎯 ${ep.turrets.length}/${ep.maxTurrets}</span>` : ''}<span class="lz">🔴 ${marks}/${g.laserMax()}</span><span data-tip="sight">👁 Sight <b>${ep.noticeRange}</b>${ep.darkness ? ` <small>(darkness −${ep.darkness})</small>` : ''}</span>${ep.catterall ? '<span class="catt">CATTERALL</span>' : ''}${ep.t < ep.tunaUntil ? '<span class="tuna">TUNA TIME!</span>' : ''}${g.s.research ? `<span>🔨 ${esc(NYA.UPG[g.s.research.id].name)} ${Math.round(100 * (1 - g.s.research.left / g.s.research.total))}%</span>` : ''}`;
+        this.el.hud.innerHTML = `<span>⏱ ${NYA.fmtTime(ep.t)}</span><span>Ore tiles left <b>${left}</b></span><span class="haul" data-tip="haul">Haul ${NIP}<b>${fmt(est)}</b> <small>(${ep.haul.items} items)</small></span>${ep.def.quirk === 'milk' ? `<span>🥛 <b>${fmt(ep.haul.milk)}</b></span>` : ''}${ep.waterOn ? `<span>🍣 <b>${fmt(ep.haul.sushi)}</b></span>` : ''}${ep.miceOn ? `<span>🧀 <b>${fmt(ep.haul.cheese)}</b></span><span>🐭 <b>${ep.mice.length}</b></span><span data-tip="tool:turret">🎯 ${ep.turrets.length}/${ep.maxTurrets}</span>` : ''}<span class="lz">🔴 ${marks}/${g.laserMax()}</span><span data-tip="sight">👁 Sight <b>${ep.noticeRange}</b>${ep.darkness ? ` <small>(darkness −${ep.darkness})</small>` : ''}</span>${ep.catterall ? '<span class="catt">CATTERALL</span>' : ''}${ep.t < ep.tunaUntil ? '<span class="tuna">TUNA TIME!</span>' : ''}${g.s.research ? `<span>🔨 ${esc(NYA.UPG[g.s.research.id].name)} ${Math.round(100 * (1 - g.s.research.left / g.s.research.total))}%</span>` : ''}`;
       }
       this.updateTileInfo();
       this.updateCrewLive();
@@ -445,7 +445,7 @@
         if (ty === T.ORE) {
           const left = M.dens[i] - M.dropped[i], q = M.q[i] + (M.glow[i] ? 2 : 0), qi = NYA.qInfo(q);
           if (M.sushi[i]) html = `<b>Wild Nigiri</b> · <b>${left}</b> sushi · grows next to flooded chambers. Break it carefully!${hp}`;
-          else html = `<b>Catnip Ore</b>${i === M.motherlode ? ' <b style="color:#ff7eb6">MEOWTHERLODE</b>' : ''}${M.glow[i] ? ' <b style="color:#b4ff78">GLOWING</b>' : ''} · density <b>${left}</b> · quality <b style="color:${qi.color}">${q} ${qi.label}</b> · ≈${fmt(left * ep.itemValue({ q, d: M.dens[i] }))} ore value${hp}`;
+          else html = `<b>Catnip Ore</b>${i === M.motherlode ? ' <b style="color:#ff7eb6">MEOWTHERLODE</b>' : ''}${M.glow[i] ? ' <b style="color:#b4ff78">GLOWING</b>' : ''} · density <b>${left}</b> · quality <b style="color:${qi.color}">${q} ${qi.label}</b> · worth ${NIP}${fmt(left * ep.itemValue({ q, d: M.dens[i] }) * this.g.nipMult(ep))}${hp}`;
         } else if (ty === T.BOX) html = `<b>Schrödinger’s Box</b> — it hums.${hp}`;
         else if (ty === T.NEST) html = `<b>Mouse Nest</b> — sends out mice once it’s uncovered. Smash it for a Cheese Wheel (${NYA.CHEESE_WHEEL} cheese). Counts toward a perfect clear.${hp}`;
         else if (ty === T.OPEN) {
@@ -834,7 +834,7 @@
             <div class="seg">${['on', 'unfocused', 'off'].map(m => `<button class="${(s[kind + 'Mode'] || 'on') === m ? 'on' : ''}" data-act="sndmode:${kind}.${m}">${SND_LABEL[m]}</button>`).join('')}</div>
             <input type="range" min="0" max="1" step="0.05" value="${s[kind]}" data-vol="${kind}" title="Volume"></div>`).join('')}
           ${tog('nya', 'Soft “nya” per swing (will drive some people up the wall)')}
-          ${tog('shake', 'Screen shake')}${tog('flashes', 'Flashes')}${tog('showDQ', 'Show raw d/q numbers on ore')}
+          ${tog('shake', 'Screen shake')}${tog('flashes', 'Flashes')}${tog('showDQ', 'Show catnip value on ore')}
           ${tog('hideAnims', 'Hide pack-up animations (time cost is simulated either way)')}${tog('sci', 'Scientific notation')}${tog('vhs', 'VHS mode (scanlines)')}${tog('bgRun', 'Keep mining in background tabs (off: hidden time becomes Banked Time at ' + Math.round(this.g.bankEff() * 100) + '%)')}
         </div>
         <h3>Save</h3>
@@ -938,6 +938,7 @@
       if (k === 'catnip') return `<b>Catnip</b><br>Global multiplier ${NYA.fmtMult(g.catnipMult())}<br>${g.catnipMultParts().map(p => esc(p[0]) + ' ' + NYA.fmtMult(p[1])).join('<br>') || 'Earn faxes and yarn to grow it.'}<br>Season total: ${fmt(g.s.seasonCatnip)}`;
       if (k === 'snd') { const m = g.s.settings[a + 'Mode'] || 'on'; return `<b>${a === 'music' ? 'Music' : 'Sound effects'}: ${SND_LABEL[m]}</b><br>Click to cycle: On → Mute when unfocused → Muted.<br><small>Volume lives in Settings ⚙.</small>`; }
       if (k === 'sight') { const ep = g.episode; return `<b>Sight</b> = ${NYA.BASE_SIGHT} base + ${g.lvl('headlamp')} Headlamps − ${ep ? ep.darkness : 0} darkness = <b>${ep ? ep.noticeRange : '?'}</b><br>Miners notice ore within this many tiles on their own, even with a short attention span. Opened tiles reveal fog ${ep ? ep.revealR : 1} tile(s) around them.<br><small>Deeper mines are darker: −1 Sight every two tiers. Buy Headlamps in the R&D Lab.</small>`; }
+      if (k === 'haul') return `<b>This shift’s haul</b><br>Catnip your crew has delivered so far, after Refinery, global${g.episode && g.episode.event ? ' and event-mine' : ''} multipliers. A perfect clear multiplies it again by the Full-Clear Bonus (${NYA.fmtMult(g.fullClearMult())}) at the end.`;
       if (k === 'cheese') return `<b>Cheese</b><br>Mice drop crumbs, and every smashed Mouse Nest drops a whole Cheese Wheel. Spend it on turrets in the R&D Lab (Defense) and on Aged Gouda at the Refinery.`;
       if (k === 'sushi') return `<b>Sushi</b><br>Wild nigiri grows on the rocks of the Sushi Grotto, usually right next to the flooded chambers. Spend it at the Refinery's Sushi Bar.`;
       if (k === 'milk') return `<b>Milk</b><br>Pumped from milk nodes in the Dairy Depths. Spend it at the Refinery's Creamery.<br><small>Pump flow = rate ÷ (1 + pipe length ÷ ${NYA.PIPE_HALF}). Short pipes pump faster.</small>`;

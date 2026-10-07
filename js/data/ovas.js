@@ -60,6 +60,13 @@
       perk: 'Ace Protocol', perkText: L => 'Your first catgirl on shift gets ×' + NYA.OVA_ACE[L] + ' Power, Haste, Pace and Stamina',
       fax: 'ONE GIRL. ONE PICKAXE. ONE VERY LONG MONTAGE. ♡',
     },
+    {
+      id: 'osha', name: 'No OSHA Compliance', icon: '⛑️',
+      limiter: 'No hard hats. Every level-up has a 40% chance to leave her with an injury: Concussed, Punch Drunk, Drain Bamage or Toofless. They heal when the OVA ends.',
+      goals: [tier(3), tier(4), fc(4, 3)],
+      perk: 'Hazard Pay', perkText: L => '+' + (15 * L) + '% XP',
+      fax: 'THE HARD HATS WERE RECALLED. TORA SAYS SAFETY IS "A STATE OF MIND." ♡',
+    },
   ];
   NYA.OVA = {};
   NYA.OVAS.forEach((o, i) => { o.index = i; NYA.OVA[o.id] = o; });

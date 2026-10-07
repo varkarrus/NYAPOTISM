@@ -6,7 +6,7 @@ This picks up development of NYAPOTISM! after the first build sessions. `CLAUDE.
 
 The vertical slice is playable and live on GitHub Pages. `main` is at https://varkarrus.github.io/NYAPOTISM/, and the newest other branch is at https://varkarrus.github.io/NYAPOTISM/dev/. The user is away from their computer for a few days and playtests on `/dev/`, so push playable work to the session branch and add a changelog entry (`js/ui/changelog.js`). The build includes:
 - Tiers 1–6, with grooved chains, tangles + Schrödinger's Box, Dairy Depths pumping, Sushi Grotto flooding, and Mousehole Maze mice and turrets.
-- Six OVA challenge tapes.
+- Seven OVA challenge tapes.
 - Traits, the R&D tree and MEWCLEAR, eight actives, standing orders, and Banked Time.
 - Skein prestige into the Quantum Loom.
 - Tanuki's limited-time event mines and swing techniques.
@@ -59,6 +59,9 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Survey perfect-clear requirements only gate the first unlock (`NYA.surveyReq`) | Bug: they were re-checked every season, so post-S4 seasons never got past Tier 3 |
 | Bot resets its per-tier stats on unravel | Harness: stale stats kept the bot in old tiers after a reset |
 | `STORY_FAX.tier4` added | Bug: reaching Dairy Depths sent a blank fax |
+| Ore labels (setting `showDQ`, now "Show catnip value on ore"), drop-off pops, the HUD Haul and a "THIS SHIFT" total in the sky strip all show catnip after Refinery × global × event multipliers, before the Full-Clear Bonus (`game.nipMult(ep)`, `game.haulCatnip(ep)`) | User request: show catnip, not raw density/quality, and a visible running total |
+| Traits can have `req(cg)` (eligibility), `onGain(cg)` and `ova` (OVA-only). New: Caffeine Addict (legendary: ×2 Haste/Pace, pumping, building, distraction speed; swings cost ×1.1, so drain is 2.2× per second), Underdog (rare, C-rank only, sets aptitude to the new SS grade, `NYA.APT_SS`), Hot Water Bottle (Sphynx only: loafing within 2 tiles of her restores 6% stamina) | User trait ideas (the Sphynx trait was left to me) |
+| OVA 7, No OSHA Compliance (`osha`): `noHats`, 40% chance per level-up of an injury trait (Concussed, Punch Drunk, Drain Bamage, Toofless; `ova: 'osha'`), stripped from anchored catgirls when the OVA ends. Goals T3 / T4 / FC T4 ×3. Perk Hazard Pay +15% XP per release | User OVA idea |
 | Rough ground from Tier 2: mud patches (×0.5 walk speed) and rubble from broken rock (×0.65, trampled after 2 crossings). New Mud Puppy trait ignores both | Pace needed a per-tier counter-pressure. Pacing targets unchanged in the harness |
 
 ### Pacing targets vs current sims (active bot)

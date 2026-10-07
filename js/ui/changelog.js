@@ -6,6 +6,18 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Catnip values, new traits, a new OVA',
+      date: '2026-10-09',
+      items: [
+        'Settings → “Show catnip value on ore” (replaces the raw d/q numbers): each ore tile shows the catnip it’s still worth, after your Refinery and other multipliers (but before the perfect-clear bonus).',
+        'Drop-offs now pop the catnip that catgirl just delivered, and a running “THIS SHIFT” total sits in the sky above the mine. The Haul in the top bar shows the same number.',
+        'New legendary trait: Caffeine Addict. Does everything twice as fast (swings, walking, pumping, even loafing), but stamina drains 2.2× as fast.',
+        'New rare trait: Underdog. Only C-rank catgirls can roll it, and it bumps her aptitude straight to SS, a brand-new rank above S.',
+        'New Sphynx-only trait: Hot Water Bottle. Anyone who loafs within 2 tiles of her cuddles up and gets 6% stamina back.',
+        'A seventh OVA tape: No OSHA Compliance. No hard hats, and every level-up might leave a catgirl Concussed, Punch Drunk, Drain Bamaged or Toofless. They heal when it’s over. Perk: Hazard Pay (+XP).',
+      ],
+    },
+    {
       title: 'New rare eyecatcher',
       date: '2026-10-08',
       items: [
@@ -205,7 +217,7 @@
       'Tanuki’s limited-time event mines, R&D and MEWCLEAR, standing orders, swing techniques.',
       'Tier 5, Sushi Grotto (floods and sushi), around 3–5 hours in.',
       'Tier 6, Mousehole Maze (mice, turrets and cheese), around 4–5 hours in.',
-      'Late game: six OVA challenge episodes, 18 releases in all, each with a permanent perk.',
+      'Late game: seven OVA challenge episodes, 21 releases in all, each with a permanent perk.',
       'Not built yet: Tiers 7+, equipment, and more late-game content.',
     ],
   };
