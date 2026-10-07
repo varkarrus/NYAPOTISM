@@ -12,6 +12,7 @@
         'From Yarnball Caverns on, every ore tile holds more catnip items (×2 in Tier 3, ×3 in Tier 4, and so on), each worth proportionally less. A tile still pays the same and takes as long to break, but bags actually fill up and catgirls start bringing catnip home early in the shift instead of halfway through.',
         'Bigger Bags is cheaper (×2.1 per level, was ×2.3) and goes up to 30 levels, since Carry matters more now.',
         'Pump crews: a catgirl with nothing left to dig now comes back to help crank a pump someone’s already running (up to 3 helpers, each adding her own flow). No more watching the whole crew clock out while one catgirl pumps the last node alone.',
+        'Event mines keep their rules on show in the Office (and on Tanuki’s purrmit list): while one is queued, up next, or running, with its current catnip bonus.',
         'Last one standing: once everyone still on shift is at a pump (the rest have flopped), they crank 3× as fast and tire 3× as fast. Same milk for the same stamina, minus the waiting.',
         'New trait: Destructive Urges. +15% Power and hits mice harder, but she won’t head home with a full bag until she’s tired. Catnip that won’t fit is left on the floor for the rest of the crew, and she never works a pump.',
         'Loner now really is a loner: she avoids tiles near other miners and wherever they’re headed, even if it means a longer walk. She gets her +25% Power bonus far more often (76% of her swings, up from about half).',

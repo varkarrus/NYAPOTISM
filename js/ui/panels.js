@@ -92,10 +92,12 @@
         return `<div class="tape ${done >= 3 ? 'done' : ''}"><div class="tape-t">${o.icon} ${esc(o.name)}</div><div class="ms">${esc(o.limiter)}</div><ul>${rels}</ul>${btn}</div>`;
       }).join('') + `</div>`;
     }
-    // Tanuki event purrmits waiting in the queue
-    if (s.tanuki && (s.tanuki.queue.length || s.pendingEvent)) {
+    // Tanuki event mines: the one running now, the one up next, and purrmits waiting in the queue (each with its rules)
+    const runEv = g.episode && !g.episode.ended && g.episode.eventKey ? g.episode : null;
+    if ((s.tanuki && (s.tanuki.queue.length || s.pendingEvent)) || runEv) {
       h += `<h3 class="sec">🍃 Event Purrmits</h3><div class="mines">`;
-      if (s.pendingEvent) { const E = NYA.EVENTS[s.pendingEvent.ev]; h += `<div class="mine sel evq"><div class="mt">${E.icon}</div><div class="mi"><b>${esc(E.name)}</b> <span class="sz">T${s.pendingEvent.tier}</span><div class="desc">Runs next episode!</div></div></div>`; }
+      if (runEv) { const E = NYA.EVENTS[runEv.eventKey]; h += `<div class="mine sel evq"><div class="mt">${E.icon}</div><div class="mi"><b>${esc(E.name)}</b> <span class="sz">T${runEv.tier}</span><div class="desc">${esc(E.desc)}</div><div class="ms">Running now · catnip ×${(1.5 * (1 + 0.15 * runEv.wishes)).toFixed(2)}${runEv.wishes ? ` (${runEv.wishes} wish${runEv.wishes > 1 ? 'es' : ''})` : ''} · doesn’t count toward perfect clears for mine unlocks</div></div></div>`; }
+      if (s.pendingEvent) { const E = NYA.EVENTS[s.pendingEvent.ev]; h += `<div class="mine sel evq"><div class="mt">${E.icon}</div><div class="mi"><b>${esc(E.name)}</b> <span class="sz">T${s.pendingEvent.tier}</span><div class="desc">${esc(E.desc)}</div><div class="ms">Runs next episode!</div></div></div>`; }
       s.tanuki.queue.forEach((q, k) => { const E = NYA.EVENTS[q.ev]; h += `<div class="mine evq" data-act="runevent:${k}"><div class="mt">${E.icon}</div><div class="mi"><b>${esc(E.name)}</b> <span class="sz">T${q.tier}</span><div class="desc">${esc(E.desc)}</div><div class="ms">Click to run it next episode</div></div></div>`; });
       h += `</div>`;
     }
@@ -324,7 +326,7 @@
     else h += `<div class="note">🍃 The stall is packed up. Tanuki will be back in about <b data-live="tanNext">${NYA.fmtTime(Math.max(0, T.nextAt - s.simTime))}</b>. Probably. She is not great with schedules.</div>`;
     if (T.rain) h += `<h3 class="sec">Rain Check <small>one held · never expires</small></h3>` + card(T.rain, '(Rain Check — Tanuki left it when the stall closed.)', 'tanrain');
     if (T.queue.length) {
-      h += `<h3 class="sec">Your Event Purrmits</h3><div class="mines">` + T.queue.map((q, k) => { const E = NYA.EVENTS[q.ev]; return `<div class="mine evq" data-act="runevent:${k}"><div class="mt">${E.icon}</div><div class="mi"><b>${esc(E.name)}</b> <span class="sz">T${q.tier}</span><div class="ms">Click to run it next episode</div></div></div>`; }).join('') + `</div>`;
+      h += `<h3 class="sec">Your Event Purrmits</h3><div class="mines">` + T.queue.map((q, k) => { const E = NYA.EVENTS[q.ev]; return `<div class="mine evq" data-act="runevent:${k}"><div class="mt">${E.icon}</div><div class="mi"><b>${esc(E.name)}</b> <span class="sz">T${q.tier}</span><div class="desc">${esc(E.desc)}</div><div class="ms">Click to run it next episode</div></div></div>`; }).join('') + `</div>`;
     }
     h += `<p class="mini">Event mines so far: <b>${fmt(s.life.events || 0)}</b>${s.life.wishes ? ` · wishes made: <b>${fmt(s.life.wishes)}</b>` : ''}. File <b>Tanuki Auto-Buy</b> with Pochi (8 RP) to never miss one.</p>`;
     return h;

@@ -534,7 +534,7 @@
       else if (tab === 'pochi') parts.push(affOf('pochi'), s.orders.join(), g.runningOrders().join(), NYA.ORDER_ORDER.map(id => g.orderAvailable(id) ? 1 : 0).join(''));
       else if (tab === 'loom') parts.push(Math.floor(s.yarn), JSON.stringify(s.loom));
       else if (tab === 'tanuki') parts.push(JSON.stringify(s.tanuki.offer), JSON.stringify(s.tanuki.rain), s.tanuki.queue.length, s.catnip >= (s.tanuki.offer ? s.tanuki.offer.cost : Infinity), s.catnip >= (s.tanuki.rain ? s.tanuki.rain.cost : Infinity));
-      if (tab === 'office') parts.push(s.tanuki ? s.tanuki.queue.length + ':' + !!s.pendingEvent : '', JSON.stringify(s.ova), JSON.stringify(s.ovaDone), g.ovaShelfOpen());
+      if (tab === 'office') parts.push(s.tanuki ? s.tanuki.queue.length + ':' + !!s.pendingEvent : '', g.episode && !g.episode.ended ? (g.episode.eventKey || '') + ':' + g.episode.wishes : '', JSON.stringify(s.ova), JSON.stringify(s.ovaDone), g.ovaShelfOpen());
       return parts.join('|');
     }
     renderPanel(force) {
