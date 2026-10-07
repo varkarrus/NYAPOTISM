@@ -166,7 +166,8 @@
     desc: '+1 Focus: miners compare one more candidate tile before choosing.', flavor: 'A PowerPoint titled "Rocks: Which One?"',
     fx: l => '+' + l + ' Focus' });
   def({ id: 'resume', bld: 'lab', branch: 'Personnel', name: 'Résumé Reader', max: 1, base: 400, timer: 10,
-    show: g => g.s.hires >= 3,
+    // after the first run it's there from the start: anchored catgirls mean you may hire very few (playtest)
+    show: g => g.s.hires >= 3 || g.s.season > 1,
     desc: 'Reveals each catgirl’s hidden Aptitude (C to S), which scales her growth per level.', flavor: 'Turns out the résumés were written in paw. Doc Boom built a translator.',
     fx: l => l ? 'Aptitude visible' : '' });
 
