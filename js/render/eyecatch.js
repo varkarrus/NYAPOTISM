@@ -219,11 +219,15 @@
       gg.addColorStop(0, `rgba(140,200,255,${glow})`); gg.addColorStop(1, 'rgba(140,200,255,0)');
       ctx.fillStyle = gg; ctx.fillRect(cx - r * 4, cy - r * 4, r * 8, r * 8);
       ctx.fillStyle = '#4a4458'; ctx.beginPath(); ctx.arc(cx, cy, r * 0.62, 0, Math.PI * 2); ctx.fill(); // the core itself
+      const rim = Math.max(1.5, r * 0.07);
       ctx.fillStyle = '#c9d2e0'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI); ctx.closePath(); ctx.fill(); // lower shell
+      ctx.fillStyle = '#8a93a6'; ctx.fillRect(cx - r, cy - rim / 2, r * 2, rim); // its cut edge
       ctx.fillStyle = '#e8eef8'; ctx.fillRect(cx - r * 0.7, cy + r * 0.25, r * 0.5, r * 0.12);
-      const open = up ? -0.08 : -0.55; // the gap all but closes while nobody's looking
+      // upper shell, hinged at the right and lifted on the left (positive = clockwise, so the free end rises)
+      const open = up ? 0.08 : 0.55; // the gap all but closes while nobody's looking
       ctx.save(); ctx.translate(cx + r, cy); ctx.rotate(open);
-      ctx.fillStyle = '#d9e1ee'; ctx.beginPath(); ctx.arc(-r, 0, r, Math.PI, Math.PI * 2); ctx.closePath(); ctx.fill(); // upper shell
+      ctx.fillStyle = '#d9e1ee'; ctx.beginPath(); ctx.arc(-r, 0, r, Math.PI, Math.PI * 2); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#8a93a6'; ctx.fillRect(-r * 2, -rim / 2, r * 2, rim);
       ctx.fillStyle = '#ffffff'; ctx.fillRect(-r * 1.55, -r * 0.62, r * 0.4, r * 0.1);
       ctx.restore();
       // the screwdriver, from her paw into the gap
