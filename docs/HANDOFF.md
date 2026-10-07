@@ -59,6 +59,7 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Survey perfect-clear requirements only gate the first unlock (`NYA.surveyReq`) | Bug: they were re-checked every season, so post-S4 seasons never got past Tier 3 |
 | Bot resets its per-tier stats on unravel | Harness: stale stats kept the bot in old tiers after a reset |
 | `STORY_FAX.tier4` added | Bug: reaching Dairy Depths sent a blank fax |
+| From Tier 3, ore tiles hold `NYA.tierDensityMult(t)` = t−1 times more items, each worth, weighing (HP) and teaching (XP) that much less, so a tile pays and breaks the same. Bigger Bags growth 2.3 → 2.1, max 20 → 30 | Playtest: by Tier 3 the crew cleared half the mine before anyone's bag was full, so the haul read 0 for half the shift. First drop-off moved from ~50% of the shift to ~12–24% at T3/T4; T3 catnip/s −10%, offset by cheaper bags (S1 milestones unchanged, T4 at 82–94 min) |
 | Pumping drains `NYA.PUMP_DRAIN` (2) swing costs/s, was 0.6; base flow `NYA.PUMP_RATE` 8, was 5 | Playtest: the pumper outlasted everyone and the shift waited on one catgirl. Lone-pumper time per early T4 episode roughly halved (worst 44 s → 17 s), T4 episodes ~25% shorter, same milk per episode. T4 clears faster, so T5/T6 arrive ~0.3–0.8h earlier in the bot runs |
 | Ore labels (setting `showDQ`, now "Show catnip value on ore"), drop-off pops, the HUD Haul and a "THIS SHIFT" total in the sky strip all show catnip after Refinery × global × event multipliers, before the Full-Clear Bonus (`game.nipMult(ep)`, `game.haulCatnip(ep)`) | User request: show catnip, not raw density/quality, and a visible running total |
 | Traits can have `req(cg)` (eligibility), `onGain(cg)` and `ova` (OVA-only). New: Caffeine Addict (legendary: ×2 Haste/Pace, pumping, building, distraction speed; swings cost ×1.1, so drain is 2.2× per second), Underdog (rare, C-rank only, sets aptitude to the new SS grade, `NYA.APT_SS`), Hot Water Bottle (Sphynx only: loafing within 2 tiles of her restores 6% stamina) | User trait ideas (the Sphynx trait was left to me) |
@@ -106,6 +107,9 @@ The user has played through Tier 2 and an event mine. They called it "super addi
    - ~~Sushi Grotto~~ — built. Sushi's second sink should be Tier 6's purrmit (GDD).
    - ~~Mousehole Maze~~ — built (see above). More mouse and turret types are still to come.
    - The Big Haze: a marathon mine with several elevators.
+   - **Tabled mine quirk ideas from the user (not built):**
+     - *Icy:* very high Grit, but lots of open space, and much of it is ice that behaves like a sliding-ice puzzle (a catgirl slides until something stops her). Pathfinding has to plan around slides, so expect wonderfully elaborate routes.
+     - *Portal maze:* a massive mine split into many subsections by bedrock walls, linked by two-way portals.
 5. **Focus vs "Fool's Nip".** Shiny worthless decoy tiles in deeper mines that fool low-Focus miners.
 6. **Workshop (Hagane): equipment slots** (Tool / Outfit / Trinket). This is the sink for special resources such as milk and cheese.
 7. **Rubble and Robovacs.** Gives dirt and stone a purpose, and feeds the Farm later.

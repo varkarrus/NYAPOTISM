@@ -33,6 +33,10 @@
   NYA.tierDensityCap = t => 10 + 2 * t;
   // ...but crumblier: HP per item shrinks with depth, so density costs bag space more than time.
   NYA.tierCrumble = t => Math.pow(0.88, t - 1);
+  // From Tier 3, every ore tile holds this many times more items, each worth (and as tough, and as much XP as)
+  // that much less: a tile pays and breaks the same, but bags fill as fast as Bigger Bags grows them. Playtest:
+  // by Tier 3 crews cleared half the mine before anyone's bag was full, so the haul read 0 for half the shift.
+  NYA.tierDensityMult = t => Math.max(1, t - 1);
   // Headlamps <- darkness: Sight = BASE_SIGHT + headlamps - darkness.
   NYA.BASE_SIGHT = 3;
   NYA.tierDarkness = t => Math.floor((t - 1) / 2);   // T1-2: 0, T3-4: 1, T5-6: 2, ...

@@ -27,7 +27,7 @@
     let d = 1;
     const p = Math.min(0.92, NYA.tierDensityP(tier) + (bonus || 0)), cap = NYA.tierDensityCap(tier);
     while (d < cap && rng.next() < p) d++;
-    return d;
+    return d * NYA.tierDensityMult(tier);
   }
   function rollQuality(rng) {
     return rng.weighted([[1, 50], [2, 28], [3, 14], [4, 6], [5, 2]]);
@@ -44,9 +44,9 @@
       this.type = new Uint8Array(n);
       this.hp = new Float32Array(n);
       this.maxHp = new Float32Array(n);
-      this.dens = new Uint8Array(n);      // initial density (items)
+      this.dens = new Uint16Array(n);     // initial density (items)
       this.q = new Uint8Array(n);         // quality
-      this.dropped = new Uint8Array(n);   // items already dropped from this tile
+      this.dropped = new Uint16Array(n);  // items already dropped from this tile
       this.revealed = new Uint8Array(n);
       this.groove = new Int16Array(n).fill(-1);
       this.tangle = new Uint8Array(n);
@@ -348,7 +348,7 @@
         for (let i = 0; i < n; i++) if (type[i] === T.ORE && !this.sushi[i] && far[i] > bestD && rng.chance(0.6)) { best = i; bestD = far[i]; }
         if (best >= 0) {
           this.motherlode = best;
-          this.dens[best] = rng.int(30, 50);
+          this.dens[best] = rng.int(30, 50) * NYA.tierDensityMult(this.tier);
           this.q[best] = Math.max(this.q[best], rng.int(2, 3));
         }
       }
@@ -358,7 +358,7 @@
       for (let i = 0; i < n; i++) {
         const t = type[i];
         let hp = 0;
-        if (t === T.ORE) hp = NYA.ORE_LAYER_HP * tHP * NYA.tierCrumble(this.tier) * this.dens[i];
+        if (t === T.ORE) hp = NYA.ORE_LAYER_HP * tHP * NYA.tierCrumble(this.tier) * (this.sushi[i] ? this.dens[i] : this.dens[i] / NYA.tierDensityMult(this.tier));
         else if (NYA.BASE_HP[t]) hp = NYA.BASE_HP[t] * tHP;
         this.hp[i] = this.maxHp[i] = hp;
       }
@@ -414,7 +414,7 @@
 
     resourceStats() {
       let tiles = 0, value = 0, items = 0;
-      const base = NYA.tierNip(this.tier);
+      const base = NYA.tierNip(this.tier) / NYA.tierDensityMult(this.tier);
       for (let i = 0; i < this.n; i++) {
         if (this.type[i] === T.ORE) { tiles++; const left = this.dens[i] - this.dropped[i]; items += left; if (!this.sushi[i]) value += left * this.q[i] * base; }
         else if (this.type[i] === T.BOX || this.type[i] === T.NEST) tiles++;

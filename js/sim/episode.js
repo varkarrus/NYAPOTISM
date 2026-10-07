@@ -51,6 +51,7 @@
       const rs = M.resourceStats();
       this.totalValue = rs.value; this.totalItems = rs.items;
       this.tierBase = NYA.tierNip(this.tier);
+      this.densMult = NYA.tierDensityMult(this.tier); // more, lighter items per ore tile from Tier 3
       this.resist = NYA.tierResist(this.tier);
       this.motherlodeSeen = false; this.boxSeen = false;
       // Sight: how far miners notice ore on their own, and how far opened tiles reveal fog
@@ -571,7 +572,7 @@
     valueOf(i, m) {
       const M = this.mine, ty = M.type[i];
       if (ty === T.ORE) {
-        const left = M.dens[i] - M.dropped[i];
+        const left = (M.dens[i] - M.dropped[i]) / (M.sushi[i] ? 1 : this.densMult);
         return left * (M.q[i] + (M.glow[i] ? 2 : 0)) * (m.s.flags.scoreOre || 1);
       }
       if (ty === T.BOX) return 6;
@@ -833,7 +834,7 @@
         this.st.items++;
         if (m && m.bag.length < m.s.carry) {
           m.bag.push(it); m.items++;
-          this.giveXP(m, 2 * q);
+          this.giveXP(m, 2 * q / (M.sushi[i] ? 1 : this.densMult));
           this.ev({ t: 'item', m: m.id, q, i, lucky, dbl: k > 0 });
         } else {
           let at = m ? m.tile : i;
@@ -1013,8 +1014,9 @@
     }
 
     itemValue(it) {
-      let v = this.tierBase * Math.pow(it.q, this.cfg.polishExp || 1);
-      if (this.cfg.centrifuge && it.d > 1) v *= 1 + 0.02 * this.cfg.centrifuge * (it.d - 1);
+      let v = this.tierBase * Math.pow(it.q, this.cfg.polishExp || 1) / this.densMult;
+      const d = it.d / this.densMult; // Centrifuge rewards dense tiles, measured before the density multiplier
+      if (this.cfg.centrifuge && d > 1) v *= 1 + 0.02 * this.cfg.centrifuge * (d - 1);
       if (it.mochi) v *= 4;
       return v;
     }

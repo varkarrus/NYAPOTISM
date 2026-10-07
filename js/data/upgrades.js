@@ -138,7 +138,7 @@
     fx: l => l ? 'Chains spread' : '' });
 
   // ---------------- R&D Lab: Logistics ----------------
-  def({ id: 'bags', bld: 'lab', branch: 'Logistics', name: 'Bigger Bags', max: 20, base: 20, growth: 2.3,
+  def({ id: 'bags', bld: 'lab', branch: 'Logistics', name: 'Bigger Bags', max: 30, base: 20, growth: 2.1,
     show: g => g.s.episodes >= 2,
     desc: '+1 Carry.', flavor: 'Same bag. More pockets. Pockets inside pockets.',
     fx: l => '+' + l + ' Carry' });

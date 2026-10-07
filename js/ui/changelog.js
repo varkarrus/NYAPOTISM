@@ -6,6 +6,14 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Denser ore from Tier 3',
+      date: '2026-10-09',
+      items: [
+        'From Yarnball Caverns on, every ore tile holds more catnip items (×2 in Tier 3, ×3 in Tier 4, and so on), each worth proportionally less. A tile still pays the same and takes as long to break, but bags actually fill up and catgirls start bringing catnip home early in the shift instead of halfway through.',
+        'Bigger Bags is cheaper (×2.1 per level, was ×2.3) and goes up to 30 levels, since Carry matters more now.',
+      ],
+    },
+    {
       title: 'Blend exploit fix, new names',
       date: '2026-10-09',
       items: [
