@@ -10,7 +10,8 @@
     'Ceviche', 'Sashimi', 'Sketchy', 'Tabi', 'Miya', 'Koneko', 'Raku', 'Catherine', 'Clawdia', 'Bob'];
   NYA.FAMILY_NAMES = ['Nekomaru', 'Tabbygawa', 'Whiskerton', 'Purrington', 'Nekozawa', 'Mikeyama', 'Meowmura', 'Nyanbara',
     'Pawsley', 'Clawford', 'Furugawa', 'Koneko', 'Shimashima', 'Hachiware', 'Nyamamoto', 'Kittenhouse', 'Mewberry',
-    'Fluffington', 'Biscuitbottom', 'Tamamura', 'Kurobuchi', 'Nekoda', 'Sunbeam', 'Mittensworth', 'Scratchley', 'Nyanzaki'];
+    'Fluffington', 'Biscuitbottom', 'Tamamura', 'Kurobuchi', 'Nekoda', 'Sunbeam', 'Mittensworth', 'Scratchley', 'Nyanzaki',
+    'Nyansuke', 'Luxenford'];
 
   // Fur patterns: hair colors used by the sprite renderer.
   NYA.FURS = {

@@ -9,7 +9,7 @@
       title: 'Blend exploit fix, new names',
       date: '2026-10-09',
       items: [
-        'New applicant names: Sketchy, Tabi, Miya, Koneko, Raku, Catherine, Clawdia and Bob.',
+        'New applicant names: Sketchy, Tabi, Miya, Koneko, Raku, Catherine, Clawdia and Bob, and two new family names: Nyansuke and Luxenford.',
         'Fixed: Tora’s Special Blend could keep brewing through a fresh start and pay out a huge pot early in the next run. An unfinished pot is now settled at face value before the reset.',
       ],
     },
