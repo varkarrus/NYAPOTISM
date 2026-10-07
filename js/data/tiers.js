@@ -23,7 +23,18 @@
   // ~250), so the rock was easier than Dairy Depths. Deep tiers toughen faster to make up for it.
   NYA.DEEP_HP = 10;
   NYA.DEEP_RESIST = 5;
-  NYA.tierResist = t => { const d = NYA.tierDiff(t); return Math.pow(2.0, d - 1) * Math.pow(NYA.DEEP_RESIST, Math.max(0, d - 4)); }; // stamina per swing
+  NYA.tierResist = t => { const d = NYA.tierDiff(t); return Math.pow(2.0, d - 1) * Math.pow(NYA.DEEP_RESIST, Math.max(0, d - 4)) / NYA.tierTough(t); }; // stamina per swing
+  // Toughness: from Dairy Depths down, rock is tougher still, hard stone most of all (HP × tough^TOUGH_EXP), so
+  // dirt, stone and hard stone stay distinct while a stay's own income grows Power 10-50x (playtest: everything
+  // was a one-shot by mid-stay). Swings cost ÷tough stamina, and ore pays ×tierRich, so clearing slows down but
+  // catnip per swing and the economy hold.
+  NYA.tierTough = t => { const d = NYA.tierDiff(t); return d < 4 ? 1 : NYA.TOUGH_T4 * Math.pow(NYA.TOUGH_GROWTH, d - 4); };
+  NYA.TOUGH_T4 = 3; NYA.TOUGH_GROWTH = 1.5;
+  NYA.TOUGH_EXP = { [T.DIRT]: 0.5, [T.HARD]: 1.5 }; // everything else (stone, ore, boxes, nests) ×tough
+  NYA.toughOf = (t, ty) => Math.pow(NYA.tierTough(t), NYA.TOUGH_EXP[ty] != null ? NYA.TOUGH_EXP[ty] : 1);
+  // Richness: ore value multiplier that pays for the extra swings, the tougher rock in between and slick floors
+  NYA.tierRich = t => { const d = NYA.tierDiff(t); return d < 4 ? 1 : NYA.RICH_T4 * Math.pow(NYA.RICH_GROWTH, d - 4); };
+  NYA.RICH_T4 = 2; NYA.RICH_GROWTH = 1.35;
   NYA.tierXP = t => Math.pow(2.5, t - 1);         // XP per swing / item
 
   // Counter-pressures: every stat faces something that grows each tier, so upgrading it keeps
@@ -54,7 +65,7 @@
   // and walking speed is divided by this. Comfy Boots alone is ×1.1 a level, so without it crews crossed a Tier 4-6
   // mine in under a second (46-84 tiles/s) and walking fell from ~half of crew time to a quarter (playtest).
   NYA.tierFooting = t => { const d = NYA.tierDiff(t); return d < 4 ? 1 : NYA.FOOTING_T4 * Math.pow(NYA.FOOTING_GROWTH, d - 4); };
-  NYA.FOOTING_T4 = 2; NYA.FOOTING_GROWTH = 1.25;
+  NYA.FOOTING_T4 = 3; NYA.FOOTING_GROWTH = 1.3;
   NYA.MUD_SLOW = 0.5; NYA.RUBBLE_SLOW = 0.65; NYA.TANGLE_SLOW = 0.4;
   NYA.RUBBLE_STEPS = 2;
 
@@ -165,7 +176,7 @@
   };
   NYA.MAX_TIER = 6;
   // Catnip value per ore item. A tier can pay like a shallower one (nipTier) when it's a resource mine.
-  NYA.tierNip = t => NYA.tierBase((NYA.TIERS[t] && NYA.TIERS[t].nipTier) || t);
+  NYA.tierNip = t => NYA.tierBase((NYA.TIERS[t] && NYA.TIERS[t].nipTier) || t) * NYA.tierRich(t); // value of one quality-1 item
 
   // Sushi Grotto water (GDD §9.2): a falling-sand style fluid on open tiles, simulated only while it moves.
   NYA.WATER_STEP = 0.08;   // seconds between flow steps

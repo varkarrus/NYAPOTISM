@@ -6,10 +6,19 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Deep mines: tougher rock, richer ore',
+      date: '2026-10-09',
+      items: [
+        'From Dairy Depths down, rock is tougher (×3 in Dairy Depths, ×4.5 in Sushi Grotto, ×5.7 in Mousehole Maze), and hard stone most of all, so dirt, stone and hard stone feel different again instead of all breaking in one swing. Swings cost that much less stamina down there, and ore is worth more (×2, ×2.7, ×3.2) to pay for the extra digging. Shifts in deep mines run longer and pay more.',
+        'Slick floors are stronger: walking is ÷3 in Dairy Depths, ÷3.9 in Sushi Grotto and ÷4.6 in Mousehole Maze. Long walks matter again.',
+        'The mine list shows each deep mine’s footing, toughness and richness.',
+      ],
+    },
+    {
       title: 'Slick floors, bomb fix',
       date: '2026-10-09',
       items: [
-        'Slick floors: from Dairy Depths down, walking is slower in the whole mine (÷2 in Dairy Depths, ÷2.5 in Sushi Grotto, ÷2.9 in Mousehole Maze). Crews were zipping across deep mines in under a second. Comfy Boots and Cream Grease matter again. It only costs time: walking doesn’t tire them any faster per tile. The mine list shows each mine’s footing.',
+        'Slick floors: from Dairy Depths down, walking is slower in the whole mine (since made stronger, see above). Crews were zipping across deep mines in under a second. Comfy Boots and Cream Grease matter again. It only costs time: walking doesn’t tire them any faster per tile. The mine list shows each mine’s footing.',
         'Fixed: a Hairball Bomb could break the last ore inside solid rock and end the shift as a perfect clear with the catnip still sitting there. Catnip the crew can dig to now has to be brought home first, and they’ll tunnel toward it on their own.',
         'OVAs always start with a brand-new crew. None of your veterans come along.',
       ],

@@ -184,7 +184,9 @@
         // and the bot unravelled for 1 yarn
         const ypm = Math.pow(s.seasonYarnNip / NYA.YARN_DIV, g.yarnExp()) * g.yarnMult() / (s.seasonTime / 60);
         this.ypmPeak = Math.max(this.ypmPeak || 0, ypm);
-        if (y >= 1 && (since > 25 * 60 || (since > 5 * 60 && ypm < this.ypmPeak * 0.92))) { this.ypmPeak = 0; g.unravel(); }
+        // and never bail out for a fraction of last run's yarn (a dip on reaching a new mine made it unravel for 4 yarn)
+        const last = s.seasonLog.filter(l => !l.ova).slice(-1)[0], enough = !last || y >= 0.5 * last.yarn;
+        if (y >= 1 && (since > 25 * 60 || (since > 5 * 60 && enough && ypm < this.ypmPeak * 0.92))) { this.ypmPeak = 0; g.unravel(); }
       }
     }
   }

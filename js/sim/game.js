@@ -249,7 +249,7 @@
       this.startEpisode();
     }
     bluntPotency() { return 0.30 + 0.05 * this.lvl('pouch'); }
-    bombDamage(tier) { return 50 * NYA.tierHP(tier) * (1 + 0.6 * this.lvl('bombdmg')) * Math.pow(1.25, this.lvl('mewclear')); }
+    bombDamage(tier) { return 50 * NYA.tierHP(tier) * NYA.tierTough(tier) * (1 + 0.6 * this.lvl('bombdmg')) * Math.pow(1.25, this.lvl('mewclear')); }
     sonarRadius() { return 3 + Math.max(0, this.lvl('mewclear') - 2); }
     rpMax() { return 5 + 2 * this.lvl('cabinet') + (this.loom('nm_desk') ? 4 : 0); }
     ffSpeed() { return this.loomRowDone(3) ? 5 : this.loom('nm_ff') ? 3 : 2; }
@@ -754,7 +754,7 @@
       if (this.catterallActive()) this.episode.setCatterall(true);
       this.phase = 'shift';
       if (NYA.tierMud(t) > 0) this.novel('terrain', 'Rough ground! Mud and rubble slow your crew down. Pace matters now', 'mine');
-      if (NYA.tierFooting(t) > 1) this.novel('footing', 'Slick floors! Walking is ÷' + NYA.tierFooting(t).toFixed(1) + ' down here, and worse deeper. Comfy Boots and Cream Grease help', 'mine');
+      if (NYA.tierFooting(t) > 1) this.novel('footing', 'Deep mine! Slick floors (walking ÷' + NYA.tierFooting(t).toFixed(1) + '), tougher rock (hard stone most of all) and richer ore. Swings cost less stamina down here', 'mine');
       this.emit('episodeStart', { ep: this.episode, num: this.s.episodeNum, tier: t });
       return this.episode;
     }

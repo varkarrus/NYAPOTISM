@@ -360,6 +360,7 @@
         let hp = 0;
         if (t === T.ORE) hp = NYA.ORE_LAYER_HP * tHP * NYA.tierCrumble(this.tier) * (this.sushi[i] ? this.dens[i] : this.dens[i] / NYA.tierDensityMult(this.tier));
         else if (NYA.BASE_HP[t]) hp = NYA.BASE_HP[t] * tHP;
+        hp *= NYA.toughOf(this.tier, t);
         this.hp[i] = this.maxHp[i] = hp;
       }
 
