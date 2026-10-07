@@ -6,6 +6,14 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'OVAs save your run',
+      date: '2026-10-09',
+      items: [
+        'Playing an OVA tape no longer ends your current run. Your run is saved exactly as it is (catnip, research, crew, the works), the OVA plays as a run of its own, and when it ends, cleared or ejected, you’re right back where you left off. A popup spells this out before the tape starts.',
+        'A shift that gets interrupted by the tape is called off and its purrmit refunded (or its event mine put back in line).',
+      ],
+    },
+    {
       title: 'Easy clears',
       date: '2026-10-09',
       items: [

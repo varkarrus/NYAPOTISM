@@ -22,7 +22,7 @@
       this.unravelAt = (opts && opts.unravel) || 'auto';
       this.log = [];
       game.on((type, d) => {
-        if (type === 'unravel') this.tierStats = {}; // a new run: old per-tier earnings are from a weaker crew
+        if (type === 'unravel' || type === 'ova') this.tierStats = {}; // a new (or resumed) run: old per-tier earnings are from another crew
         if (type === 'episodeEnd') {
           const ts = this.tierStats[d.tier] || (this.tierStats[d.tier] = { n: 0, dur: 0, catnip: 0, fc: 0, recent: [] });
           ts.n++; ts.dur += d.duration; ts.catnip += d.catnip; if (d.fullClear) ts.fc++;

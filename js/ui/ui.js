@@ -260,8 +260,12 @@
           this.renderTools();
           break;
         case 'skein': this.freeze = 2.2; this.el.stage.classList.add('mono'); setTimeout(() => this.el.stage.classList.remove('mono'), 2600); this.newTabs.office = 1; this.renderTabs(); break;
-        case 'unravel': if (d.ova) this.ovaStartCard(d); else if (!d.afterOva) this.seasonCard(d); this.renderTabs(); this.renderPanel(true); break;
-        case 'ova': if (d.phase === 'clear') this.ovaClearCard(d); else this.toast('OVA abandoned. Back to the regular broadcast.', 'warn'); break;
+        case 'unravel': if (!d.afterOva) this.seasonCard(d); this.renderTabs(); this.renderPanel(true); break;
+        case 'ova':
+          if (d.phase === 'start') this.ovaStartCard(d);
+          else if (d.phase === 'clear') this.ovaClearCard(d);
+          else this.toast(d.fresh ? 'OVA ejected. Back to the regular broadcast.' : 'OVA ejected. Back to your saved run, right where you left it.', 'warn');
+          this.renderTabs(); this.renderPanel(true); break;
         case 'toast': this.toast(esc(d.text), d.kind); break;
         case 'blend':
           if (d.phase === 'end') { this.banner('blend', d); this.audio.sfx(d.f >= 2 ? 'motherlode' : d.f >= 1 ? 'fullclear' : 'empty'); }
@@ -772,24 +776,26 @@
     openModal(html) { this.el.modal.innerHTML = `<div class="mbox">${html}</div>`; this.el.modal.hidden = false; }
     closeModal() { this.el.modal.hidden = true; this.el.modal.innerHTML = ''; if (this.opts.onModalClose) this.opts.onModalClose(); }
     confirmOva(id) {
-      const g = this.g, o = NYA.OVA[id], rel = g.ovaPerk(id), y = g.yarnPreview();
+      const g = this.g, o = NYA.OVA[id], rel = g.ovaPerk(id), n = g.anchorSlots();
       if (!o) return;
+      const shift = g.phase === 'shift' && g.episode && !g.episode.ended;
       this.openModal(`<h2>${o.icon} OVA: ${esc(o.name)}</h2><p><b>${NYA.OVA_RELEASES[rel]} release.</b> ${esc(o.limiter)}</p>
         <p>Goal: <b>${esc(o.goals[rel].text)}</b>. Clear it for <b>${esc(o.perk)} ${['I', 'II', 'III'][rel]}</b> (${esc(o.perkText(rel + 1))}).</p>
-        <p>This unravels the timeline as usual (you gain <b>🧶 ${fmt(y)} yarn</b> from this run), but the next run is the OVA. OVAs pay no yarn. When you hit the goal it ends and a fresh regular run begins. You can abandon it any time from the Office.</p>
+        <div class="note">📼 <b>Your current run is saved exactly as it is.</b> No yarn, nothing resets. The OVA is a fresh run of its own${n ? ` with copies of your ${n} anchored catgirl${n > 1 ? 's' : ''}` : ''}, and it pays no yarn.
+        When you clear the goal, or eject the tape from the Office, you're back in your saved run right where you left it. Nothing from the OVA comes back with you except the perk.${shift ? ' The shift in progress is called off and its purrmit refunded.' : ''}</div>
         <div class="row"><button class="big danger" id="doOva">📼 Play the tape</button><button class="big ghost" data-act="close">Not yet</button></div>`);
       document.getElementById('doOva').onclick = () => { this.closeModal(); this.audio.sfx('skein'); g.startOva(id); };
     }
     confirmAbandonOva() {
       const g = this.g;
-      this.openModal(`<h2>Abandon the OVA?</h2><p>This run ends with no yarn and no perk, and a fresh regular run starts. You can play the tape again later.</p>
+      this.openModal(`<h2>Abandon the OVA?</h2><p>No perk this time. ${g.s.suspended ? 'You go straight back to your saved run, right where you left it.' : 'A fresh regular run starts (this OVA began before runs could be saved).'} You can play the tape again later.</p>
         <div class="row"><button class="big danger" id="doAbandon">⏏ Eject the tape</button><button class="big ghost" data-act="close">Keep going</button></div>`);
       document.getElementById('doAbandon').onclick = () => { this.closeModal(); g.abandonOva(); };
     }
     ovaStartCard(d) {
       const o = NYA.OVA[d.ova.id], goal = o.goals[d.ova.rel];
       this.openModal(`<div class="season-card"><div class="sc-top">ORIGINAL VIDEO ANIMATION</div><div class="sc-big">${o.icon} ${esc(o.name)}</div>
-        <div class="sc-gain">${NYA.OVA_RELEASES[d.ova.rel]} release${d.gain ? ` · +${fmt(d.gain)} 🧶 yarn banked` : ''}</div>
+        <div class="sc-gain">${NYA.OVA_RELEASES[d.ova.rel]} release · your run is saved</div>
         <div class="sc-verse"><div class="sc-vh">Special rules</div>${esc(o.limiter)}<div class="sc-ch">Goal: ${esc(goal.text)}</div></div>
         <button class="big" data-act="close">Press play ▶</button></div>`);
       this.audio.sfx('motherlode');
@@ -799,7 +805,7 @@
       this.openModal(`<div class="season-card"><div class="sc-top">OVA CLEAR!!</div><div class="sc-big">${o.icon} ${esc(o.name)}</div>
         <div class="sc-gain">${NYA.OVA_RELEASES[d.rel]} release · ${esc(o.perk)} ${['I', 'II', 'III'][d.rel]}</div>
         <div class="sc-verse"><div class="sc-vh">Permanent perk</div>${esc(o.perkText(L))}${L === 1 && NYA.OVAS[o.index + 1] ? `<div class="sc-ch">New tape on the shelf: ${esc(NYA.OVAS[o.index + 1].name)}</div>` : ''}</div>
-        <p>A fresh regular run starts now.</p>
+        <p>${d.fresh ? 'A fresh regular run starts now.' : 'Back to your saved run, right where you left it.'}</p>
         <button class="big" data-act="close">Back to the show ▶</button></div>`);
       this.audio.sfx('fullclear');
     }

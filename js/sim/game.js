@@ -7,6 +7,11 @@
     'bestChain', 'zoomies', 'blunts', 'bombs', 'allLoaf', 'traits', 'legendaries', 'boxes', 'rescues', 'droneMarks', 'glowing',
     'madStarter', 'faxClicks', 'whistles', 'maxTier', 'skeins', 'yarn', 'swings', 'items', 'distractions', 'firstBoxDone', 'mewclears'];
 
+  // Everything that belongs to one run (what an unravel resets). An OVA sets these aside in s.suspended.
+  const RUN_KEYS = ['episodes', 'catnip', 'seasonCatnip', 'seasonYarnNip', 'seasonTime', 'milk', 'sushi', 'cheese', 'upg', 'research',
+    'buildings', 'tierUnlocked', 'selectedTier', 'maxTierReached', 'mine', 'crew', 'active', 'reserve', 'hires', 'board', 'act', 'skein',
+    'stats', 'pendingEvent', 'blend', 'tanuki', 'catterall'];
+
   function newSeasonStats() {
     return { swings: 0, fullClears: 0, marks: 0, episodes: 0, catnip: 0 };
   }
@@ -45,6 +50,7 @@
       tanuki: { nextAt: 0, offer: null, queue: [], rain: null },
       pendingEvent: null,
       ova: null,       // { id, rel } while an OVA run is in progress
+      suspended: null, // { at: simTime, run: {RUN_KEYS...} }: the regular run, saved while an OVA plays
       ovaDone: {},     // id -> releases cleared (0-3); also the perk level
     };
   }
@@ -64,6 +70,8 @@
       this._faxBonus = null;
       this.awaitT = 0;
       const ids = this.s.crew.map(c => c.id).concat(this.s.board.apps.filter(Boolean).map(c => c.id));
+      const sus = this.s.suspended && this.s.suspended.run; // the run saved during an OVA keeps its ids too
+      if (sus) ids.push(...sus.crew.map(c => c.id), ...sus.board.apps.filter(Boolean).map(c => c.id));
       if (ids.length) NYA.setNextCatgirlId(Math.max(...ids) + 1);
       this.openBoard();
       if (this.s.season > 1) this.applyHeadStarts(); // floors only; fixes saves that bought head starts mid-season
@@ -171,18 +179,38 @@
       return { lightsOut: this.ovaIs('lights'), timeLimit: this.ovaIs('nine') ? NYA.OVA_TIME_LIMIT : 0,
         noLaser: this.ovaIs('nolaser'), loafPower: 0.04 * this.ovaPerk('monday'), noHats: this.ovaIs('osha') };
     }
-    // start an OVA instead of a normal unravel: you still get this run's yarn on the way out
+    // An OVA is a side story. Playing a tape sets the current run aside exactly as it stands (s.suspended: no
+    // yarn, nothing reset) and starts a fresh OVA run with copies of your anchored catgirls. When the OVA ends,
+    // cleared or ejected, the saved run picks up where it left off, and the OVA crew stays in the OVA (playtest).
     startOva(id) {
-      const o = NYA.OVA[id];
-      if (!o || this.s.ova || !this.s.skein.have || !this.ovaReleaseReady(id)) return false;
+      const o = NYA.OVA[id], s = this.s;
+      if (!o || s.ova || !this.ovaReleaseReady(id)) return false;
       const rel = this.ovaPerk(id);
-      this.unravel({ ova: { id, rel } });
+      const run = {};
+      for (const k of RUN_KEYS) run[k] = s[k] === undefined ? null : JSON.parse(JSON.stringify(s[k]));
+      const ep = this.phase === 'shift' && this.episode && !this.episode.ended ? this.episode : null;
+      if (ep) { // the shift that got interrupted is handed back: its purrmit, or its event mine
+        if (ep.eventKey) { const q = { ev: ep.eventKey, tier: ep.tier }; if (!run.pendingEvent) run.pendingEvent = q; else run.tanuki.queue.unshift(q); }
+        else run.catnip += ep.cfg.purrmit || 0;
+      }
+      s.suspended = { at: s.simTime, run };
+      const kept = this.anchoredCrew(); // the live objects; the saved run holds its own copies
+      for (const c of kept) c.anchored = true;
+      s.ova = { id, rel };
+      s.blend = null; s.catterall = 0;
+      s.tanuki = { nextAt: s.simTime + 5 * 60, offer: null, queue: [], rain: null };
+      this.freshRun(kept);
+      this.novel('ova:start', 'OVA! A special episode with its own rules. Clear the goal for a permanent perk', 'prestige');
+      this.fax('ova:' + o.id, o.fax);
+      this.episode = null; this.phase = 'idle'; this.packup = null; this.lastResult = null;
+      this.emit('ova', { phase: 'start', ova: s.ova });
+      this.startEpisode();
       return true;
     }
     abandonOva() {
       if (!this.s.ova) return false;
-      this.emit('ova', { phase: 'abandon', id: this.s.ova.id, rel: this.s.ova.rel });
-      return this.unravel({ force: true, noYarn: true });
+      this.endOva('abandon');
+      return true;
     }
     checkOvaGoal() {
       const ova = this.s.ova, goal = this.ovaGoal();
@@ -196,10 +224,31 @@
       this.s.ovaDone[ova.id] = Math.max(this.ovaPerk(ova.id), ova.rel + 1);
       this.s.life.ovaClears = (this.s.life.ovaClears || 0) + 1;
       this.novel('ova:' + ova.id + ':' + ova.rel, 'OVA cleared: ' + o.name + ' (' + NYA.OVA_RELEASES[ova.rel] + ')! ' + o.perk + ' ' + ['', 'I', 'II', 'III'][ova.rel + 1], 'prestige');
-      const next = NYA.OVAS[o.index + 1];
-
-      this.emit('ova', { phase: 'clear', id: ova.id, rel: ova.rel });
-      this.unravel({ force: true, noYarn: true });
+      this.endOva('clear');
+    }
+    // leave the OVA (phase 'clear' or 'abandon') and pick the saved run back up
+    endOva(phase) {
+      const s = this.s, ova = s.ova, sus = s.suspended;
+      this._ovaClear = false;
+      if (!sus) { // an OVA started before runs could be set aside: it ends in a fresh run, as it used to
+        this.emit('ova', { phase, id: ova.id, rel: ova.rel, fresh: true });
+        this.unravel({ force: true, noYarn: true });
+        return;
+      }
+      s.seasonLog.push({ season: s.season, time: s.seasonTime, catnip: s.seasonCatnip, yarn: 0, eps: s.episodes, ova: ova.id + ':' + ova.rel });
+      for (const k of RUN_KEYS) s[k] = sus.run[k];
+      s.ova = null; s.suspended = null;
+      // timers on the global clock stood still while the run was set aside
+      const dt = s.simTime - sus.at;
+      if (s.catterall > sus.at) s.catterall += dt;
+      if (s.blend) { if (s.blend.until != null) s.blend.until += dt; if (s.blend.readyAt != null) s.blend.readyAt += dt; }
+      if (s.tanuki) { s.tanuki.nextAt += dt; if (s.tanuki.offer) s.tanuki.offer.until += dt; }
+      this.syncActives();
+      this._faxBonus = null;
+      this.announceShelf();
+      this.episode = null; this.phase = 'idle'; this.packup = null; this.lastResult = null;
+      this.emit('ova', { phase, id: ova.id, rel: ova.rel });
+      this.startEpisode();
     }
     bluntPotency() { return 0.30 + 0.05 * this.lvl('pouch'); }
     bombDamage(tier) { return 50 * NYA.tierHP(tier) * (1 + 0.6 * this.lvl('bombdmg')) * Math.pow(1.25, this.lvl('mewclear')); }
@@ -1030,7 +1079,7 @@
       if (!this.s.skein.have || this.s.ova) return 0;
       return Math.floor(Math.pow(this.s.seasonYarnNip / NYA.YARN_DIV, this.yarnExp()) * this.yarnMult());
     }
-    // opts.ova: the next run is that OVA. opts.noYarn/force: leave an OVA (cleared or abandoned) for a fresh run.
+    // opts.noYarn/force: only for leaving an OVA started before runs could be set aside (see endOva).
     unravel(opts) {
       opts = opts || {};
       if (!this.s.skein.have && !opts.force) return false;
@@ -1046,15 +1095,29 @@
       const gain = opts.noYarn ? 0 : this.yarnPreview();
       s.seasonLog.push({ season: s.season, time: s.seasonTime, catnip: s.seasonCatnip, yarn: gain, eps: s.episodes, ova: s.ova ? s.ova.id + ':' + s.ova.rel : undefined });
       s.yarn += gain; s.life.yarn += gain;
-      // Timeline Anchors: keep the best N catgirls
-      const keepN = this.anchorSlots();
-      const kept = s.crew.slice().sort((a, b) => (b.level - a.level) || (b.xp - a.xp)).slice(0, keepN);
+      const kept = this.anchoredCrew();
       for (const c of kept) { c.anchored = true; c.seasons++; }
       if (s.ova && s.ova.id === 'osha') { // No OSHA Compliance is over: the injuries heal
         for (const c of kept) for (let k = c.traits.length - 1; k >= 0; k--) if ((NYA.TRAIT[c.traits[k]] || {}).ova) { c.traits.splice(k, 1); c.traitMines.splice(k, 1); }
       }
       s.season++;
-      s.ova = opts.ova || null;
+      s.ova = null;
+      this.freshRun(kept);
+      this.announceShelf();
+      this.novel('season:' + s.season, 'SEASON ' + s.season + '! A new verse of the opening theme', 'prestige');
+      if (s.season === 2) this.fax('season2', NYA.STORY_FAX.season2);
+      this.episode = null; this.phase = 'idle'; this.packup = null; this.lastResult = null;
+      this.emit('unravel', { gain, season: s.season, afterOva: !!opts.noYarn });
+      this.startEpisode();
+      return gain;
+    }
+    // Timeline Anchors: the best N catgirls go on to the next run (or into an OVA)
+    anchoredCrew() {
+      return this.s.crew.slice().sort((a, b) => (b.level - a.level) || (b.xp - a.xp)).slice(0, this.anchorSlots());
+    }
+    // A brand-new run's state (an unravel, or an OVA starting), with `kept` as the crew carried in
+    freshRun(kept) {
+      const s = this.s;
       this._ovaClear = false;
       s.seasonCatnip = 0; s.seasonYarnNip = 0; s.seasonTime = 0; s.episodes = 0;
       s.catnip = this.loom('hs_cash') ? 300 : 0;
@@ -1085,20 +1148,12 @@
       }
       this.syncActives();
       this._faxBonus = null;
-      for (const o of NYA.OVAS) { // a new tape or a harder release just arrived on the shelf
+    }
+    announceShelf() { // a new tape or a harder release just arrived on the shelf
+      for (const o of NYA.OVAS) {
         if (this.ovaUnlocked(o.id) && this.ovaPerk(o.id) === 0) this.novel('ova:unlock:' + o.id, 'New OVA on the shelf: ' + o.name + '!', 'prestige');
         else if (this.ovaReleaseReady(o.id) && this.ovaPerk(o.id) > 0) this.novel('ova:rel:' + o.id + ':' + this.ovaPerk(o.id), o.name + ': the ' + NYA.OVA_RELEASES[this.ovaPerk(o.id)] + ' release is out!', 'prestige');
       }
-      if (s.ova) {
-        const o = NYA.OVA[s.ova.id];
-        this.novel('ova:start', 'OVA! A special episode with its own rules. Clear the goal for a permanent perk', 'prestige');
-        this.fax('ova:' + o.id, o.fax);
-      } else this.novel('season:' + s.season, 'SEASON ' + s.season + '! A new verse of the opening theme', 'prestige');
-      if (s.season === 2) this.fax('season2', NYA.STORY_FAX.season2);
-      this.episode = null; this.phase = 'idle'; this.packup = null; this.lastResult = null;
-      this.emit('unravel', { gain, season: s.season, ova: s.ova, afterOva: !!opts.noYarn });
-      this.startEpisode();
-      return gain;
     }
     // Head-start knots set a floor on this season's upgrades. Applied at every unravel, and right away
     // when bought: yarn only arrives at an unravel, so buying them always happens mid-season.

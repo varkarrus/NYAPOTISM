@@ -54,7 +54,7 @@
         <p class="ms">${esc(o.limiter)}</p>
         <p>Goal: <b>${esc(goal.text)}</b> · <b data-live="ovaProg">${goal.nip ? fmt(cur) : cur}</b> / ${goal.nip ? fmt(goal.need) : goal.need}</p>
         <div class="rbar"><div data-live="ovaBar" style="width:${pct.toFixed(1)}%"></div></div>
-        <p class="ms">Clear it for <b>${esc(o.perk)} ${['I', 'II', 'III'][s.ova.rel]}</b>: ${esc(o.perkText(s.ova.rel + 1))}. OVAs pay no yarn, and end the moment you hit the goal.</p>
+        <p class="ms">Clear it for <b>${esc(o.perk)} ${['I', 'II', 'III'][s.ova.rel]}</b>: ${esc(o.perkText(s.ova.rel + 1))}. OVAs pay no yarn, and end the moment you hit the goal. ${s.suspended ? 'Your regular run is saved and picks up again when this ends.' : ''}</p>
         <button class="big ghost" data-act="ova:abandon">⏏ Abandon OVA</button>
       </div></div>`;
     }
@@ -74,9 +74,9 @@
       const p = (NYA.BOX_CHANCE[3] + 0.02 * g.loom('sk_box') + s.skein.pity) * 100;
       h += `<div class="note">📦 <b>Schrödinger's Box</b>: ~${p.toFixed(1)}% chance per Tier 3 episode (grows every episode without one).</div>`;
     }
-    // OVA tape shelf: start one instead of a normal unravel
+    // OVA tape shelf: playing a tape saves the current run, which resumes when the OVA ends
     if (g.ovaShelfOpen() && !s.ova) {
-      h += `<h3 class="sec">📼 OVA Tape Shelf <small>challenge runs · no yarn, permanent perks</small></h3><div class="tapes">` + NYA.OVAS.map(o => {
+      h += `<h3 class="sec">📼 OVA Tape Shelf <small>challenge runs · no yarn, permanent perks · your current run is saved while you play</small></h3><div class="tapes">` + NYA.OVAS.map(o => {
         const done = g.ovaPerk(o.id), open = g.ovaUnlocked(o.id);
         if (!open) {
           const need = [];
@@ -87,8 +87,7 @@
         const rels = NYA.OVA_RELEASES.map((r, i) => `<li class="${i < done ? 'got' : i === done ? 'next' : ''}">${i < done ? '✓' : i === done ? '▶' : '·'} <b>${r}</b>: ${esc(o.goals[i].text)} → ${esc(o.perk)} ${['I', 'II', 'III'][i]} <small>(${esc(o.perkText(i + 1))})</small></li>`).join('');
         const btn = done >= 3 ? '<div class="ms">All releases cleared! ★</div>'
           : !g.ovaReleaseReady(o.id) ? `<div class="ms">The ${NYA.OVA_RELEASES[done]} release arrives in Season ${NYA.ovaSeason(o, done)}.</div>`
-          : s.skein.have ? `<button class="big danger" data-act="ova:start:${o.id}">▶ Play the ${NYA.OVA_RELEASES[done]} release</button>`
-          : '<div class="ms">Find the Skein to switch tapes.</div>';
+          : `<button class="big danger" data-act="ova:start:${o.id}">▶ Play the ${NYA.OVA_RELEASES[done]} release</button>`;
         return `<div class="tape ${done >= 3 ? 'done' : ''}"><div class="tape-t">${o.icon} ${esc(o.name)}</div><div class="ms">${esc(o.limiter)}</div><ul>${rels}</ul>${btn}</div>`;
       }).join('') + `</div>`;
     }
