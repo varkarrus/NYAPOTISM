@@ -45,6 +45,7 @@
   // couple of crossings). Both start at Tier 2 and spread with depth; mines also widen each tier.
   NYA.tierMud = t => t < 2 ? 0 : Math.min(0.3, 0.06 * (t - 1));     // share of the mine floor that's mud
   NYA.tierRubble = t => t < 2 ? 0 : Math.min(0.6, 0.12 * (t - 1));  // chance a broken rock tile leaves rubble
+  NYA.LONER_PENALTY = 3;  // target-score penalty for a Loner on tiles near other miners or their targets
   NYA.MUD_SLOW = 0.5; NYA.RUBBLE_SLOW = 0.65; NYA.TANGLE_SLOW = 0.4;
   NYA.RUBBLE_STEPS = 2;
 

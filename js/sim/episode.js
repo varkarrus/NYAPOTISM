@@ -616,6 +616,14 @@
       }
       let best = null, bestScore = -1e9, blocked = 0;
       const seen = new Set();
+      // Loner: other miners and the tiles they're headed for push her away (same 3-tile radius as her bonus)
+      const crowd = [];
+      if (f.loner) for (const o of this.miners) {
+        if (o === m || o.state === 'out' || o.state === 'rescue') continue;
+        crowd.push(o.tile);
+        if (o.target >= 0) crowd.push(o.target);
+        if (o.pumpNode >= 0) crowd.push(o.pumpNode);
+      }
       const bagFull = m.bag.length >= m.s.carry;
       for (const c of cands) {
         if (seen.has(c)) continue; seen.add(c);
@@ -626,6 +634,7 @@
         if (stand < 0) continue;
         let score = this.valueOf(c, m) * 1.4 - sd * 0.18 + rng.next() * 0.8 - this.claims[c] * 1.5;
         if (M.mochi[c] && this.claims[c] === 1) score += 4.5; // a lone pounder needs a partner
+        if (crowd.length) for (const k of crowd) if (this.manhattan(c, k) <= 3) { score -= NYA.LONER_PENALTY; break; }
         const marked = markSet.has(c);
         if (marked) score = Math.max(score, 0.2) * 10 + 8;
         if (farMarks.length) {

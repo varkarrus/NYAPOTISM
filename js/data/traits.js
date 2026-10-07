@@ -62,7 +62,7 @@
 
     // --- Social and synergy
     { id: 'team_player', name: 'Team Player', kind: 'pos', rarity: 'uncommon', desc: '+10% Haste to miners within 2 tiles (including her).', flavor: 'Brings orange slices to the mine.', mods: { teamPlayer: 1 } },
-    { id: 'loner', name: 'Loner', kind: 'mixed', rarity: 'common', desc: '+25% Power with no other miner within 3 tiles.', flavor: 'Prefers the company of rocks.', mods: { loner: 1 } },
+    { id: 'loner', name: 'Loner', kind: 'mixed', rarity: 'common', desc: '+25% Power with no other miner within 3 tiles. Steers clear of tiles near other miners and wherever they’re headed, even if it means a longer walk.', flavor: 'Prefers the company of rocks.', mods: { loner: 1 } },
     { id: 'loaf_squad', name: 'Loaf Squad', kind: 'pos', rarity: 'uncommon', desc: '+5% all stats per other Loaf Squad member in the crew. Stacks.', flavor: 'Part of a bread-based collective.', mods: { loafSquad: 1 } },
     { id: 'tuxedo_club', name: 'Tuxedo Club', kind: 'pos', rarity: 'uncommon', desc: '+15% Power if at least two tuxedo-pattern catgirls are on shift.', flavor: 'Formal wear is mandatory. Always.', mods: { tuxedoClub: 1 } },
     { id: 'perfectionist', name: 'Perfectionist', kind: 'pos', rarity: 'uncommon', desc: '+10% Power in mines where your crew has an S rank.', flavor: 'An A is just a failed S.', mods: { perfectionist: 1 } },
