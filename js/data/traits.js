@@ -26,6 +26,7 @@
     { id: 'rock_licker', name: 'Rock Licker', kind: 'pos', rarity: 'uncommon', desc: '+35% damage vs stone and hardstone.', flavor: 'Says it helps her "read the grain". HR has asked her to stop.', mods: { dmgStone: 1.35 }, mines: { quarry: 4 } },
     { id: 'sharp_claws', name: 'Sharp Claws', kind: 'pos', rarity: 'uncommon', desc: '+6% critical swing chance.', flavor: 'Files them nightly. On the furniture.', mods: { critAdd: 0.06 } },
     { id: 'noodle_arms', name: 'Noodle Arms', kind: 'neg', rarity: 'common', desc: '−20% Power.', flavor: 'Arms are for hugging, not for rocks.', mods: { powerMult: 0.8 } },
+    { id: 'destructive_urges', name: 'Destructive Urges', kind: 'mixed', rarity: 'uncommon', desc: '+15% Power and hits mice 50% harder, but she won’t head home with a full bag until she’s tired. Catnip that won’t fit is left on the floor, and she never works a pump.', flavor: 'Was asked to “take it easy.” Took the pickaxe instead.', mods: { powerMult: 1.15, rampage: 1 } },
     { id: 'domino_brain', name: 'Domino Brain', kind: 'pos', rarity: 'rare', desc: 'Stone she breaks has a 30% chance to crack each adjacent stone tile.', flavor: 'Sees chain reactions everywhere. Including in soup.', mods: { crackSpread: 0.3 }, mines: { quarry: 6 } },
 
     // --- Movement and attention

@@ -45,6 +45,7 @@
   // couple of crossings). Both start at Tier 2 and spread with depth; mines also widen each tier.
   NYA.tierMud = t => t < 2 ? 0 : Math.min(0.3, 0.06 * (t - 1));     // share of the mine floor that's mud
   NYA.tierRubble = t => t < 2 ? 0 : Math.min(0.6, 0.12 * (t - 1));  // chance a broken rock tile leaves rubble
+  NYA.RAMPAGE_TIRED = 0.2; // Destructive Urges heads home with her bag below this share of her stamina
   NYA.LONER_PENALTY = 3;  // target-score penalty for a Loner on tiles near other miners or their targets
   NYA.MUD_SLOW = 0.5; NYA.RUBBLE_SLOW = 0.65; NYA.TANGLE_SLOW = 0.4;
   NYA.RUBBLE_STEPS = 2;
@@ -195,4 +196,7 @@
   // Catgirls with nothing left to dig come and help crank a running pump (each adds her own flow), so the last
   // node doesn't leave the whole crew clocked out waiting on one pumper (playtest).
   NYA.PUMP_HELPERS = 3;
+  // ...and once everyone still on shift is at a pump (the rest flopped or clocked out), they crank PUMP_RUSH× as
+  // fast and tire PUMP_RUSH× as fast: same milk for the same stamina, it just doesn't keep the shift waiting.
+  NYA.PUMP_RUSH = 3;
 })(globalThis.NYA = globalThis.NYA || {});

@@ -301,6 +301,7 @@
           case 'pipedone': this.rings.push({ i: e.i, life: 0.6, max: 0.6, col: '#e8f4ff', r0: 0.3, r1: 1.5 }); this.sfx('drop', 2); break;
           case 'milkdry': this.burst(e.i, '#fffaf0', 18, 3, 0.12); if (m) this.pop(m.x + 0.5, m.y - 0.5, 'PUMPED DRY!', '#fffaf0', true); this.sfx('fullclear'); break;
           case 'pipelay': if (Math.random() < 0.4) this.sfx('tink', 2); break;
+          case 'pumprush': if (m) this.pop(m.x + 0.5, m.y - 0.6, 'HURRY!', '#fffaf0', false); break;
           // Mousehole Maze
           case 'nestwake': this.rings.push({ i: e.i, life: 0.7, max: 0.7, col: '#ffd96a', r0: 0.3, r1: 1.6 }); this.pop(M.x(e.i) + 0.5, M.y(e.i), 'SQUEAK!', '#ffd96a', false); this.sfx('squeak', 1); break;
           case 'mspawn': this.burst(e.i, '#8a7a6a', 4, 1.5, 0.08); break;

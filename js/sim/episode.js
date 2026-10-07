@@ -219,6 +219,12 @@
       if (this.waterOn) this.tickWater(dt);
       if (this.miceOn) this.tickMice(dt);
       if (this.fieldDirty) this.recomputeField();
+      // Last one standing at the pump: if everyone still working is pumping, fast-forward the pumping
+      let working = 0, pumping = 0;
+      for (const m of this.miners) { if (m.state !== 'out') { working++; if (m.state === 'pump' || m.state === 'pbuild') pumping++; } }
+      const rush = working > 0 && pumping === working && working < this.miners.length;
+      if (rush && !this.pumpRush) { this.st.pumpRushes = (this.st.pumpRushes || 0) + 1; for (const m of this.miners) if (m.state === 'pump' || m.state === 'pbuild') { this.emote(m, 'zoom', 1.2); this.ev({ t: 'pumprush', m: m.id }); } }
+      this.pumpRush = rush;
       for (const m of this.miners) {
         m.px = m.x; m.py = m.y;
         this.updateMiner(m, dt);
@@ -282,7 +288,7 @@
           m.timer -= dt;
           if (m.timer > 0) return;
           if (this.fullClear || m.done) { this.goHome(m, 'return'); return; }
-          if (m.bag.length >= m.s.carry) { this.goHome(m, 'return'); return; }
+          if (m.bag.length >= m.s.carry && !this.keepsSmashing(m)) { this.goHome(m, 'return'); return; }
           this.chooseTarget(m);
           return;
         case 'wait':
@@ -320,7 +326,7 @@
         }
         case 'mine': {
           if (!M.isMineable(m.target) || M.forbid[m.target]) { this.release(m); this.toIdle(m); return; }
-          if (m.bag.length >= m.s.carry) { this.release(m); this.goHome(m, 'return'); return; }
+          if (m.bag.length >= m.s.carry && !this.keepsSmashing(m)) { this.release(m); this.goHome(m, 'return'); return; }
           m.swingT += dt * this.hasteOf(m);
           if (M.mochi[m.target] && (m.lonely || 0) >= 4) { m.lonely = 0; this.release(m); this.toIdle(m, 0.3); return; }
           while (m.swingT >= 1 && m.state === 'mine') {
@@ -375,7 +381,7 @@
         case 'pbuild': {
           const p = this.pumps[m.pumpNode];
           if (!p || M.type[m.pumpNode] !== T.MILK) { this.release(m); this.toIdle(m); return; }
-          const cafB = m.s.flags.caffeine ? 2 : 1;
+          const cafB = (m.s.flags.caffeine ? 2 : 1) * (this.pumpRush ? NYA.PUMP_RUSH : 1);
           m.timer -= dt * cafB; m.swingAnim = 0.25 * (Math.sin(this.t * 14) > 0 ? 1 : 0);
           m.stamina -= this.swingCost(m) * dt * cafB;
           if (m.stamina <= 0) { this.zeroStamina(m); return; }
@@ -407,8 +413,8 @@
         case 'pump': {
           const node = m.pumpNode, p = this.pumps[node];
           if (!p || M.type[node] !== T.MILK) { this.release(m); this.toIdle(m); return; }
-          m.swingAnim = 0.25 * (0.5 + 0.5 * Math.sin(this.t * 6));
-          const cafP = m.s.flags.caffeine ? 2 : 1;
+          m.swingAnim = 0.25 * (0.5 + 0.5 * Math.sin(this.t * (this.pumpRush ? 18 : 6)));
+          const cafP = (m.s.flags.caffeine ? 2 : 1) * (this.pumpRush ? NYA.PUMP_RUSH : 1);
           m.stamina -= this.swingCost(m) * NYA.PUMP_DRAIN * dt * cafP;
           const L = Math.max(1, this.homeDist[p.stand]);
           let flow = this.pumpRate * dt * cafP * (m.s.flags.lactose ? 1.3 : 1) / (1 + L / NYA.PIPE_HALF);
@@ -449,6 +455,9 @@
         }
       }
     }
+
+    // Destructive Urges: a full bag doesn't send her home (what won't fit stays on the floor) until she's tired
+    keepsSmashing(m) { return !!m.s.flags.rampage && m.stamina > NYA.RAMPAGE_TIRED * m.maxSt && !this.fullClear; }
 
     toIdle(m, delay) { m.state = 'idle'; m.timer = delay || 0; m.path = []; m.pathI = 0; }
 
@@ -661,7 +670,7 @@
         }
         if (score > bestScore) { bestScore = score; best = { kind: 'tile', c, stand, marked }; }
       }
-      for (const node of this.milkFront) {
+      for (const node of (f.rampage ? [] : this.milkFront)) { // Destructive Urges: pumps are boring
         if (M.forbid[node]) continue;
         const p = this.pumps[node];
         if (p && p.op) continue;
@@ -682,7 +691,7 @@
           if (score > bestScore) { bestScore = score; best = { kind: 'item', it }; }
         }
       }
-      if (!best && !bagFull) { // nothing left to dig: go help crank a pump someone's already running
+      if (!best && !bagFull && !f.rampage) { // nothing left to dig: go help crank a pump someone's already running
         const node = this.helpablePump(m, dist);
         if (node >= 0) {
           const p = this.pumps[node];

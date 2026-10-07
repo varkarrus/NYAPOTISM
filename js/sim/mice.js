@@ -248,7 +248,7 @@
     while (m.fightT >= 1 && !near.dead) {
       m.fightT -= 1;
       m.stamina -= this.swingCost(m) * (m.s.swingMult || 1);
-      let dmg = m.s.power * (f.mouser ? 2 : 1) * (this.cfg.combatMult || 1);
+      let dmg = m.s.power * (f.mouser ? 2 : 1) * (f.rampage ? 1.5 : 1) * (this.cfg.combatMult || 1);
       const crit = this.rng.chance(m.s.crit);
       if (crit) dmg *= 3;
       m.swingAnim = 0.25;
