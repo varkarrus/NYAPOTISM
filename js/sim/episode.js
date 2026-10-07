@@ -292,12 +292,15 @@
         case 'walk': {
           if (m.pumpNode >= 0) {
             const p = this.pumps[m.pumpNode];
-            if (M.type[m.pumpNode] !== T.MILK || !p || p.op !== m.id) { this.release(m); this.toIdle(m); return; }
+            if (M.type[m.pumpNode] !== T.MILK || !p || (p.op !== m.id && !m.helping)) { this.release(m); this.toIdle(m); return; }
             const arrivedP = this.move(m, dt, this.speedOf(m), true);
             if (m.state !== 'walk') return;
             if (arrivedP) {
               m.zoomT = 0;
-              if (!p.built) { m.state = 'pbuild'; m.timer = 3; this.faceToward(m, m.pumpNode); }
+              if (m.helping) { // join the crank; take over if the operator left while she walked over
+                if (!p.op) { p.op = m.id; m.helping = false; p.helpers = (p.helpers || []).filter(id => id !== m.id); }
+                m.state = 'pump'; this.faceToward(m, m.pumpNode); this.st.pumpHelps = (this.st.pumpHelps || 0) + 1;
+              } else if (!p.built) { m.state = 'pbuild'; m.timer = 3; this.faceToward(m, m.pumpNode); }
               else if (!p.laid) this.startPipe(m);
               else { m.state = 'pump'; this.faceToward(m, m.pumpNode); }
             }
@@ -453,7 +456,21 @@
 
     hasWork(m) {
       if (this.frontier.some(i => !this.mine.forbid[i])) return true;
+      if (this.helpablePump(m) >= 0) return true;
       return this.loose.some(it => !it.claim && this.homeDist[it.idx] >= 0);
+    }
+    // A running pump (built, piped, someone on it) with room for another pair of paws. Nearest by path if dist given.
+    helpablePump(m, dist) {
+      let best = -1, bd = 1e9;
+      for (const k in this.pumps) {
+        const p = this.pumps[k], node = +k;
+        if (!p.op || p.op === m.id || !p.built || !p.laid || p.dry || this.mine.type[node] !== T.MILK) continue;
+        if ((p.helpers || []).length >= NYA.PUMP_HELPERS || this.mine.forbid[node]) continue;
+        const d = dist ? dist[p.stand] : this.homeDist[p.stand];
+        if (d < 0) continue;
+        if (d < bd) { bd = d; best = node; }
+      }
+      return best;
     }
 
     move(m, dt, speed, drain) {
@@ -665,6 +682,18 @@
           if (score > bestScore) { bestScore = score; best = { kind: 'item', it }; }
         }
       }
+      if (!best && !bagFull) { // nothing left to dig: go help crank a pump someone's already running
+        const node = this.helpablePump(m, dist);
+        if (node >= 0) {
+          const p = this.pumps[node];
+          (p.helpers || (p.helpers = [])).push(m.id);
+          m.pumpNode = node; m.helping = true; m.target = -1;
+          m.path = this.pathTo(p.stand, m.tile); m.pathI = 0;
+          m.state = 'walk';
+          this.emote(m, 'heart', 1);
+          return;
+        }
+      }
       if (!best) {
         if (blocked > 0) { m.state = 'wait'; m.timer = 0.6 + rng.next() * 0.6; if (rng.chance(0.3)) this.emote(m, 'dots', 1); return; }
         if (m.bag.length) { this.goHome(m, 'return'); return; }
@@ -702,9 +731,17 @@
     release(m) {
       if (m.pumpNode >= 0) {
         const p = this.pumps[m.pumpNode];
-        if (p && p.op === m.id) p.op = 0;
+        if (p && p.helpers) { const k = p.helpers.indexOf(m.id); if (k >= 0) p.helpers.splice(k, 1); }
+        if (p && p.op === m.id) {
+          p.op = 0;
+          while (p.helpers && p.helpers.length && !p.op) { // a helper already at the crank takes over
+            const h = this.minerById(p.helpers.shift());
+            if (h && h.pumpNode === m.pumpNode) { p.op = h.id; h.helping = false; }
+          }
+        }
         m.pumpNode = -1;
       }
+      m.helping = false;
       if (m.target >= 0 && this.claims[m.target] > 0) this.claims[m.target]--;
       m.target = -1;
       if (m.item) { if (m.item.claim === m.id) m.item.claim = 0; m.item = null; }

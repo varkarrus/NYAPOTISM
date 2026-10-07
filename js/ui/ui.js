@@ -602,7 +602,7 @@
         r.sf.style.width = (f * 100).toFixed(1) + '%';
         r.sf.className = 'sf ' + (f > 0.5 ? 'hi' : f > 0.2 ? 'mid' : 'lo');
         r.st.textContent = Math.ceil(Math.max(0, m.stamina)) + '/' + Math.round(m.maxSt);
-        const txt = m.state === 'distract' ? dk[m.dkind] || 'distracted' : m.state === 'out' ? (m.flopped ? 'zzz…' : ep.fullClear ? 'celebrating!' : 'clocked out') : names[m.state] || m.state
+        const txt = m.state === 'distract' ? dk[m.dkind] || 'distracted' : m.state === 'pump' && m.helping ? 'helping pump 🥛' : m.helping && m.state === 'walk' ? 'off to help pump' : m.state === 'out' ? (m.flopped ? 'zzz…' : ep.fullClear ? 'celebrating!' : 'clocked out') : names[m.state] || m.state
           + ((m.cg.treatUntil || 0) > this.g.s.simTime ? ' · 🍬2× XP ' + Math.ceil(m.cg.treatUntil - this.g.s.simTime) + 's' : '');
         if (r.state.textContent !== txt) r.state.textContent = txt;
         const bag = `🎒<b class="${m.bag.length >= m.s.carry ? 'full' : ''}">${m.bag.length}</b>/${m.s.carry}`;

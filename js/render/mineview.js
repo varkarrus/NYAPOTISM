@@ -911,6 +911,10 @@
       const M = ep.mine;
       let x = NYA.lerp(m.px, m.x, alpha), y = NYA.lerp(m.py, m.y, alpha);
       let anim = 'idle', eyes = null, mouth = null, droop = 0, swing = 0, face = m.face;
+      if (m.helping && m.state === 'pump') { // helpers crowd around the crank instead of standing on the operator
+        const p = ep.pumps[m.pumpNode], k = p && p.helpers ? Math.max(0, p.helpers.indexOf(m.id)) : 0;
+        x += (k % 2 ? -1 : 1) * (0.32 + 0.16 * Math.floor(k / 2)); y -= 0.06 * (k + 1);
+      }
       switch (m.state) {
         case 'walk': case 'return': case 'hotbox': anim = (m.zoomT > ep.t || m.boost3am > 0) ? 'zoom' : 'walk'; break;
         case 'mine': case 'pbuild': case 'pump': anim = 'mine'; swing = Math.max(0, m.swingAnim / 0.25); break;

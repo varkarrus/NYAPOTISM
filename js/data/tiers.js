@@ -192,4 +192,7 @@
   // costs/s the pumper outlasted everyone, and the shift sat waiting on one catgirl at a pump (playtest).
   NYA.PUMP_DRAIN = 2.0;   // swing costs per second while pumping
   NYA.PUMP_RATE = 8;      // base milk flow per second (Pump Pistons ×1.3 each); was 5 before the drain went up
+  // Catgirls with nothing left to dig come and help crank a running pump (each adds her own flow), so the last
+  // node doesn't leave the whole crew clocked out waiting on one pumper (playtest).
+  NYA.PUMP_HELPERS = 3;
 })(globalThis.NYA = globalThis.NYA || {});
