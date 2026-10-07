@@ -621,12 +621,12 @@
           }
         }
         if (this.ovaIs('osha') && this.rng.chance(NYA.OSHA_INJURY)) { // OVA: No OSHA Compliance
-          const hurt = NYA.OSHA_INJURIES.filter(id => cg.traits.indexOf(id) < 0);
+          const hurt = NYA.OSHA_INJURIES.filter(([id]) => cg.traits.indexOf(id) < 0);
           if (hurt.length) {
-            const tid = this.rng.pick(hurt);
+            const tid = this.rng.weighted(hurt);
             cg.traits.push(tid); cg.traitMines.push(mineKey);
             this.s.life.injuries = (this.s.life.injuries || 0) + 1;
-            this.emit('toast', { text: '💥 ' + cg.name + ' leveled up… and is now ' + NYA.TRAIT[tid].name + '. (No hard hats!)', kind: 'warn' });
+            this.emit('toast', { text: tid === 'spanish' ? '🤕 ' + cg.name + ' bonked her head and woke up… Fluent in Spanish?! ¡Miau!' : '💥 ' + cg.name + ' leveled up… and is now ' + NYA.TRAIT[tid].name + '. (No hard hats!)', kind: 'warn' });
           }
         }
       }

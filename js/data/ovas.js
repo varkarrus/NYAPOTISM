@@ -62,7 +62,7 @@
     },
     {
       id: 'osha', name: 'No OSHA Compliance', icon: '⛑️',
-      limiter: 'No hard hats. Every level-up has a 40% chance to leave her with an injury: Concussed, Punch Drunk, Drain Bamage or Toofless. They heal when the OVA ends.',
+      limiter: 'No hard hats. Every level-up has a 40% chance to leave her with an injury: Concussed, Punch Drunk, Drain Bamage or Toofless (or, very rarely, something stranger). They heal when the OVA ends.',
       goals: [tier(3), tier(4), fc(4, 3)],
       perk: 'Hazard Pay', perkText: L => '+' + (15 * L) + '% XP',
       fax: 'THE HARD HATS WERE RECALLED. TORA SAYS SAFETY IS "A STATE OF MIND." ♡',

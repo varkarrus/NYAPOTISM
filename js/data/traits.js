@@ -91,9 +91,11 @@
     { id: 'concussed', ova: 'osha', name: 'Concussed', kind: 'neg', rarity: 'common', desc: '−2 Focus, +50% Whimsy.', flavor: 'Sees little birds. Is chasing the little birds.', mods: { focusAdd: -2, whimsyMult: 1.5 } },
     { id: 'punch_drunk', ova: 'osha', name: 'Punch Drunk', kind: 'neg', rarity: 'common', desc: '−25% Pace, −15% Haste.', flavor: 'Walks in a straight line. A very wobbly straight line.', mods: { paceMult: 0.75, hasteMult: 0.85 } },
     { id: 'drain_bamage', ova: 'osha', name: 'Drain Bamage', kind: 'neg', rarity: 'common', desc: '−40% XP.', flavor: 'Has forgotten what XP stands for. And what a pickaxe is. Mostly the pickaxe.', mods: { xpMult: 0.6 } },
+    // The soap-opera trope: bump your head, wake up fluent in a language you never studied. Harmless, and rare.
+    { id: 'spanish', ova: 'osha', name: 'Fluent in Spanish', kind: 'pos', rarity: 'legendary', desc: 'Does nothing at all, except that her NYAs come out as ¡MIAU!s now.', flavor: 'Bonked her head on a stalactite and woke up fluent in a language she never studied, just like in the telenovelas. Doctors are fascinated. She’s thrilled.', mods: { spanish: 1 } },
     { id: 'toofless', ova: 'osha', name: 'Toofless', kind: 'neg', rarity: 'common', desc: '−25% Power.', flavor: 'Lost a fang to a rock. Every “nya” is now a “nyath.”', mods: { powerMult: 0.75 } },
   ];
-  NYA.OSHA_INJURIES = ['concussed', 'punch_drunk', 'drain_bamage', 'toofless'];
+  NYA.OSHA_INJURIES = [['concussed', 10], ['punch_drunk', 10], ['drain_bamage', 10], ['toofless', 10], ['spanish', 1]]; // weights
   NYA.OSHA_INJURY = 0.4; // chance per level-up in the No OSHA Compliance OVA
 
   NYA.TRAIT = {};

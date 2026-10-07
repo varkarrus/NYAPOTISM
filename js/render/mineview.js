@@ -201,7 +201,7 @@
             this.burst(e.i, col, (e.crit ? 10 : 3) + fold * 2, (e.crit ? 4 : 2.2) + fold * 0.4, 0.09 + fold * 0.015);
             if (fold) this.burst(e.i, FOLD_COLS[(fold - 1) % FOLD_COLS.length], 2 + fold, 3, 0.07);
             if (fold >= 2) this.shake = Math.max(this.shake, Math.min(0.12, 0.03 * fold));
-            if (e.crit) { this.pop(M.x(e.i) + 0.5, M.y(e.i) + 0.2, 'NYA!', '#ff7eb6', true); this.sfx('crit'); }
+            if (e.crit) { this.pop(M.x(e.i) + 0.5, M.y(e.i) + 0.2, m && m.s.flags.spanish ? '¡MIAU!' : 'NYA!', '#ff7eb6', true); this.sfx('crit'); }
             else this.sfx(fold ? 'heavy' : 'tink', e.ty, fold);
             if (set.nya && Math.random() < 0.5) this.sfx('nya');
             break;
@@ -308,7 +308,7 @@
           case 'steal': this.pop(e.x + 0.5, e.y - 0.2, 'YOINK!', '#ffd96a', true); this.sfx('squeak', 2); break;
           case 'recover': this.pop(e.x + 0.5, e.y - 0.2, 'Got it back!', '#7af0a0', false); break;
           case 'escape': this.burstAt(e.x, e.y, '#8a7a6a', 5, 1.6, 0.08); break;
-          case 'mswing': this.burstAt(e.x, e.y, e.crit ? '#ff7eb6' : '#fff2dc', e.crit ? 6 : 3, 2, 0.08); if (e.crit) this.pop(e.x + 0.5, e.y - 0.1, 'NYA!', '#ff7eb6', false); this.sfx('tink', 0); break;
+          case 'mswing': this.burstAt(e.x, e.y, e.crit ? '#ff7eb6' : '#fff2dc', e.crit ? 6 : 3, 2, 0.08); if (e.crit) this.pop(e.x + 0.5, e.y - 0.1, m && m.s.flags.spanish ? '¡MIAU!' : 'NYA!', '#ff7eb6', false); this.sfx('tink', 0); break;
           case 'mkill': this.burstAt(e.x, e.y, '#c9c2d6', 10, 2.6, 0.1); this.burstAt(e.x, e.y, '#ffd96a', 4, 1.8, 0.08); this.pop(e.x + 0.5, e.y - 0.1, e.kind === 'bruiser' ? 'SQUEEEAK!' : 'squeak!', '#fffaf0', e.kind === 'bruiser'); this.sfx('squeak', 3); break;
           case 'tshot': this.shots.push({ x0: M.x(e.i) + 0.5, y0: M.y(e.i) + 0.35, x1: e.x + 0.5, y1: e.y + 0.6, t: 0, dur: 0.18 }); if (Math.random() < 0.6) this.sfx('pew'); break;
           case 'turret': this.rings.push({ i: e.i, life: 0.5, max: 0.5, col: e.by === 'chan' ? '#7af0e0' : '#ff9ec4', r0: 0.3, r1: 1.2 }); this.sfx('stamp'); break;

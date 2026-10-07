@@ -15,6 +15,7 @@
         'New rare trait: Underdog. Only C-rank catgirls can roll it, and it bumps her aptitude straight to SS, a brand-new rank above S.',
         'New Sphynx-only trait: Hot Water Bottle. Anyone who loafs within 2 tiles of her cuddles up and gets 6% stamina back.',
         'A seventh OVA tape: No OSHA Compliance. No hard hats, and every level-up might leave a catgirl Concussed, Punch Drunk, Drain Bamaged or Toofless. They heal when it’s over. Perk: Hazard Pay (+XP).',
+        'Very rarely, a bonk in that OVA does something stranger: Fluent in Spanish. It does nothing at all except turn her NYAs into ¡MIAU!s, a nod to the soap-opera trope where someone bumps their head and wakes up fluent in a language they never learned.',
       ],
     },
     {
