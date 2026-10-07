@@ -6,6 +6,14 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Pumping fix',
+      date: '2026-10-09',
+      items: [
+        'Pumping milk now tires a catgirl almost as fast as mining does (it used to barely cost anything), so you’re no longer left watching one catgirl pump alone after everyone else has flopped.',
+        'To make up for it, pumps flow 60% faster. Dairy Depths shifts are about a quarter shorter, with the same milk per shift.',
+      ],
+    },
+    {
       title: 'Catnip values, new traits, a new OVA',
       date: '2026-10-09',
       items: [

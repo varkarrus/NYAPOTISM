@@ -405,7 +405,7 @@
           if (!p || M.type[node] !== T.MILK) { this.release(m); this.toIdle(m); return; }
           m.swingAnim = 0.25 * (0.5 + 0.5 * Math.sin(this.t * 6));
           const cafP = m.s.flags.caffeine ? 2 : 1;
-          m.stamina -= this.swingCost(m) * 0.6 * dt * cafP;
+          m.stamina -= this.swingCost(m) * NYA.PUMP_DRAIN * dt * cafP;
           const L = Math.max(1, this.homeDist[p.stand]);
           let flow = this.pumpRate * dt * cafP * (m.s.flags.lactose ? 1.3 : 1) / (1 + L / NYA.PIPE_HALF);
           flow = Math.min(flow, M.milk[node]);

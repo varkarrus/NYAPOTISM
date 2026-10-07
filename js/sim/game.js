@@ -683,7 +683,7 @@
         centrifuge: this.lvl('centrifuge'),
         bluntPotency: this.bluntPotency(),
         droneMarks: 1,
-        pumpRate: 5 * Math.pow(1.3, this.lvl('pistons')),
+        pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')),
         junctions: this.lvl('junctions') > 0,
         purrmit: cost,
       };
@@ -754,7 +754,7 @@
         laserMax: this.laserMax(), headlamp: this.lvl('headlamp') + (ev.headlamp || 0), headless: this.headless,
         resonance: this.lvl('resonance') > 0, polishExp: this.polishExp(), centrifuge: this.lvl('centrifuge'),
         bluntPotency: this.bluntPotency(), droneMarks: 1, purrmit: 0,
-        pumpRate: 5 * Math.pow(1.3, this.lvl('pistons')), junctions: this.lvl('junctions') > 0,
+        pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')), junctions: this.lvl('junctions') > 0,
         event: q.ev, ghosts: ev.ghosts || 0,
       };
       Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg());

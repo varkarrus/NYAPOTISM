@@ -183,4 +183,8 @@
   // Schrödinger's Box base chance per episode by tier (GDD §14.1)
   NYA.BOX_CHANCE = { 3: 0.05, 4: 0.08, 5: 0.15, 6: 0.35 };
   NYA.PIPE_HALF = 12; // flow = rate / (1 + pipeLength / 12)  (GDD §9.2)
+  // Pumping costs stamina close to mining's rate (a swing costs 1 swing cost, at 2-4 swings/s). At 0.6 swing
+  // costs/s the pumper outlasted everyone, and the shift sat waiting on one catgirl at a pump (playtest).
+  NYA.PUMP_DRAIN = 2.0;   // swing costs per second while pumping
+  NYA.PUMP_RATE = 8;      // base milk flow per second (Pump Pistons ×1.3 each); was 5 before the drain went up
 })(globalThis.NYA = globalThis.NYA || {});

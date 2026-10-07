@@ -59,6 +59,7 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Survey perfect-clear requirements only gate the first unlock (`NYA.surveyReq`) | Bug: they were re-checked every season, so post-S4 seasons never got past Tier 3 |
 | Bot resets its per-tier stats on unravel | Harness: stale stats kept the bot in old tiers after a reset |
 | `STORY_FAX.tier4` added | Bug: reaching Dairy Depths sent a blank fax |
+| Pumping drains `NYA.PUMP_DRAIN` (2) swing costs/s, was 0.6; base flow `NYA.PUMP_RATE` 8, was 5 | Playtest: the pumper outlasted everyone and the shift waited on one catgirl. Lone-pumper time per early T4 episode roughly halved (worst 44 s → 17 s), T4 episodes ~25% shorter, same milk per episode. T4 clears faster, so T5/T6 arrive ~0.3–0.8h earlier in the bot runs |
 | Ore labels (setting `showDQ`, now "Show catnip value on ore"), drop-off pops, the HUD Haul and a "THIS SHIFT" total in the sky strip all show catnip after Refinery × global × event multipliers, before the Full-Clear Bonus (`game.nipMult(ep)`, `game.haulCatnip(ep)`) | User request: show catnip, not raw density/quality, and a visible running total |
 | Traits can have `req(cg)` (eligibility), `onGain(cg)` and `ova` (OVA-only). New: Caffeine Addict (legendary: ×2 Haste/Pace, pumping, building, distraction speed; swings cost ×1.1, so drain is 2.2× per second), Underdog (rare, C-rank only, sets aptitude to the new SS grade, `NYA.APT_SS`), Hot Water Bottle (Sphynx only: loafing within 2 tiles of her restores 6% stamina) | User trait ideas (the Sphynx trait was left to me) |
 | OVA 7, No OSHA Compliance (`osha`): `noHats`, 40% chance per level-up of an injury trait (Concussed, Punch Drunk, Drain Bamage, Toofless, weight 10 each; Fluent in Spanish, weight 1, no effect except ¡MIAU! crit pops, after the head-injury-language trope; `ova: 'osha'`), stripped from anchored catgirls when the OVA ends. Goals T3 / T4 / FC T4 ×3. Perk Hazard Pay +15% XP per release | User OVA idea |
@@ -76,8 +77,8 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Crew size | 3 at Tier 1, 3–4 at Tier 2, 5–6 at Tier 3, 7–8 at Tier 4 | on target |
 | Season 1 | 90–150 min | ~1h25–1h30 (the bot unravels 25 min after the Skein) |
 | Stay-vs-jump income at a tier unlock | ~1× (new mine held back by Power/Grit) | median ~2× (T2 0.8–4, T3 2–3, T4 1–2.7); `node tools/tierjump.js <seed>` |
-| Tier 5 | a few hours in | 3.1h (seed 4, Season 3) – 4.7h (seed 1, Season 6); 2h25 if you never unravel. Stay-vs-jump at unlock 3–6× |
-| Tier 6 | after Tier 5 | 4.0–5.2h (Seasons 4–8). At unlock it pays 0.14–0.3× Tier 5's catnip/s (seed 4's crew: ~1×) plus ~35 cheese/episode; mice ~16/episode, 7–9 bites; smart turrets cut bites 30–45%. `node tools/test_mice.js <seed>` |
+| Tier 5 | a few hours in | 2.9h (seed 4) – 4.0h (seed 1); ~2h25 if you never unravel. Stay-vs-jump at unlock 3–6× |
+| Tier 6 | after Tier 5 | 3.3–4.5h (seeds 4 and 1; was 4.0–5.2h before the pump change). At unlock it pays 0.14–0.3× Tier 5's catnip/s (seed 4's crew: ~1×) plus ~35 cheese/episode; mice ~16/episode, 7–9 bites; smart turrets cut bites 30–45%. `node tools/test_mice.js <seed>` |
 | Yarn per season | ~×3 growth | S2 ~50, S4 ~100–500, then ~2–4K around Seasons 7–8 and ~30–80K by Season 15 (with T5–T6). `node tools/seasons.js <seed> <hours> [--max-tier 4]` |
 
 ## Known issues / watch list
