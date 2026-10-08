@@ -5,7 +5,7 @@
   const T = NYA.T;
 
   const DISTRACTIONS = [['butterfly', 25], ['groom', 25], ['loaf', 30], ['pebble', 20]];
-  const CAN_DISTRACT = { walk: 1, mine: 1, return: 1, pump: 1, pipe: 1 };
+  const CAN_DISTRACT = { walk: 1, mine: 1, return: 1, pump: 1, pipe: 1, chase: 1 };
 
   class Episode {
     // cfg: { tier, seed, crew:[catgirl], genOpts, laserMax, headlamp, headless, resonance,
@@ -31,7 +31,7 @@
       this.resQ = []; this.resCounts = {}; this.resId = 0; // Crystal Catacombs: shatter pulses waiting to land, crystals per cascade
       this.bombs = [];
       this.tunaUntil = 0; this.hotbox = null; this.catterall = false;
-      this.haul = { value: 0, items: 0, byQ: new Array(12).fill(0), glow: 0, motherlode: 0, thread: 0, lost: 0, milk: 0, sushi: 0, cheese: 0 };
+      this.haul = { value: 0, items: 0, byQ: new Array(12).fill(0), glow: 0, motherlode: 0, thread: 0, lost: 0, milk: 0, sushi: 0, cheese: 0, greebles: 0 };
       // Sushi Grotto water: only simulated while it's moving (a breach wakes it, settling puts it back to sleep)
       this.waterOn = this.mine.water.some(v => v);
       this.waterActive = false; this.waterT = 0; this.waterStamp = new Uint32Array(n); this.waterStepN = 0; this.drainT = 0;
@@ -72,6 +72,7 @@
       for (const m of this.miners) if (m.s.flags.psychic) m.psychicNext = NYA.PSYCHIC_GAP[0] * 0.5 + this.rng.next() * NYA.PSYCHIC_GAP[0];
       this.buryMiners();
       this.initMice(); // js/sim/mice.js
+      this.initGreebles(); // js/sim/greebles.js
       if (cfg.ghosts) this.addGhosts(cfg.ghosts);
       if (this.event && this.event.goldfish) this.addGoldfish(this.event.goldfish);
     }
@@ -152,7 +153,7 @@
         stamina: s.stamina * (s.flags.sleepy || 1), maxSt: s.stamina,
         bag: [], swingT: 0, face: k % 2 ? -1 : 1, restores: 0, napped: false, nineUsed: false,
         dkind: null, emote: null, emoteT: 0, zoom: 1, zoomT: 0, boost3am: 0, lastBox: -99,
-        bored: false, flopped: false, done: false, xp: 0, swings: 0, items: 0, levelsGained: 0, swingAnim: 0, pumpNode: -1, milk: 0,
+        bored: false, flopped: false, done: false, xp: 0, swings: 0, items: 0, levelsGained: 0, swingAnim: 0, pumpNode: -1, milk: 0, greeble: 0,
       };
     }
 
@@ -223,7 +224,7 @@
         for (const nb of M.nbrs(i)) if (hd[nb] >= 0) { this.frontier.push(i); this.isFront[i] = 1; break; }
       }
       this.milkFront.length = 0;
-      if (this.def.quirk === 'milk') {
+      if (NYA.hasQuirk(this.def, 'milk')) {
         for (let i = 0; i < this.n; i++) {
           if (M.type[i] !== T.MILK) continue;
           for (const nb of M.nbrs(i)) if (hd[nb] >= 0) { this.milkFront.push(i); break; }
@@ -290,6 +291,7 @@
       if (this.hotbox && t > this.hotbox.until) this.hotbox = null;
       if (this.waterOn) this.tickWater(dt);
       if (this.miceOn) this.tickMice(dt);
+      if (this.greeblesOn) this.tickGreebles(dt);
       if (this.fieldDirty) this.recomputeField();
       // Last one standing at the pump: if everyone still working is pumping, fast-forward the pumping
       let working = 0, pumping = 0;
@@ -417,6 +419,7 @@
           }
           return;
         }
+        case 'chase': this.chaseGreeble(m, dt); return; // js/sim/greebles.js
         case 'return': {
           const arrived = this.move(m, dt, this.speedOf(m), true);
           if (m.state !== 'return') return;
@@ -807,6 +810,10 @@
           if (score > bestScore) { bestScore = score; best = { kind: 'item', it }; }
         }
       }
+      if (!bagFull && this.greeblesOn && this.greebles.length) { // a greeble to chase (js/sim/greebles.js)
+        const g = this.greebleOption(m, dist);
+        if (g && g.score > bestScore) { bestScore = g.score; best = g; }
+      }
       if (!best && !bagFull && !f.rampage) { // nothing left to dig: go help crank a pump someone's already running
         const node = this.helpablePump(m, dist);
         if (node >= 0) {
@@ -827,6 +834,7 @@
         m.clockOut = true;
         return;
       }
+      if (best.kind === 'greeble') { this.startChase(m, best.gr); return; }
       if (best.kind === 'pump') {
         const p = this.pumps[best.node] || (this.pumps[best.node] = { built: false, laid: false, op: 0, stand: best.stand });
         p.op = m.id; m.pumpNode = best.node; m.target = -1;
@@ -867,6 +875,7 @@
         m.pumpNode = -1;
       }
       m.helping = false;
+      if (m.greeble) { const gr = this.greebles.find(g => g.id === m.greeble); if (gr && gr.chasers > 0) gr.chasers--; m.greeble = 0; }
       if (m.target >= 0 && this.claims[m.target] > 0) this.claims[m.target]--;
       m.target = -1;
       if (m.item) { if (m.item.claim === m.id) m.item.claim = 0; m.item = null; }
@@ -1192,7 +1201,7 @@
 
     deliver(m) {
       if (!m.bag.length) return 0;
-      let delivered = 0, value = 0, sushi = 0, cheese = 0;
+      let delivered = 0, value = 0, sushi = 0, cheese = 0, greebles = 0;
       for (const it of m.bag) {
         if (m.s.flags.menace && this.rng.chance(m.s.flags.menace)) {
           this.haul.lost++;
@@ -1200,18 +1209,26 @@
           this.ev({ t: 'menace', m: m.id });
           continue;
         }
-        if (it.sushi) { this.haul.sushi += it.sushi; sushi += it.sushi; this.haul.items++; delivered++; continue; } // nigiri: sushi, no catnip
-        if (it.cheese) { this.haul.cheese += it.cheese; cheese += it.cheese; delivered++; continue; } // mouse crumbs and nest wheels
-        const v = this.itemValue(it);
-        value += v; delivered++;
-        this.haul.value += v; this.haul.items++;
-        this.haul.byQ[Math.min(11, it.q)]++;
-        if (it.ml) this.haul.motherlode++;
-        if (it.glow) this.haul.glow++;
+        const b = this.bankItem(it, 1);
+        value += b.value; sushi += b.sushi; cheese += b.cheese; greebles += b.greebles; delivered++;
       }
       m.bag = [];
-      this.ev({ t: 'drop', m: m.id, n: delivered, value, sushi, cheese });
+      this.ev({ t: 'drop', m: m.id, n: delivered, value, sushi, cheese, greebles });
       return delivered;
+    }
+    // One item into this shift's haul (catnip value × mult, or sushi / cheese / a greeble). Returns what it added.
+    bankItem(it, mult) {
+      const out = { value: 0, sushi: 0, cheese: 0, greebles: 0 };
+      if (it.sushi) { this.haul.sushi += it.sushi; out.sushi = it.sushi; this.haul.items++; return out; } // nigiri: sushi, no catnip
+      if (it.cheese) { this.haul.cheese += it.cheese; out.cheese = it.cheese; return out; } // mouse crumbs and nest wheels
+      if (it.greeble) { this.haul.greebles += it.greeble; out.greebles = it.greeble; return out; } // Greeble Crash Site
+      const v = this.itemValue(it) * (mult || 1);
+      out.value = v;
+      this.haul.value += v; this.haul.items++;
+      this.haul.byQ[Math.min(11, it.q)]++;
+      if (it.ml) this.haul.motherlode++;
+      if (it.glow) this.haul.glow++;
+      return out;
     }
 
     itemValue(it) {
@@ -1236,9 +1253,10 @@
           for (const m of this.miners) { st += Math.max(0, m.stamina); mx += m.maxSt; }
           this.clearStam = mx > 0 ? st / mx : 0;
           if (this.mice.length) this.scatterMice();
+          if (this.greebles.length) this.scatterGreebles();
           for (const m of this.miners) {
             m.done = true;
-            if (m.state === 'walk' || m.state === 'mine' || m.state === 'idle' || m.state === 'wait' || m.state === 'distract' || m.state === 'hotbox' || m.state === 'smoke' || m.state === 'pump' || m.state === 'pipe' || m.state === 'pbuild') {
+            if (m.state === 'walk' || m.state === 'mine' || m.state === 'idle' || m.state === 'wait' || m.state === 'distract' || m.state === 'hotbox' || m.state === 'smoke' || m.state === 'pump' || m.state === 'pipe' || m.state === 'pbuild' || m.state === 'chase') {
               this.release(m); this.goHome(m, 'return');
             }
             if (m.bag.length) carrying = true;
@@ -1284,6 +1302,7 @@
     addMark(idx, drone) {
       const M = this.mine;
       if (idx < 0 || idx >= this.n || this.cfg.noLaser) return false;
+      if (!drone && this.greeblesOn && this.markGreeble(idx)) return true; // lasered a greeble (js/sim/greebles.js)
       // fog tiles can always be marked (no peeking at what's under them); reveal() clears the mark if it's not mineable
       if (M.revealed[idx] && !M.isMineable(idx) && M.type[idx] !== T.MILK) return false;
       if (M.revealed[idx] && M.isOpen(idx)) return false;
@@ -1360,20 +1379,25 @@
       this.ev({ t: 'blunt', m: m.id });
       return true;
     }
-    useBomb(idx, dmg) {
-      this.bombs.push({ i: idx, at: this.t + 0.55, dmg });
+    // r 1: the 3×3 around it; r 2 (MEWCLEAR stage 4): plus the tiles 2 out in a straight line. glow (stage 6): ore it
+    // hits starts Glowing.
+    useBomb(idx, dmg, r, glow) {
+      this.bombs.push({ i: idx, at: this.t + 0.55, dmg, r: r || 1, glow: !!glow });
       this.st.bombs++;
       this.ev({ t: 'bombthrow', i: idx });
       return true;
     }
     detonate(b) {
-      const M = this.mine, x0 = M.x(b.i), y0 = M.y(b.i);
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const M = this.mine, x0 = M.x(b.i), y0 = M.y(b.i), r = b.r || 1;
+      for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+        const ring = Math.max(Math.abs(dx), Math.abs(dy));
+        if (ring > 1 && Math.abs(dx) + Math.abs(dy) > r) continue;
         const x = x0 + dx, y = y0 + dy;
         if (!M.inb(x, y)) continue;
         const j = M.idx(x, y);
         this.reveal(j);
-        this.damage(j, b.dmg * (dx || dy ? 0.75 : 1), null);
+        if (b.glow && M.type[j] === T.ORE && !M.glow[j] && !M.sushi[j]) { M.glow[j] = 1; this.st.glowing++; }
+        this.damage(j, b.dmg * (ring === 0 ? 1 : ring === 1 ? 0.75 : 0.5), null);
       }
       // catnip blasted somewhere no amount of digging reaches (sealed by bedrock) is blown back to the elevator
       const sealed = this.loose.some(it => this.homeDist[it.idx] < 0);
@@ -1436,9 +1460,13 @@
       this.ev({ t: 'hotbox', i: idx });
       return true;
     }
+    // THE MEWCLEAR OPTION: everything within MEWCLEAR_R goes, bedrock too. The catnip in it is refined on the spot
+    // (×2, straight into the haul), mice in it are gone and greebles in it are yours. Ore out to MEWCLEAR_GLOW starts
+    // Glowing. (Playtest: it used to leave the ore lying around in a smaller blast, weak for its cooldown.)
     useMewclear(idx) {
       const M = this.mine, x0 = M.x(idx), y0 = M.y(idx);
-      const R = 5.5, R2 = 8;
+      const R = NYA.MEWCLEAR_R, R2 = NYA.MEWCLEAR_GLOW;
+      const inBlast = (x, y) => Math.hypot(x - x0, y - y0) <= R;
       for (let i = 0; i < this.n; i++) {
         const d = Math.hypot(M.x(i) - x0, M.y(i) - y0);
         if (d <= R) {
@@ -1456,10 +1484,22 @@
           if (M.type[i] === T.ORE && !M.glow[i]) { M.glow[i] = 1; this.st.glowing++; }
         }
       }
-      // items spawned inside the blast land where the tile was
-      for (const it of this.loose) if (!M.isOpen(it.idx)) it.idx = M.elev;
+      // everything lying in the blast (just broken out or already loose) is refined on the spot
+      let value = 0;
+      for (let k = this.loose.length - 1; k >= 0; k--) {
+        const it = this.loose[k];
+        if (it.claim || !inBlast(M.x(it.idx), M.y(it.idx))) { if (!M.isOpen(it.idx)) it.idx = M.elev; continue; }
+        this.loose.splice(k, 1); it.gone = true;
+        value += this.bankItem(it, 2).value;
+      }
+      if (this.mice.length) for (const mo of this.mice) if (!mo.dead && inBlast(mo.x, mo.y)) this.killMouse(mo, null);
+      if (this.greeblesOn) for (const gr of this.greebles) if (gr.awake && !gr.gone && inBlast(gr.x, gr.y)) {
+        gr.gone = true; this.haul.greebles++; this.st.greebles = (this.st.greebles || 0) + 1;
+        for (const o of this.miners) if (o.greeble === gr.id) { o.greeble = 0; if (o.state === 'chase') this.toIdle(o, 0.5); }
+      }
+      this.st.nuked = value;
       this.fieldDirty = true;
-      this.ev({ t: 'mewclear', i: idx });
+      this.ev({ t: 'mewclear', i: idx, value });
       return true;
     }
 

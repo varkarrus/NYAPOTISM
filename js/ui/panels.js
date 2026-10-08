@@ -13,7 +13,7 @@
     let state = maxed ? 'max' : c.ok ? 'afford' : c.locked ? 'locked' : c.busy ? 'busy' : c.poor ? 'poor' : 'locked';
     if (g.s.research && g.s.research.id === u.id) state = 'researching';
     const cost = maxed ? '' : g.upgCost(u.id);
-    const CUR = u.cur === 'milk' ? '🥛' : u.cur === 'sushi' ? '🍣' : u.cur === 'cheese' ? '🧀' : NIP;
+    const CUR = u.cur === 'milk' ? '🥛' : u.cur === 'sushi' ? '🍣' : u.cur === 'cheese' ? '🧀' : u.cur === 'greebles' ? '👾' : NIP;
     const fxNow = u.fx ? u.fx(l) : '';
     const fxNext = u.fx && !maxed ? u.fx(l + 1) : '';
     const lvTxt = u.max > 1 ? `<span class="lv">${maxed ? 'MAX' : 'Lv ' + l}</span>` : (l ? '<span class="lv done">✓</span>' : '');
@@ -160,6 +160,7 @@
     if (s.milk > 0 || s.maxTierReached >= 4) h += `<h3 class="sec">🥛 Creamery <small>paid in milk · you have ${fmt(s.milk)}</small></h3><div class="grid">${cream}</div>`;
     if (s.sushi > 0 || s.maxTierReached >= 5) h += `<h3 class="sec">🍣 Sushi Bar <small>paid in sushi · you have ${fmt(s.sushi)}</small></h3><div class="grid">${upgList(g, u => u.bld === 'refinery' && u.cur === 'sushi')}</div>`;
     if (s.cheese > 0 || s.maxTierReached >= 6) h += `<h3 class="sec">🧀 Cheese Cave <small>paid in cheese · you have ${fmt(s.cheese)}</small></h3><div class="grid">${upgList(g, u => u.bld === 'refinery' && u.cur === 'cheese')}</div>`;
+    if (s.greebles > 0 || s.maxTierReached >= 8) h += `<h3 class="sec">👾 Saucer Salvage <small>paid in greebles · you have ${fmt(s.greebles)}</small></h3><div class="grid">${upgList(g, u => u.bld === 'refinery' && u.cur === 'greebles')}</div>`;
     if (g.lvl('blend')) {
       const b = s.blend;
       if (b && b.active) {
@@ -243,12 +244,15 @@
     if (g.upgVisible(NYA.UPG.mewclear)) {
       h += `<div class="warhead"><canvas id="warhead" width="260" height="90"></canvas><div><b>Project MEWCLEAR</b> — stage ${stage}/10<br><i>${esc(NYA.MEWCLEAR_NOTES[stage])}</i></div></div>`;
     }
-    const branches = ['Excavation', 'Logistics', 'Personnel', 'Ordnance', 'Exploration', 'Defense'];
+    const branches = ['Excavation', 'Logistics', 'Personnel', 'Ordnance', 'Exploration', 'Defense', 'Xenology'];
     for (const b of branches) {
       if (b === 'Defense' && !(s.cheese > 0 || s.maxTierReached >= 6)) continue; // its teaser would spoil the mice
+      if (b === 'Xenology' && !(s.greebles > 0 || s.maxTierReached >= 8)) continue; // ...and this one the greebles
       const inner = upgList(g, u => u.bld === 'lab' && u.branch === b);
       if (!inner) continue;
-      h += b === 'Defense' ? `<h3 class="sec">🧀 Defense <small>paid in cheese · you have ${fmt(s.cheese)}</small></h3><div class="grid">${inner}</div>` : `<h3 class="sec">${b}</h3><div class="grid">${inner}</div>`;
+      h += b === 'Defense' ? `<h3 class="sec">🧀 Defense <small>paid in cheese · you have ${fmt(s.cheese)}</small></h3><div class="grid">${inner}</div>`
+        : b === 'Xenology' ? `<h3 class="sec">👾 Xenology <small>paid in greebles · you have ${fmt(s.greebles)}</small></h3><div class="grid">${inner}</div>`
+        : `<h3 class="sec">${b}</h3><div class="grid">${inner}</div>`;
     }
     return h;
   }
@@ -272,7 +276,7 @@
       const filed = s.orders.indexOf(id) >= 0;
       const run = running.indexOf(id) >= 0;
       if (!avail && !filed) {
-        h += `<div class="order locked"><b>???</b> <small>${o.active ? 'Needs ' + esc(NYA.ACTIVES[o.active].name) : ''}</small></div>`;
+        h += `<div class="order locked"><b>???</b> <small>${o.active ? 'Needs ' + esc(NYA.ACTIVES[o.active].name) : o.minBlunts ? 'Needs ' + o.minBlunts + ' Blunt charges' : ''}</small></div>`;
         continue;
       }
       h += `<div class="order ${filed ? (run ? 'run' : 'pending') : ''}" data-act="order:${id}">

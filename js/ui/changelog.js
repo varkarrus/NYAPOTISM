@@ -6,6 +6,19 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Tier 8: Greeble Crash Site, Project MEWCLEAR rework',
+      date: '2026-10-09',
+      items: [
+        'New mine below the Crystal Catacombs: the Greeble Crash Site, a crashed saucer in a crater of cracked rock. Survey it in the R&D Lab after two perfect clears of the Catacombs. Yes, you’ll probably get there too early again.',
+        'Greebles are little alien doodads that wander the tunnels and scoot away from your crew. They’re faster than a catgirl, so the crew has to corner them: in a dead end, against the saucer’s hull, or two catgirls closing in from both sides. Once spotted, a greeble only hangs around for a minute or so before it beams back to the mothership. Laser one and it’s dazzled (slower, and too curious to leave), and up to three catgirls go after it. Greebles glow in the dark.',
+        'Old quirks come back: the crash left grooved fractures (Scratching Post Quarry’s chain-breaking stone) running out from the crater. The saucer’s hull is tough alien plating with cargo inside.',
+        'Spend greebles on Saucer Salvage (Refinery, catnip ×1.25 a level), Greeble Treats (R&D Xenology, slower greebles) and Greeble Co-processors (Purrmit Office, +2 RP). The purrmit costs sushi. New trait: Greeble Whisperer. Plus a new Bunk Bed, faxes and a tune.',
+        'Project MEWCLEAR reworked. Each stage now has its own bonus, and Doc Boom needs samples from deeper mines before each one: bomb damage ×1.5, a 9×9 Whisker Sonar, a shorter bomb cooldown, bigger bomb blasts, ×2 turret damage at the Mousehole Maze, glowing bomb hits and stronger resonance at the Crystal Catacombs, slower greebles, more XP, and finally the warhead. Whisker Sonar no longer grows to cover the whole mine.',
+        'THE MEWCLEAR OPTION hits harder: a bigger blast, every bit of catnip inside is refined on the spot at ×2 straight into the haul, mice in it are gone, greebles in it are yours. The cooldown is 30 minutes (was an hour).',
+        'New standing order, Blunt Rotation (at 6 Blunt charges): once auto-cast Blunts run dry, they wait for a full set before handing them out again. The Blunt button shows ⏸ while it waits.',
+      ],
+    },
+    {
       title: 'Tier 7: Crystal Catacombs',
       date: '2026-10-09',
       items: [
@@ -291,17 +304,18 @@
 
   // What the current build actually contains, so a playtester knows where the content ends.
   NYA.FRONTIER = {
-    summary: 'Roughly 5 hours of new things, then the OVA challenges (several more hours). After that, just bigger numbers.',
+    summary: 'Roughly 6 hours of new things, then the OVA challenges (several more hours). After that, the last mine keeps you busy a while, then just bigger numbers.',
     items: [
       'Tiers 1–3 in your first run (Tier 3 at about 40 minutes).',
       'Something big around the 1 hour mark. No spoilers!',
       'Tier 4, Dairy Depths (milk pumping), at about 1 hour.',
-      'Tanuki’s limited-time event mines, R&D and MEWCLEAR, standing orders, swing techniques.',
+      'Tanuki’s limited-time event mines, R&D, standing orders, swing techniques. Project MEWCLEAR keeps going as you dig deeper.',
       'Tier 5, Sushi Grotto (floods and sushi): it opens early, but you’ll arrive too soon. Making it yours takes around 3 hours.',
-      'Tier 6, Mousehole Maze (mice, turrets and cheese): opens around 3–4 hours in, and it’s just as tough at first.',
-      'Tier 7, Crystal Catacombs (refraction, resonance and sushi purrmits): opens around 4 hours in. Another wall at first.',
+      'Tier 6, Mousehole Maze (mice, turrets and cheese): opens around 3–3.5 hours in, and it’s just as tough at first.',
+      'Tier 7, Crystal Catacombs (refraction, resonance and sushi purrmits): opens around 4.5 hours in. Another wall at first.',
+      'Tier 8, Greeble Crash Site (greebles to corner, a crashed saucer): opens around 6 hours in, and takes a good while to conquer.',
       'Late game: seven OVA challenge episodes, 21 releases in all, each with a permanent perk.',
-      'Not built yet: Tiers 8+, equipment, and more late-game content.',
+      'Not built yet: Tiers 9+, equipment, and more late-game content.',
     ],
   };
 })(globalThis.NYA = globalThis.NYA || {});

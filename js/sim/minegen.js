@@ -61,6 +61,8 @@
       this.water = new Uint8Array(n);     // Sushi Grotto: 1 = this open tile is flooded
       this.sushi = new Uint8Array(n);     // Sushi Grotto: this ORE tile is wild nigiri (drops sushi, not catnip)
       this.crystal = new Uint8Array(n);   // Crystal Catacombs: this ORE tile is crystal catnip (refraction, resonance)
+      this.hull = new Uint8Array(n);      // Greeble Crash Site: this HARD tile is the crashed saucer's hull
+      this.greebleSpawns = [];            // Greeble Crash Site: open tiles where a greeble starts
       this.elev = 0;
       this.motherlode = -1;
       this.box = -1;
@@ -119,7 +121,7 @@
       // --- Air pockets (blobs + drunkard's walk tunnels)
       const airTarget = Math.round(n * (comp.air + (opts.airAdd || 0)));
       let air = 0, guard = 0;
-      const tunnelBias = def.quirk === 'tangles' ? 0.55 : def.quirk === 'mice' ? 0.75 : 0.2;
+      const tunnelBias = NYA.hasQuirk(def, 'tangles') ? 0.55 : NYA.hasQuirk(def, 'mice') ? 0.75 : NYA.hasQuirk(def, 'greebles') ? 0.5 : 0.2;
       while (air < airTarget && guard++ < 500) {
         let c = rng.int(0, n - 1);
         if (nearElev(c, 3)) continue;
@@ -200,10 +202,52 @@
         }
       }
 
+      // --- The crashed saucer (T8): a riveted hull of tough plating around an open cargo hold, sunk in a crater of
+      // soft dirt. Placed before the grooves so the crash's fractures run through the rock around it.
+      if (NYA.hasQuirk(def, 'greebles')) {
+        const sr = new NYA.RNG('saucer:' + this.seed);
+        const rx = Math.max(5, Math.round(w * 0.17)), ry = Math.max(2.5, Math.round(h * 0.12));
+        const cx = sr.int(rx + 2, w - rx - 3), cy = sr.int(Math.max(ry + 4, Math.round(h * 0.45)), h - ry - 3);
+        this.saucer = { x: cx, y: cy, rx, ry };
+        const hold = [];
+        for (let i = 0; i < n; i++) {
+          if (i === this.elev || nearElev(i, 3)) continue;
+          const dx = (this.x(i) - cx) / rx, dy = (this.y(i) - cy) / ry, e = dx * dx + dy * dy;
+          if (e < 0.55) { type[i] = T.OPEN; hold.push(i); }
+          else if (e < 1.05) { type[i] = T.HARD; this.hull[i] = 1; }
+          else if (e < 2.1 && type[i] !== T.ORE) type[i] = sr.chance(0.12) ? T.OPEN : T.DIRT; // the crater
+        }
+        // seal the hull: every hold tile's neighbours are hold or plating
+        const inHold = new Uint8Array(n); for (const i of hold) inHold[i] = 1;
+        for (const i of hold) for (const nb of this.nbrs(i)) if (!inHold[nb] && !this.hull[nb] && nb !== this.elev) { type[nb] = T.HARD; this.hull[nb] = 1; }
+        // impact fractures: grooved lines (Tier 2's quirk) radiating out through the rock from the crater's rim
+        const rays = sr.int(7, 10);
+        for (let k = 0; k < rays; k++) {
+          const a = (k + sr.next() * 0.6) / rays * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a);
+          const len = sr.int(4, 9), members = [];
+          for (let r = 1.5; members.length < len && r < 6; r += 0.12) {
+            const x = Math.round(cx + ca * rx * r), y = Math.round(cy + sa * ry * r);
+            if (!this.inb(x, y)) break;
+            const i = this.idx(x, y);
+            if (members.indexOf(i) >= 0) continue;
+            if (type[i] !== T.DIRT && type[i] !== T.STONE) { if (members.length) break; continue; }
+            members.push(i);
+          }
+          if (members.length < 3) continue;
+          const gid = this.grooveGroups.length;
+          for (const i of members) { type[i] = T.GROOVE; this.groove[i] = gid; }
+          this.grooveGroups.push(members);
+        }
+        // cargo: a few crates of top-shelf catnip on the hold's floor
+        const floor = hold.filter(i => !hold.includes(i + w)).sort((a, b) => this.x(a) - this.x(b));
+        for (let k = 1; k < floor.length - 1; k += 3) { const i = floor[k]; type[i] = T.ORE; this.q[i] = Math.min(9, rollQuality(sr) + 2); this.dens[i] = rollDensity(sr, 0.2, this.tier); }
+        this.holdTiles = hold.filter(i => type[i] === T.OPEN);
+      }
+
       // --- Grooved stone lines (T2 quirk)
-      if (def.quirk === 'grooved') {
+      if (NYA.hasQuirk(def, 'grooved')) {
         const lines = Math.round(n / 34);
-        let gid = 0;
+        let gid = this.grooveGroups.length;
         for (let L = 0; L < lines; L++) {
           let c = rng.int(0, n - 1);
           if (type[c] !== T.STONE) continue;
@@ -226,7 +270,7 @@
       }
 
       // --- Tangles (T3 quirk): yarn-choked open tiles
-      if (def.quirk === 'tangles') {
+      if (NYA.hasQuirk(def, 'tangles')) {
         for (let i = 0; i < n; i++) if (type[i] === T.OPEN && rng.chance(0.45)) this.tangle[i] = 2;
       }
 
@@ -248,7 +292,7 @@
       }
 
       // --- Milk nodes (T4 quirk): pumped, never mined
-      if (def.quirk === 'milk') {
+      if (NYA.hasQuirk(def, 'milk')) {
         const nodes = rng.int(3, 5) + (opts.extraMilk || 0);
         let placed = 0; guard = 0;
         while (placed < nodes && guard++ < 300) {
@@ -265,7 +309,7 @@
       }
 
       // --- Flooded chambers + wild nigiri (T5 quirk). Own RNG stream so other tiers' layouts don't change.
-      if (def.quirk === 'water') {
+      if (NYA.hasQuirk(def, 'water')) {
         const wr = new NYA.RNG('water:' + this.seed);
         const chambers = Math.max(3, Math.round(n / 110));
         let made = 0; guard = 0;
@@ -297,7 +341,7 @@
 
       // --- Crystal catnip clusters (T7 quirk): connected crystals refract laser marks and resonate when struck.
       // Own RNG stream so other tiers' layouts don't change.
-      if (def.quirk === 'crystal') {
+      if (NYA.hasQuirk(def, 'crystal')) {
         const cr = new NYA.RNG('crystal:' + this.seed);
         const want = Math.max(5, Math.round(n / 95));
         let made = 0; guard = 0;
@@ -319,7 +363,7 @@
 
       // --- Mouse nests (T6 quirk), each set in the wall of a little warren so the mice have somewhere to come
       // out. Own RNG stream so other tiers' layouts don't change.
-      if (def.quirk === 'mice') {
+      if (NYA.hasQuirk(def, 'mice')) {
         const mr = new NYA.RNG('mice:' + this.seed);
         const want = Math.max(4, Math.round(n / 120));
         const nests = [];
@@ -355,6 +399,18 @@
       // --- Distances from the elevator through any non-bedrock tile (used for placing specials)
       const far = this.bfsAll(this.elev);
 
+      // --- Greebles (T8): a few start in the saucer's hold, the rest anywhere open, away from the elevator
+      if (NYA.hasQuirk(def, 'greebles')) {
+        for (const i of this.holdTiles || []) this.mud[i] = 0; // the hold's deck is clean
+        const gr = new NYA.RNG('greeble:' + this.seed);
+        const want = Math.max(6, Math.round(n / 95));
+        const open = [], hold = (this.holdTiles || []).filter(i => type[i] === T.OPEN);
+        for (let i = 0; i < n; i++) if (type[i] === T.OPEN && !this.water[i] && !nearElev(i, 5) && far[i] >= 0 && hold.indexOf(i) < 0) open.push(i);
+        const pick = list => list.splice(gr.int(0, list.length - 1), 1)[0];
+        for (let k = 0; k < 4 && hold.length; k++) this.greebleSpawns.push(pick(hold));
+        while (this.greebleSpawns.length < want && open.length) this.greebleSpawns.push(pick(open));
+      }
+
       // --- Schrödinger's Box
       if (opts.box) {
         let best = -1, bestD = -1;
@@ -384,6 +440,7 @@
         if (t === T.ORE) hp = NYA.ORE_LAYER_HP * tHP * NYA.tierCrumble(this.tier) * (this.sushi[i] ? this.dens[i] : this.dens[i] / NYA.tierDensityMult(this.tier));
         else if (NYA.BASE_HP[t]) hp = NYA.BASE_HP[t] * tHP;
         if (this.crystal[i]) hp *= NYA.CRYSTAL_HP;
+        if (this.hull[i]) hp *= NYA.HULL_HP;
         this.hp[i] = this.maxHp[i] = hp;
       }
 

@@ -5,14 +5,14 @@
   const T = NYA.T;
   const P = NYA.Episode.prototype;
   // a catgirl swings at an adjacent mouse instead of carrying on, in these states
-  const FIGHT = { idle: 1, wait: 1, walk: 1, mine: 1, return: 1, drop: 1, pump: 1, pbuild: 1, pipe: 1, hotbox: 1, smoke: 1 };
+  const FIGHT = { idle: 1, wait: 1, walk: 1, mine: 1, return: 1, drop: 1, pump: 1, pbuild: 1, pipe: 1, hotbox: 1, smoke: 1, chase: 1 };
   const SAFE = { out: 1, rescue: 1, flop: 1, nap: 1, buried: 1 };
   const KINDS = Object.keys(NYA.MICE).map(k => [k, NYA.MICE[k].w]);
 
   P.initMice = function () {
     const M = this.mine, cfg = this.cfg;
     this.mice = []; this.turrets = []; this.nests = {}; this.nestOrder = [];
-    this.miceOn = this.def.quirk === 'mice';
+    this.miceOn = NYA.hasQuirk(this.def, 'mice');
     if (!this.miceOn) return;
     this.miceRng = new NYA.RNG('mice:' + cfg.seed);
     this.mouseId = 1;

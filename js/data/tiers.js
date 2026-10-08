@@ -188,11 +188,44 @@
     },
     music: { key: 2, bpm: 96, prog: 'crystal' },
   };
-  NYA.MAX_TIER = 7;
+  NYA.TIERS[8] = {
+    tier: 8, key: 'greeble', name: 'Greeble Crash Site', w: 40, h: 26,
+    comp: { air: 0.13, bedrock: 0.08, ore: 0.07, hard: 0.2, stone: 0.5 }, // plus the saucer and its crater (minegen)
+    purrmit: 25, purrmitCur: 'sushi', // GDD: the aliens have a sushi thing
+    quirk: 'greebles', quirks: ['greebles', 'grooved'], box: true, // the crash left grooved impact fractures (Tier 2's quirk returns)
+    nipTier: 7, diffTier: 7.2, // 7.5 arrived at 40-160 swings and stayed a wall for 15+ seasons (late-game growth is slower)
+    blurb: 'A crashed alien saucer in a crater of cracked rock. Quirk: GREEBLES, alien doodads that scoot away from your crew. They’re quicker than a catgirl, so corner them in a dead end or close in from both sides. The crash left GROOVED fractures too. Purrmits cost SUSHI.',
+    pal: {
+      floor: '#2a3036', floor2: '#323a41', fog: '#0b0e11', fog2: '#12171b',
+      dirt: '#8f7d68', dirt2: '#a8957e', dirt3: '#6e5f4f',
+      stone: '#7d8a91', stone2: '#96a3aa', stone3: '#606c73',
+      hard: '#4e5960', hard2: '#616d75', hard3: '#3a434a',
+      bed: '#14181c', bed2: '#1c2227', bed3: '#2a3238',
+      accent: '#9dff7a', sky: '#b8ffd0',
+    },
+    music: { key: 11, bpm: 100, prog: 'greeble' },
+  };
+  NYA.MAX_TIER = 8;
+  // A tier has one headline quirk (`quirk`) and may bring back older ones too (`quirks`, user: old quirks should return).
+  NYA.hasQuirk = (def, q) => !!def && (def.quirk === q || (!!def.quirks && def.quirks.indexOf(q) >= 0));
   // Crystal Catacombs (GDD §9.2). Crystals are tougher than ore, but every hit on one rings RES_HIT of its damage
   // into each neighbouring crystal, and a crystal that shatters sends RES_SHATTER of its max HP into its neighbours
   // RES_DELAY s later, so a softened cluster cascades. Lasering one crystal refracts the mark across its cluster.
   NYA.CRYSTAL_HP = 1.5; NYA.RES_HIT = 0.35; NYA.RES_SHATTER = 0.5; NYA.RES_DELAY = 0.12;
+  // Greeble Crash Site (GDD §9.2). Greebles wander the open tiles and scoot away from any catgirl within GREEBLE_SCARE
+  // tiles at GREEBLE_SPEED × the crew's median walking speed (they hover: rough ground and slick floors don't slow
+  // them). Faster than her, so she only catches one that's cornered (no open tile farther from every catgirl nearby)
+  // or that she's right on top of. A catgirl gives up a chase after GREEBLE_PATIENCE s (×2 on a lasered greeble).
+  NYA.GREEBLE_SPEED = 1.3; NYA.GREEBLE_WANDER = 0.35; NYA.GREEBLE_SCARE = 3.5; NYA.GREEBLE_PATIENCE = 7;
+  NYA.GREEBLE_VALUE = 6; // how keen a catgirl is to chase one (a tile of ore scores its items × quality)
+  NYA.HULL_HP = 2; // saucer plating vs hard stone
+  NYA.MEWCLEAR_R = 7; NYA.MEWCLEAR_GLOW = 10; // THE MEWCLEAR OPTION: blast radius, and how far out ore starts Glowing
+  NYA.GREEBLE_MARK = 12; // seconds a lasered greeble stays everyone's business
+  // Once spotted, a greeble hangs around GREEBLE_STAY s (random in the range) and then beams back to the mothership,
+  // unless it's lasered (too curious to leave). Without this a strong crew swept up every greeble in a long shift on
+  // its own and lasering added nothing (active play should be a bonus).
+  NYA.GREEBLE_STAY = [45, 80];
+  NYA.GREEBLE_DAZZLE = 0.6; // a lasered greeble is dazzled by the dot: it scoots at this share of its speed
   // Catnip value per ore item. A tier can pay like a shallower one (nipTier) when it's a resource mine.
   NYA.tierNip = t => NYA.tierBase((NYA.TIERS[t] && NYA.TIERS[t].nipTier) || t) * NYA.tierRich(t); // value of one quality-1 item
 

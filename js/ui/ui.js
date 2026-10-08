@@ -40,7 +40,7 @@
     // ---------------------------------------------------------------- setup
     bind() {
       this.el = {
-        catnip: $('#catnip'), yarnBox: $('#resYarn'), yarn: $('#yarn'), milkBox: $('#resMilk'), milk: $('#milk'), sushiBox: $('#resSushi'), sushi: $('#sushi'), cheeseBox: $('#resCheese'), cheese: $('#cheese'), title: $('#epTitle'),
+        catnip: $('#catnip'), yarnBox: $('#resYarn'), yarn: $('#yarn'), milkBox: $('#resMilk'), milk: $('#milk'), sushiBox: $('#resSushi'), sushi: $('#sushi'), cheeseBox: $('#resCheese'), cheese: $('#cheese'), greebleBox: $('#resGreebles'), greebles: $('#greebles'), title: $('#epTitle'),
         hud: $('#hud'), crew: $('#crewList'), actives: $('#actives'), tabs: $('#tabs'), panel: $('#panel'),
         overlay: $('#overlay'), banner: $('#banner'), toasts: $('#toasts'), faxTray: $('#faxTray'), tip: $('#tip'),
         modal: $('#modal'), bank: $('#bank'), ff: $('#btnFF'), pause: $('#btnPause'), tools: $('#toolBtns'), stage: $('#mineWrap'),
@@ -306,6 +306,7 @@
       if (r.milk) extra.push(`🥛 +${fmt(r.milk)} milk`);
       if (r.sushi) extra.push(`🍣 +${fmt(r.sushi)} sushi`);
       if (r.cheese) extra.push(`🧀 +${fmt(r.cheese)} cheese`);
+      if (r.greebles) extra.push(`👾 +${fmt(r.greebles)} greeble${r.greebles > 1 ? 's' : ''}`);
       if (r.mice) extra.push(`🐭 ${r.mice} mice shooed`);
       if (r.stolen) extra.push(`${r.stolen} item${r.stolen > 1 ? 's' : ''} stolen by pickpockets`);
       if (r.event) extra.push(`${NYA.EVENTS[r.event].icon} ${NYA.EVENTS[r.event].name}: ×${r.evMult.toFixed(2)}${r.wishes ? ` (${r.wishes} wish${r.wishes > 1 ? 'es' : ''})` : ''}`);
@@ -400,6 +401,7 @@
       if (s.milk > 0 || s.tierUnlocked[4]) { this.el.milkBox.hidden = false; this.el.milk.textContent = fmt(s.milk); } else this.el.milkBox.hidden = true;
       if (s.sushi > 0 || s.tierUnlocked[5]) { this.el.sushiBox.hidden = false; this.el.sushi.textContent = fmt(s.sushi); } else this.el.sushiBox.hidden = true;
       if (s.cheese > 0 || s.tierUnlocked[6]) { this.el.cheeseBox.hidden = false; this.el.cheese.textContent = fmt(s.cheese); } else this.el.cheeseBox.hidden = true;
+      if (s.greebles > 0 || s.tierUnlocked[8]) { this.el.greebleBox.hidden = false; this.el.greebles.textContent = fmt(s.greebles); } else this.el.greebleBox.hidden = true;
       this.el.bank.textContent = NYA.fmtTime(s.bank);
       this.el.ff.classList.toggle('on', !!s.settings.ffOn && s.bank > 0);
       this.el.ff.querySelector('small').textContent = g.ffSpeed() + '×';
@@ -410,7 +412,7 @@
         const left = ep.resLeft;
         const est = g.haulCatnip(ep); // after multipliers, before the Full-Clear Bonus
         const marks = ep.marks.filter(m => !m.drone).length;
-        this.el.hud.innerHTML = `<span>⏱ ${NYA.fmtTime(ep.t)}</span><span>Ore tiles left <b>${left}</b></span><span class="haul" data-tip="haul">Haul ${NIP}<b>${fmt(est)}</b> <small>(${ep.haul.items} items)</small></span>${ep.def.quirk === 'milk' ? `<span>🥛 <b>${fmt(ep.haul.milk)}</b></span>` : ''}${ep.waterOn ? `<span>🍣 <b>${fmt(ep.haul.sushi)}</b></span>` : ''}${ep.miceOn ? `<span>🧀 <b>${fmt(ep.haul.cheese)}</b></span><span>🐭 <b>${ep.mice.length}</b></span><span data-tip="tool:turret">🎯 ${ep.turrets.length}/${ep.maxTurrets}</span>` : ''}<span class="lz">🔴 ${marks}/${g.laserMax()}</span><span data-tip="sight">👁 Sight <b>${ep.noticeRange}</b>${ep.darkness ? ` <small>(darkness −${ep.darkness})</small>` : ''}</span>${ep.catterall ? '<span class="catt">CATTERALL</span>' : ''}${ep.t < ep.tunaUntil ? '<span class="tuna">TUNA TIME!</span>' : ''}${g.s.research ? `<span>🔨 ${esc(NYA.UPG[g.s.research.id].name)} ${Math.round(100 * (1 - g.s.research.left / g.s.research.total))}%</span>` : ''}`;
+        this.el.hud.innerHTML = `<span>⏱ ${NYA.fmtTime(ep.t)}</span><span>Ore tiles left <b>${left}</b></span><span class="haul" data-tip="haul">Haul ${NIP}<b>${fmt(est)}</b> <small>(${ep.haul.items} items)</small></span>${NYA.hasQuirk(ep.def, 'milk') ? `<span>🥛 <b>${fmt(ep.haul.milk)}</b></span>` : ''}${ep.waterOn ? `<span>🍣 <b>${fmt(ep.haul.sushi)}</b></span>` : ''}${ep.miceOn ? `<span>🧀 <b>${fmt(ep.haul.cheese)}</b></span><span>🐭 <b>${ep.mice.length}</b></span><span data-tip="tool:turret">🎯 ${ep.turrets.length}/${ep.maxTurrets}</span>` : ''}${ep.greeblesOn ? `<span data-tip="greebles">👾 <b>${fmt(ep.haul.greebles)}</b> <small>(${ep.greebles.filter(k => k.awake).length} loose)</small></span>` : ''}<span class="lz">🔴 ${marks}/${g.laserMax()}</span><span data-tip="sight">👁 Sight <b>${ep.noticeRange}</b>${ep.darkness ? ` <small>(darkness −${ep.darkness})</small>` : ''}</span>${ep.catterall ? '<span class="catt">CATTERALL</span>' : ''}${ep.t < ep.tunaUntil ? '<span class="tuna">TUNA TIME!</span>' : ''}${g.s.research ? `<span>🔨 ${esc(NYA.UPG[g.s.research.id].name)} ${Math.round(100 * (1 - g.s.research.left / g.s.research.total))}%</span>` : ''}`;
       }
       this.updateTileInfo();
       this.updateCrewLive();
@@ -460,8 +462,13 @@
           if (M.water[i]) bits.push('<b>Flooded</b> — wet catgirls walk at ' + Math.round(100 * (ep.cfg.wetPace || NYA.WET_PACE)) + '% speed and tire ×' + (ep.cfg.wetDrain || NYA.WET_DRAIN) + ' as fast for a while');
           html = bits.length ? bits.join(' · ') : '<b>Open floor</b>';
         }
+        else if (M.hull[i]) html = `<b>Saucer Hull</b> — alien plating, tougher than hardstone. There’s cargo inside${hp}`;
         else html = `<b>${NYA.TILE_NAME[ty]}</b>${ty === T.GROOVE ? ' — breaks in a chain' : ty === T.BEDROCK ? ' — indestructible (mostly)' : ''}${hp}`;
         if (M.forbid[i]) html += ' · <b style="color:#8fd0ff">FORBIDDEN</b>';
+      }
+      if (ep.greeblesOn && M.revealed[i]) {
+        const gr = ep.greebles.find(k => k.awake && k.tile === i);
+        if (gr) html = `<b>Greeble</b> — an alien doodad. ${gr.cornered ? '<b style="color:#9dff7a">Cornered!</b>' : gr.scared ? 'Scooting away!' : 'Minding its own business.'} Faster than your crew: corner it in a dead end or close in from both sides. Laser it to set the crew on it.`;
       }
       if (ep.miceOn) {
         const tu = ep.turrets.find(k => k.idx === i);
@@ -654,12 +661,12 @@
         const r = this.actEls[id], a = g.s.act[id];
         if (!a) continue;
         const mx = g.activeMaxCharges(id);
-        const p = a.ch >= mx ? 1 : 1 - Math.max(0, a.cd) / NYA.ACTIVES[id].cd;
+        const p = a.ch >= mx ? 1 : 1 - Math.max(0, a.cd) / g.activeCd(id);
         r.ring.style.setProperty('--p', (p * 360).toFixed(0) + 'deg');
         const ready = g.canUseActive(id);
         r.el.classList.toggle('ready', ready);
         r.el.classList.toggle('cool', a.ch <= 0);
-        const txt = mx > 1 ? String(a.ch) : (a.ch <= 0 ? NYA.fmtTime(a.cd) : '');
+        const txt = mx > 1 ? String(a.ch) + (a.hold && g.orderRunning('blunt_rotation') ? '⏸' : '') : (a.ch <= 0 ? NYA.fmtTime(a.cd) : ''); // ⏸: Blunt Rotation is waiting for a full round
         if (r.ch.textContent !== txt) r.ch.textContent = txt;
       }
     }
@@ -946,7 +953,8 @@
       if (k === 'sight') { const ep = g.episode; return `<b>Sight</b> = ${NYA.BASE_SIGHT} base + ${g.lvl('headlamp')} Headlamps − ${ep ? ep.darkness : 0} darkness = <b>${ep ? ep.noticeRange : '?'}</b><br>Miners notice ore within this many tiles on their own, even with a short attention span. Opened tiles reveal fog ${ep ? ep.revealR : 1} tile(s) around them.<br><small>Deeper mines are darker: −1 Sight every two tiers. Buy Headlamps in the R&D Lab.</small>`; }
       if (k === 'haul') return `<b>This shift’s haul</b><br>Catnip your crew has delivered so far, after Refinery, global${g.episode && g.episode.event ? ' and event-mine' : ''} multipliers. A perfect clear multiplies it again by the Full-Clear Bonus (${NYA.fmtMult(g.fullClearMult())}) at the end.`;
       if (k === 'cheese') return `<b>Cheese</b><br>Mice drop crumbs, and every smashed Mouse Nest drops a whole Cheese Wheel. Spend it on turrets in the R&D Lab (Defense) and on Aged Gouda at the Refinery.`;
-      if (k === 'sushi') return `<b>Sushi</b><br>Wild nigiri grows on the rocks of the Sushi Grotto, usually right next to the flooded chambers. Spend it at the Refinery's Sushi Bar.`;
+      if (k === 'sushi') return `<b>Sushi</b><br>Wild nigiri grows on the rocks of the Sushi Grotto, usually right next to the flooded chambers. Spend it at the Refinery's Sushi Bar${g.s.maxTierReached >= 6 ? ', and on purrmits for the deepest mines' : ''}.`;
+      if (k === 'greebles') return `<b>Greebles</b><br>Alien doodads from the Greeble Crash Site. They scoot away from your crew and they’re faster, so corner them: a dead end, the saucer’s hull, or two catgirls closing in. Laser one to set the crew on it. Spend them on Saucer Salvage (Refinery), Xenology (R&D) and Greeble Co-processors (Purrmit Office).`;
       if (k === 'milk') return `<b>Milk</b><br>Pumped from milk nodes in the Dairy Depths. Spend it at the Refinery's Creamery.<br><small>Pump flow = rate ÷ (1 + pipe length ÷ ${NYA.PIPE_HALF}). Short pipes pump faster.</small>`;
       if (k === 'bank') return `<b>Catnap Bank</b><br>Offline time is banked at ${Math.round(g.bankEff() * 100)}% efficiency. Spend it as Fast-Forward (${g.ffSpeed()}×). Press <kbd>F</kbd>.`;
       return '';

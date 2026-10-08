@@ -5,16 +5,18 @@
 // and hard stone (HP / Power, no crits) and her seconds to cross the mine's width, on arrival and when the next mine
 // unlocks, plus how long the stretch lasted, the average shift and catnip/s.
 // Usage: node tools/frontier.js [seed=1] [hours=7] [--quiet] [--set '{"PUSH":1,"UPG.mine3.base":3e4,"FC":{"3":2}}']
-// --set tries balance changes without editing the game: NYA constants by name, "UPG.<id>.<field>" for upgrades, and
+// --set tries balance changes without editing the game: NYA constants by name, "UPG.<id>.<field>" for upgrades,
+// "TIER.<n>.<field>" for a mine (e.g. "TIER.8.diffTier"), and
 // "FC" to override the perfect clears each survey asks for (by tier). Targets: see docs/HANDOFF.md.
 const path = require('path'); const root = path.join(__dirname, '..', 'js') + '/';
-['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js','data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
+['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js','data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/greebles.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
 const NYA = globalThis.NYA, T = NYA.T;
 const args = process.argv.slice(2), quiet = args.includes('--quiet');
 const si = args.indexOf('--set'), set = si >= 0 ? JSON.parse(args.splice(si, 2)[1]) : {};
 for (const [k, v] of Object.entries(set)) {
   if (k === 'FC') { const sr = NYA.surveyReq; NYA.surveyReq = (g, tier, fcTier, n) => sr(g, tier, fcTier, v[tier] != null ? v[tier] : n); }
   else if (k.startsWith('UPG.')) { const [, id, field] = k.split('.'); NYA.UPG[id][field] = v; }
+  else if (k.startsWith('TIER.')) { const [, t, field] = k.split('.'); NYA.TIERS[t][field] = v; }
   else NYA[k] = v;
 }
 const nums = args.filter(a => !a.startsWith('--'));

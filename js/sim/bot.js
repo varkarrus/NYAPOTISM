@@ -9,7 +9,7 @@
     refinery: 3.2, pick: 2.2, snacks: 2.0, bunk: 12, bags: 1.1, boots: 1.0, grip: 1.6, drills: 0.9, focus: 1.3,
     grit: 1.4, claws: 0.8, blunt: 6, spray: 3, batteries: 0.9, bomb: 6, bombdmg: 0.7, tuna: 5, sonar: 3, treat: 3, catterall: 4, blend: 3,
     hotbox: 5, pouch: 0.9, mine2: 25, mine3: 25, montage: 2.6, perfection: 1.3, radar: 0.5, headlamp: 0.6,
-    enrich: 1.3, mine4: 25, mine5: 25, mine6: 25, mine7: 25, fork: 1.5, wetsuit: 2.5, drain: 1.2, wasabi: 2, otoro: 3, gouda: 3, cannons: 3, caliber: 1.5, combat: 1.5, chan: 1, junctions: 1.2, milkbath: 3, pistons: 2, cream: 1.5, calcium: 1.5, polisher: 2.2, centrifuge: 1.0, resonance: 1.0, resume: 0.15, lockers: 0.2, mewclear: 0.45, cabinet: 0.6,
+    enrich: 1.3, mine4: 25, mine5: 25, mine6: 25, mine7: 25, mine8: 25, fork: 1.5, salvage: 3, treats: 1.5, coproc: 0.6, wetsuit: 2.5, drain: 1.2, wasabi: 2, otoro: 3, gouda: 3, cannons: 3, caliber: 1.5, combat: 1.5, chan: 1, junctions: 1.2, milkbath: 3, pistons: 2, cream: 1.5, calcium: 1.5, polisher: 2.2, centrifuge: 1.0, resonance: 1.0, resume: 0.15, lockers: 0.2, mewclear: 0.45, cabinet: 0.6,
   };
 
   class Bot {
@@ -84,6 +84,13 @@
       }
     }
 
+    sushiReserve() {
+      const g = this.g;
+      let r = 0;
+      for (const t in g.s.tierUnlocked) if (g.s.tierUnlocked[t] && g.purrmitCur(+t) === 'sushi') r = Math.max(r, 2 * g.purrmitCost(+t));
+      return r;
+    }
+
     chooseTier() {
       const g = this.g, s = g.s;
       const un = Object.keys(s.tierUnlocked).map(Number).sort((a, b) => a - b);
@@ -113,6 +120,12 @@
       if (s.tierUnlocked[6] && pick !== 6 && !s.ova && NYA.UPGRADES.some(u => u.cur === 'cheese' && g.upgVisible(u) && g.canBuy(u.id).poor)) {
         this.cheeseFlip = !this.cheeseFlip;
         if (this.cheeseFlip) pick = 6;
+      }
+      // ...and the Greeble Crash Site is the only source of greebles: same deal, once it's paying its way
+      const avg = t => { const ts = this.tierStats[t]; return ts && ts.recent.length >= 2 ? ts.recent.reduce((a, r) => a + r.cps, 0) / ts.recent.length : 0; };
+      if (s.tierUnlocked[8] && pick !== 8 && !s.ova && avg(8) >= 0.25 * avg(pick) && NYA.UPGRADES.some(u => u.cur === 'greebles' && g.upgVisible(u) && g.canBuy(u.id).poor)) {
+        this.greebleFlip = !this.greebleFlip;
+        if (this.greebleFlip) pick = 8;
       }
       // in an OVA, go where the goal is once it's open (a player chasing the goal would)
       const goal = g.ovaGoal && g.ovaGoal();
@@ -161,7 +174,7 @@
         }
       }
       // upgrades: best weight/cost per currency; buy if affordable, else save for it
-      for (const cur of ['catnip', 'milk', 'sushi', 'cheese']) for (let k = 0; k < 20; k++) {
+      for (const cur of ['catnip', 'milk', 'sushi', 'cheese', 'greebles']) for (let k = 0; k < 20; k++) {
         let best = null, bestScore = 0;
         for (const u of NYA.UPGRADES) {
           if ((u.cur || 'catnip') !== cur) continue;
@@ -172,7 +185,7 @@
           if (u.id === 'bunk' && s.active.length < g.crewCap()) w = 0.1;
           if (u.id === 'montage' && !g.activeCrew().some(cg => cg.level >= g.levelCap())) w = 0.3;
           if (u.id === 'grit' && s.maxTierReached < 2) w = 0.3;
-          if (u.id === 'cabinet' && g.runningOrders().length >= s.orders.length) w = 0.05;
+          if ((u.id === 'cabinet' || u.id === 'coproc') && g.runningOrders().length >= s.orders.length) w = 0.05;
           const cost = g.upgCost(u.id);
           // an eager explorer saves up for the next mine's survey if it's within ~10 minutes of this run's income
           if (u.unlock && u.unlock.startsWith('mine:') && cost <= 600 * s.seasonCatnip / Math.max(60, s.seasonTime)) w = 1e9;
@@ -180,6 +193,8 @@
           if (score > bestScore) { bestScore = score; best = u; }
         }
         if (!best) break;
+        // keep enough sushi for a couple of deep-mine purrmits (they're paid in sushi from Tier 7 on)
+        if (cur === 'sushi' && s.sushi - g.upgCost(best.id) < this.sushiReserve()) break;
         if (!g.buy(best.id)) break;
       }
       // prestige decision

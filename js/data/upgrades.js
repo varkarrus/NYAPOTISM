@@ -85,6 +85,15 @@
     desc: 'Turret-chan places better turrets. Rank 1: no more turret by the elevator “for vibes.” Rank 2: she spreads them across the nests instead of piling them onto the first one.', flavor: '“I-I read a book about chokepoints!”',
     fx: l => ['Vibes turret, then piles onto one nest', 'No vibes turret', 'Spreads turrets across nests'][Math.min(2, l)] });
 
+  // ---------------- Greebles (from the Greeble Crash Site): Saucer Salvage and the R&D Xenology branch ----------------
+  const greebleShow = g => g.s.greebles > 0 || g.s.maxTierReached >= 8;
+  def({ id: 'salvage', bld: 'refinery', cur: 'greebles', name: 'Saucer Salvage', max: 40, base: 5, growth: 2.3, show: greebleShow,
+    desc: 'Catnip ×1.25 (compounding), in every mine.', flavor: 'Tora bolted a greeble to the Refinery. It hums. The catnip comes out shinier. Nobody asks questions.',
+    fx: l => 'Catnip ×' + NYA.fmt(Math.pow(1.25, l)) });
+  def({ id: 'treats', bld: 'lab', branch: 'Xenology', cur: 'greebles', name: 'Greeble Treats', max: 8, base: 3, growth: 2.2, show: greebleShow,
+    desc: 'Greebles scoot 8% slower (compounding). Easier to run down, and they don’t get as far before they’re cornered.', flavor: 'They’re just bolts. The greebles love them anyway.',
+    fx: l => 'Greeble speed ×' + Math.pow(0.92, l).toFixed(2) });
+
   // ---------------- Barracks ----------------
   // Crew size is the biggest multiplier in the game, so every bunk is hand-priced and the
   // Barracks only has room for more as you dig deeper. BUNKS[i] is the bunk that takes you
@@ -100,6 +109,7 @@
     { cost: 2e11, tier: 5 },
     { cost: 2e14, tier: 6 },
     { cost: 5e16, tier: 7 },
+    { cost: 2e18, tier: 8 },
   ];
   NYA.bunkReq = function (g) {
     const b = NYA.BUNKS[g.lvl('bunk')];
@@ -209,11 +219,27 @@
     show: g => g.s.maxTierReached >= 3,
     desc: 'ACTIVE [7]: for 90 s every miner gets +50% Pace and Haste, +50% max stamina and 0% Whimsy. Lasts across episodes. 20 min cooldown.', flavor: 'Pupils go to pinpricks. Tails stop swishing. The crew mines in total silence. It is deeply unsettling.',
     unlock: 'active:catterall' });
+  // Project MEWCLEAR: ten stages, each with its own bonus, and each waiting on a deeper mine (playtest: with +1 Sonar
+  // radius a stage, the whole set by ~1h in Season 1 gave full sight of every mine, and the warhead itself was weak
+  // for its cooldown). NYA.MEWCLEAR_STAGES[l] is stage l: the mine it waits for and what it adds.
+  NYA.MEWCLEAR_STAGES = [null,
+    { tier: 2, fx: 'Hairball Bomb damage ×1.5' },
+    { tier: 2, fx: 'Whisker Sonar 9×9 (was 7×7)' },
+    { tier: 3, fx: 'Hairball Bomb cooldown −25%' },
+    { tier: 4, fx: 'Hairball Bombs blast 2 tiles out' },
+    { tier: 6, fx: 'Turret damage ×2' },
+    { tier: 7, fx: 'Ore a Hairball Bomb hits starts Glowing (+2 quality)' },
+    { tier: 7, fx: 'Crystal resonance ×1.5' },
+    { tier: 8, fx: 'Greebles scoot 15% slower' },
+    { tier: 8, fx: '+25% XP' },
+    { tier: 8, fx: 'THE MEWCLEAR OPTION' },
+  ];
   def({ id: 'mewclear', bld: 'lab', branch: 'Ordnance', name: 'Project MEWCLEAR', max: 10,
-    costs: [2000, 9000, 4e4, 1.6e5, 7e5, 3e6, 1.2e7, 5e7, 2e8, 1e9],
+    costs: [6000, 4e4, 5e6, 3e8, 3e13, 1e15, 3e16, 3e17, 1e18, 3e18],
     timer: 30, show: g => g.s.maxTierReached >= 2 || g.s.lifetimeCatnip >= 1500,
-    desc: 'A ten-stage research project. Each stage: +25% bomb damage, +1 Sonar radius (from stage 3). Stage 10 unlocks THE MEWCLEAR OPTION.', flavor: 'The engineers are hammering nails into a warhead made of plywood.',
-    fx: l => 'Stage ' + l + '/10' });
+    req: g => { const st = NYA.MEWCLEAR_STAGES[g.lvl('mewclear') + 1]; return st && g.s.maxTierReached < st.tier ? 'Doc Boom needs samples from deeper down: reach Tier ' + st.tier + ' (' + NYA.TIERS[st.tier].name + ')' : null; },
+    desc: 'A ten-stage research project. Each stage adds its own bonus, and Doc Boom needs samples from deeper mines to keep going. Stage 10 unlocks THE MEWCLEAR OPTION.', flavor: 'The engineers are hammering nails into a warhead made of plywood.',
+    fx: l => l ? 'Stage ' + l + ': ' + NYA.MEWCLEAR_STAGES[l].fx : 'Not started' });
 
   // ---------------- R&D Lab: Exploration ----------------
   def({ id: 'spray', bld: 'lab', branch: 'Exploration', name: 'Spray Bottle', max: 1, base: 60, timer: 4,
@@ -286,6 +312,11 @@
     req: g => NYA.surveyReq(g, 7, 6, 2),
     desc: 'Unlocks Tier 7 — Crystal Catacombs. Crystal catnip that refracts lasers and rings when struck. The purrmit costs SUSHI.', flavor: 'Doc Boom tapped the survey core with a spoon. It sang for twenty minutes.',
     unlock: 'mine:7' });
+  def({ id: 'mine8', bld: 'lab', branch: 'Exploration', name: 'Survey: Greeble Crash Site', max: 1, base: 5e16, timer: 60,
+    show: g => g.s.maxTierReached >= 7,
+    req: g => NYA.surveyReq(g, 8, 7, 2),
+    desc: 'Unlocks Tier 8 — Greeble Crash Site. A crashed saucer full of greebles, little alien doodads that run away. The purrmit costs SUSHI.', flavor: 'Doc Boom’s survey drone came back with a greeble stuck to it. It would not stop beeping.',
+    unlock: 'mine:8' });
   def({ id: 'fork', bld: 'lab', branch: 'Excavation', name: 'Tuning Forks', max: 10, base: 2e14, growth: 3,
     show: g => g.s.maxTierReached >= 7,
     desc: '+15% resonance: hits on crystals ring harder into their neighbours, and shattering crystals pulse harder.', flavor: 'A-flat. Always A-flat. Crystals hate A-flat.',
@@ -295,6 +326,9 @@
     desc: 'New pipes connect to an existing line instead of running all the way back. Clustered milk nodes get much cheaper.', flavor: 'It\u2019s a T-shaped bit of pipe. Doc Boom wants a Nobel.' });
 
   // ---------------- Purrmit Office: Standing Orders ----------------
+  def({ id: 'coproc', bld: 'pochi', cur: 'greebles', name: 'Greeble Co-processors', max: 10, base: 4, growth: 1.8, show: g => g.s.greebles > 0 || g.s.maxTierReached >= 8,
+    desc: '+2 Requisition Points for standing orders.', flavor: 'Doc Boom wired a greeble into Pochi’s fax machine. It files things now. Pochi is furious and impressed.',
+    fx: l => '+' + (2 * l) + ' RP' });
   def({ id: 'cabinet', bld: 'pochi', name: 'Filing Cabinets', max: 10, base: 500, growth: 3.4,
     desc: '+2 Requisition Points for standing orders.', flavor: 'Pochi alphabetizes them. Then re-alphabetizes them.',
     fx: l => '+' + (2 * l) + ' RP' });
@@ -334,7 +368,7 @@
     hotbox: { name: 'Catnip Hotbox', key: '5', icon: '📦', cd: 300, target: 'open', desc: 'Every catgirl rushes to the box and takes a puff (22% stamina, tolerance applies), waking anyone who flopped.' },
     treat: { name: 'Treat Bag', key: '6', icon: '🍬', cd: 180, target: 'miner', desc: 'One catgirl earns double XP for 1 minute.' },
     catterall: { name: 'Catterall', key: '7', icon: '👁️', cd: 1200, target: 'none', desc: '90 s of +50% Pace, Haste and max stamina, and 0% Whimsy. Lasts across episodes. Silent. Unsettling.' },
-    mewclear: { name: 'THE MEWCLEAR OPTION', key: '9', icon: '☢️', cd: 3600, target: 'tile', desc: 'Clears a massive radius — including bedrock. Ore at the blast edge becomes Glowing Nip (+2 quality).' },
+    mewclear: { name: 'THE MEWCLEAR OPTION', key: '9', icon: '☢️', cd: 1800, target: 'tile', desc: 'Clears a massive radius, bedrock included. Every bit of catnip inside is refined on the spot (×2) and lands in the haul, mice in it are gone, greebles in it are yours. Ore at the blast edge becomes Glowing Nip (+2 quality).' },
   };
   NYA.ACTIVE_ORDER = ['blunt', 'bomb', 'tuna', 'sonar', 'hotbox', 'treat', 'catterall', 'mewclear'];
 
@@ -353,6 +387,8 @@
   NYA.ORDERS = {
     repeat: { name: 'Auto-Repeat', rp: 1, desc: 'Roll straight into the next episode after Pack-Up.' },
     cast_blunt: { name: 'Auto-cast: Catnip Blunt', rp: 2, active: 'blunt', desc: 'Blunt any miner who flops, while charges last.' },
+    // user idea: makes max Blunt charges matter in an auto-casting build
+    blunt_rotation: { name: 'Blunt Rotation', rp: 1, minBlunts: 6, desc: 'Once auto-cast Blunts run dry, they wait until every charge is back before handing them out again. Saves up a full round for when the whole crew flops. (Your own Blunts are unaffected.)' },
     cast_bomb: { name: 'Auto-cast: Hairball Bomb', rp: 2, active: 'bomb', desc: 'Throw at the richest visible ore cluster when ready.' },
     cast_tuna: { name: 'Auto-cast: Tuna Time!', rp: 2, active: 'tuna', desc: 'Cast when most of the crew is mining.' },
     cast_sonar: { name: 'Auto-cast: Whisker Sonar', rp: 2, active: 'sonar', desc: 'Ping the fog at the edge of the dig.' },
@@ -360,5 +396,5 @@
     auto_hire: { name: 'HR Policy: Auto-Hire', rp: 2, desc: 'Hire a recruit whenever an active slot is empty and you can afford it.' },
     tanuki_buy: { name: 'Tanuki Auto-Buy', rp: 8, tanuki: true, desc: 'Buy every Tanuki offer you can afford and run queued event mines automatically. The hungriest order in the game.' },
   };
-  NYA.ORDER_ORDER = ['repeat', 'cast_blunt', 'cast_bomb', 'cast_tuna', 'cast_sonar', 'cast_hotbox', 'auto_hire', 'tanuki_buy'];
+  NYA.ORDER_ORDER = ['repeat', 'cast_blunt', 'blunt_rotation', 'cast_bomb', 'cast_tuna', 'cast_sonar', 'cast_hotbox', 'auto_hire', 'tanuki_buy'];
 })(globalThis.NYA = globalThis.NYA || {});

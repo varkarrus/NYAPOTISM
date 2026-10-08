@@ -8,7 +8,7 @@
     'madStarter', 'faxClicks', 'whistles', 'maxTier', 'skeins', 'yarn', 'swings', 'items', 'distractions', 'firstBoxDone', 'mewclears'];
 
   // Everything that belongs to one run (what an unravel resets). An OVA sets these aside in s.suspended.
-  const RUN_KEYS = ['episodes', 'catnip', 'seasonCatnip', 'seasonYarnNip', 'seasonTime', 'milk', 'sushi', 'cheese', 'upg', 'research',
+  const RUN_KEYS = ['episodes', 'catnip', 'seasonCatnip', 'seasonYarnNip', 'seasonTime', 'milk', 'sushi', 'cheese', 'greebles', 'upg', 'research',
     'buildings', 'tierUnlocked', 'selectedTier', 'maxTierReached', 'mine', 'crew', 'active', 'reserve', 'hires', 'board', 'act', 'skein',
     'stats', 'pendingEvent', 'blend', 'tanuki', 'catterall'];
 
@@ -23,7 +23,7 @@
       v: 1,
       seed: String(seed),
       season: 1, episodeNum: 0, episodes: 0,
-      catnip: 0, seasonCatnip: 0, lifetimeCatnip: 0, seasonYarnNip: 0, yarnNipInit: 0, milk: 0, sushi: 0, cheese: 0,
+      catnip: 0, seasonCatnip: 0, lifetimeCatnip: 0, seasonYarnNip: 0, yarnNipInit: 0, milk: 0, sushi: 0, cheese: 0, greebles: 0,
       yarn: 0,
       upg: {}, loom: {},
       research: null,
@@ -117,6 +117,7 @@
       if (this.lvl('milkbath')) parts.push(['Milk Bath', Math.pow(1.25, this.lvl('milkbath'))]);
       if (this.lvl('otoro')) parts.push(['Otoro Platter', Math.pow(1.25, this.lvl('otoro'))]);
       if (this.lvl('gouda')) parts.push(['Aged Gouda', Math.pow(1.25, this.lvl('gouda'))]);
+      if (this.lvl('salvage')) parts.push(['Saucer Salvage', Math.pow(1.25, this.lvl('salvage'))]);
       if (this.loomRowDone(1)) parts.push(['Multiplier Stripe', 3]);
       if (this.loomColDone(0)) parts.push(['Cast-On Stripe', 1.5]);
       if (this.loomColDone(2)) parts.push(['Cable Stripe', 1.5]);
@@ -134,6 +135,7 @@
       if (this.loomColDone(1)) m *= 1.5;
       if (this.loomColDone(3)) m *= 1.5;
       m *= 1 + 0.15 * this.ovaPerk('osha'); // OVA perk: Hazard Pay
+      if (this.mew(9)) m *= 1.25;
       return m;
     }
     refineryMult() { return this.ovaIs('budget') ? 1 : Math.pow(1.5, this.lvl('refinery')); }
@@ -161,8 +163,18 @@
     onFlood() { this.novel('flood', 'FLOOD! Opening a chamber lets the water in. Wet catgirls walk at half speed and tire twice as fast', 'mine'); }
     // Mousehole Maze: turret slots and damage, crew damage vs mice, Turret-chan's training
     miceCfg() {
-      return { turrets: NYA.TURRET_BASE + this.lvl('cannons'), turretMult: Math.pow(1.5, this.lvl('caliber')),
+      return { turrets: NYA.TURRET_BASE + this.lvl('cannons'), turretMult: Math.pow(1.5, this.lvl('caliber')) * (this.mew(5) ? 2 : 1),
         combatMult: Math.pow(1.5, this.lvl('combat')), chanLvl: this.lvl('chan'), turretChan: true };
+    }
+    // Greeble Crash Site: Greeble Treats slow them down
+    greebleCfg() { return { greebleSlow: Math.pow(0.92, this.lvl('treats')) * (this.mew(8) ? 0.85 : 1) }; }
+    onGreeble() {
+      if (this.novel('greeble', 'GREEBLES! Alien doodads that scoot away from your crew. Corner one in a dead end, or close in from both sides. Laser one to set the crew on it', 'mine'))
+        this.emit('toast', { text: 'Doc Boom: \u201cDon\u2019t chase them in the open, they\u2019re FASTER than you! Herd them into a corner! Like sheep! Small, beeping, extraterrestrial sheep!\u201d', kind: 'doc' });
+    }
+    onGrab() {
+      if (this.novel('grab', 'Got one! Greebles go home in her bag. Spend them at the Refinery (Saucer Salvage), in R&D (Xenology) and at the Purrmit Office', 'refinery'))
+        this.emit('toast', { text: 'Tora: \u201cIt\u2019s BEEPING at me. Why is it beeping at me?! \u2026It\u2019s kinda cute. Nyandeyanen.\u201d', kind: 'tora' });
     }
     onMice() {
       if (this.novel('mice', 'MICE! They nibble your crew’s stamina. Your crew fights back, and turrets help (Turret tool, T)', 'mine'))
@@ -257,9 +269,11 @@
       this.startEpisode();
     }
     bluntPotency() { return 0.30 + 0.05 * this.lvl('pouch'); }
-    bombDamage(tier) { return 50 * NYA.tierHP(tier) * (1 + 0.6 * this.lvl('bombdmg')) * Math.pow(1.25, this.lvl('mewclear')); }
-    sonarRadius() { return 3 + Math.max(0, this.lvl('mewclear') - 2); }
-    rpMax() { return 5 + 2 * this.lvl('cabinet') + (this.loom('nm_desk') ? 4 : 0); }
+    mew(stage) { return this.lvl('mewclear') >= stage; } // a Project MEWCLEAR stage's bonus (NYA.MEWCLEAR_STAGES)
+    bombDamage(tier) { return 50 * NYA.tierHP(tier) * (1 + 0.6 * this.lvl('bombdmg')) * (this.mew(1) ? 1.5 : 1); }
+    sonarRadius() { return 3 + (this.mew(2) ? 1 : 0); }
+    activeCd(id) { return NYA.ACTIVES[id].cd * (id === 'bomb' && this.mew(3) ? 0.75 : 1); }
+    rpMax() { return 5 + 2 * this.lvl('cabinet') + 2 * this.lvl('coproc') + (this.loom('nm_desk') ? 4 : 0); }
     ffSpeed() { return this.loomRowDone(3) ? 5 : this.loom('nm_ff') ? 3 : 2; }
     bankEff() { return this.loom('nm_bank') ? 0.5 : 0.33; }
     purrmitCost(t) { return NYA.TIERS[t].purrmit; }
@@ -310,7 +324,7 @@
         const mx = this.activeMaxCharges(id);
         if (a.ch < mx) {
           a.cd -= dt;
-          if (a.cd <= 0) { a.ch++; a.cd = a.ch < mx ? NYA.ACTIVES[id].cd : 0; }
+          if (a.cd <= 0) { a.ch++; a.cd = a.ch < mx ? this.activeCd(id) : 0; }
         } else a.cd = 0;
       }
     }
@@ -324,7 +338,7 @@
     spendActive(id) {
       const a = this.s.act[id];
       const mx = this.activeMaxCharges(id);
-      if (a.ch >= mx) a.cd = NYA.ACTIVES[id].cd;
+      if (a.ch >= mx) a.cd = this.activeCd(id);
       a.ch--;
     }
     // target: miner id (blunt), tile idx (bomb/sonar/hotbox/mewclear), none (tuna)
@@ -341,7 +355,7 @@
         ok = ep.useBlunt(target, this.bluntPotency());
         if (ok) this.s.life.blunts++;
       } else if (id === 'bomb') {
-        ok = ep.useBomb(target, this.bombDamage(ep.tier));
+        ok = ep.useBomb(target, this.bombDamage(ep.tier), this.mew(4) ? 2 : 1, this.mew(6));
         if (ok) this.s.life.bombs++;
       } else if (id === 'tuna') ok = ep.useTuna();
       else if (id === 'sonar') ok = ep.useSonar(target, this.sonarRadius());
@@ -372,6 +386,7 @@
       const o = NYA.ORDERS[id];
       if (!this.s.buildings.pochi) return false;
       if (o.active) return this.activeUnlocked(o.active);
+      if (o.minBlunts) return this.activeUnlocked('blunt') && this.activeMaxCharges('blunt') >= o.minBlunts;
       if (o.tanuki) return !!this.s.buildings.tanuki;
       return true;
     }
@@ -408,7 +423,14 @@
         if (this.s.active.length < this.crewCap() && this.s.catnip >= this.hireCost()) this.hire();
       }
       if (!ep || ep.ended || this.phase !== 'shift' || ep.fullClear) return;
-      if (run.indexOf('cast_blunt') >= 0 && this.canUseActive('blunt') && ep.resLeft > 0) {
+      // Blunt Rotation: once auto-casting has used the last charge, hold off until they're all back
+      const ab = this.s.act.blunt;
+      if (ab) {
+        if (run.indexOf('blunt_rotation') < 0) ab.hold = false;
+        else if (ab.ch <= 0) ab.hold = true;
+        else if (ab.ch >= this.activeMaxCharges('blunt')) ab.hold = false;
+      }
+      if (run.indexOf('cast_blunt') >= 0 && this.canUseActive('blunt') && ep.resLeft > 0 && !(ab && ab.hold)) {
         const m = ep.miners.find(mm => mm.state === 'flop' || (mm.state === 'out' && mm.flopped));
         if (m) this.useActive('blunt', m.id);
       }
@@ -525,7 +547,7 @@
       if (id === 'pouch') this.syncActives();
       if (id === 'montage') { this.novel('montage:' + l, 'Training Montage ' + ['', 'I', 'II', 'III', 'IV'][l] + '! Level cap ' + this.levelCap(), 'montage'); if (l === 1) this.fax('montage', NYA.STORY_FAX.montage); }
       if (id === 'mewclear') {
-        this.novel('mewclear:' + l, 'Project MEWCLEAR stage ' + l + ': ' + NYA.MEWCLEAR_NOTES[l], 'mewclear');
+        this.novel('mewclear:' + l, 'Project MEWCLEAR stage ' + l + ': ' + NYA.MEWCLEAR_NOTES[l] + ' (' + NYA.MEWCLEAR_STAGES[l].fx + ')', 'mewclear');
         if (l === 10) { this.syncActives(); this.fax('mewclear', NYA.STORY_FAX.mewclear); }
       }
       if (id === 'polisher' || id === 'centrifuge') this.novel('upg:' + id, 'Refinery Module: ' + u.name, 'refinery');
@@ -754,11 +776,11 @@
         centrifuge: this.lvl('centrifuge'),
         bluntPotency: this.bluntPotency(),
         droneMarks: 1,
-        pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')), resonanceMult: 1 + 0.15 * this.lvl('fork'),
+        pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')), resonanceMult: (1 + 0.15 * this.lvl('fork')) * (this.mew(7) ? 1.5 : 1),
         junctions: this.lvl('junctions') > 0,
         purrmit: cost, purrmitCur: cur,
       };
-      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg());
+      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg(), this.greebleCfg());
       cfg.headlamp += this.ovaPerk('lights');
       if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
@@ -826,10 +848,10 @@
         laserMax: this.laserMax(), headlamp: this.lvl('headlamp') + (ev.headlamp || 0), headless: this.headless,
         resonance: this.lvl('resonance') > 0, polishExp: this.polishExp(), centrifuge: this.lvl('centrifuge'),
         bluntPotency: this.bluntPotency(), droneMarks: 1, purrmit: 0,
-        pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')), resonanceMult: 1 + 0.15 * this.lvl('fork'), junctions: this.lvl('junctions') > 0,
+        pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')), resonanceMult: (1 + 0.15 * this.lvl('fork')) * (this.mew(7) ? 1.5 : 1), junctions: this.lvl('junctions') > 0,
         event: q.ev, ghosts: ev.ghosts || 0,
       };
-      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg());
+      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg(), this.greebleCfg());
       cfg.headlamp += this.ovaPerk('lights');
       if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
@@ -891,6 +913,8 @@
         s.cheese += cheese; s.life.cheese = (s.life.cheese || 0) + cheese;
         if (this.novel('cheese', 'First cheese! Spend it on turrets in R&D (Defense) and at Tora’s Cheese Cave', 'lab')) this.emit('toast', { text: 'Doc Boom: \u201cCHEESE! Do you know what I can build with cheese?! …Turrets. Mostly turrets.\u201d', kind: 'doc' });
       }
+      const greebles = ep.haul.greebles;
+      if (greebles > 0) { s.greebles += greebles; s.life.greebles = (s.life.greebles || 0) + greebles; }
       const milk = ep.haul.milk;
       if (milk > 0) {
         s.milk += milk; s.life.milk = (s.life.milk || 0) + milk;
@@ -934,7 +958,7 @@
       const result = {
         ep: s.episodeNum, season: s.season, tier: ep.tier, mine: ep.def.name, title, tora, preview, eye,
         reason: ep.endReason, fullClear, rating, extraction: ep.extraction(),
-        oreValue: ore, ref, clearMult, glob, catnip, blendCut, milk, sushi, cheese, mice: st.mice || 0, stolen: st.stolen || 0, event: ep.eventKey, evMult, wishes: ep.wishes,
+        oreValue: ore, ref, clearMult, glob, catnip, blendCut, milk, sushi, cheese, greebles, mice: st.mice || 0, stolen: st.stolen || 0, event: ep.eventKey, evMult, wishes: ep.wishes,
         items: ep.haul.items, byQ: ep.haul.byQ.slice(), thread: ep.haul.thread, lost: ep.haul.lost,
         motherlode: st.motherlode, box: st.box, chain: st.bestChain, duration: ep.t, purrmit: ep.cfg.purrmit,
         crew: ep.miners.map(m => ({ id: m.id, name: m.name, items: m.items, xp: m.xp, levels: m.levelsGained, flopped: m.flopped, level: m.cg.level })),
@@ -1132,7 +1156,7 @@
       this._ovaClear = false;
       s.seasonCatnip = 0; s.seasonYarnNip = 0; s.seasonTime = 0; s.episodes = 0;
       s.catnip = this.loom('hs_cash') ? 300 : 0;
-      s.milk = 0; s.sushi = 0; s.cheese = 0;
+      s.milk = 0; s.sushi = 0; s.cheese = 0; s.greebles = 0;
       s.upg = {};
       s.research = null;
       s.tierUnlocked = { 1: 1 }; s.selectedTier = 1; s.maxTierReached = 1;

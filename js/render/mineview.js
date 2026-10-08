@@ -125,6 +125,7 @@
       this.claw = {};
       this.bombsVis = [];
       this.shots = []; // turret hairballs in flight (Mousehole Maze)
+      this.beams = []; // greebles beaming up (Greeble Crash Site)
       this.mushroom = null;
     }
     setEpisode(ep) {
@@ -231,6 +232,7 @@
               if (nip > 0) this.pop(m.x + 0.5, m.y - 0.3, '+' + NYA.fmt(nip), '#7af0a0', false);
               if (e.sushi) this.pop(m.x + 0.5, m.y - (nip > 0 ? 0.75 : 0.3), '+' + e.sushi + ' sushi', '#ff8a5c', false);
               if (e.cheese) this.pop(m.x + 0.5, m.y - (nip > 0 || e.sushi ? 0.75 : 0.3), '+' + e.cheese + ' cheese', '#ffd96a', false);
+              if (e.greebles) this.pop(m.x + 0.5, m.y - (nip > 0 ? 0.75 : 0.3), '+' + e.greebles + ' greeble' + (e.greebles > 1 ? 's' : ''), '#9dff7a', false);
               this.haulBump = 0.35;
               this.sfx('drop', e.n);
             }
@@ -272,6 +274,13 @@
             this.rings.push({ i: e.i, life: 0.6, max: 0.6, col: '#e7d6ff', r0: 0.3, r1: 1.8 });
             this.sfx('prism');
             break;
+          case 'gwake': this.rings.push({ i: e.i, life: 0.6, max: 0.6, col: '#9dff7a', r0: 0.2, r1: 1.2 }); this.sfx('beep', 0); break;
+          case 'grab':
+            this.burstAt(e.x, e.y, '#9dff7a', 10, 2.6, 0.09); this.burstAt(e.x, e.y, '#c3ccd6', 6, 2, 0.07);
+            this.pop(e.x + 0.5, e.y - 0.2, 'GOT ONE!', '#9dff7a', false); this.sfx('beep', 1);
+            break;
+          case 'gmark': this.burstAt(e.x, e.y, '#ff3b5c', 6, 2, 0.07); this.sfx('laser'); break;
+          case 'gwarp': this.beams.push({ x: e.x, y: e.y, life: 0.9, max: 0.9 }); this.sfx('beep', 2); break;
           case 'buried': this.rings.push({ i: e.i, life: 1, max: 1, col: '#fff2b0', r0: 0.3, r1: 1.8 }); if (m) this.pop(M.x(e.i) + 0.5, M.y(e.i) - 0.4, 'Funny story…', '#fff2b0', true); break;
           case 'unburied':
             if (m) this.pop(m.x + 0.5, m.y - 0.5, e.dug ? 'FREED!' : '…don’t ask.', '#fff2b0', e.dug);
@@ -295,6 +304,7 @@
             this.flashOn('#ffffff', 1.4); this.shake = set.shake ? 1.4 : 0;
             this.mushroom = { i: e.i, t: 0 };
             this.burst(e.i, '#ffd23f', 60, 9, 0.2);
+            if (e.value) this.pop(M.x(e.i) + 0.5, M.y(e.i) - 1, '+' + NYA.fmt(e.value * this.game.nipMult(ep)) + ' REFINED ON THE SPOT', '#ffd23f', true);
             this.sfx('mewclear');
             if (this.banners) this.banners('mewclear');
             break;
@@ -422,6 +432,7 @@
           } else {
             const base = ty === T.DIRT ? tex.dirt : ty === T.HARD ? tex.hard : ty === T.GROOVE ? tex.groove : tex.stone;
             ctx.drawImage(base[v], X, Y, ts, ts);
+            if (M.hull[i]) this.drawHull(ctx, X, Y, ts, i, M);
             if (ty === T.ORE && M.mochi[i]) this.drawMochi(ctx, X, Y, ts, i, t);
             else if (ty === T.ORE && M.sushi[i]) this.drawNigiriTile(ctx, X, Y, ts, i, t);
             else if (ty === T.ORE && M.crystal && M.crystal[i]) this.drawCrystal(ctx, X, Y, ts, i, t, valMult);
@@ -449,7 +460,7 @@
       }
 
       // milk pipes (T4)
-      if (ep.def.quirk === 'milk') this.drawPipes(ctx, M, ts, t, ep);
+      if (NYA.hasQuirk(ep.def, 'milk')) this.drawPipes(ctx, M, ts, t, ep);
       // Tanabata constellation lines between revealed tiles of the same star
       if (ep.eventKey === 'tanabata') {
         ctx.strokeStyle = 'rgba(201,227,255,0.55)'; ctx.lineWidth = Math.max(1, ts * 0.04);
@@ -490,6 +501,7 @@
       for (const it of ep.loose) {
         if (it.fish) { this.drawFish(ctx, M.x(it.idx) * ts + ts / 2, M.y(it.idx) * ts + ts * 0.6, ts, t, it.id); continue; }
         if (it.cheese) { this.drawCheese(ctx, M.x(it.idx) * ts + ts / 2 + ((it.id * 37) % 9 - 4) * ts * 0.04, M.y(it.idx) * ts + ts * 0.66 - Math.abs(Math.sin(t * 4 + it.id)) * ts * 0.05, ts * (it.wheel ? 0.42 : 0.24), it.wheel); continue; }
+        if (it.greeble) { this.drawGreeble(ctx, M.x(it.idx) * ts + ts / 2, M.y(it.idx) * ts + ts * 0.66, ts * 0.32, it.look || 0, t + it.id, false, false, 1); continue; }
         if (it.sushi) { this.drawNigiri(ctx, M.x(it.idx) * ts + ts / 2, M.y(it.idx) * ts + ts * 0.66 - Math.abs(Math.sin(t * 4 + it.id)) * ts * 0.06, ts * 0.3, it.id % 3); continue; }
         const q = NYA.qInfo(it.q);
         const X = M.x(it.idx) * ts + ts / 2 + ((it.id * 37) % 9 - 4) * ts * 0.04, Y = M.y(it.idx) * ts + ts * 0.62 + ((it.id * 53) % 7 - 3) * ts * 0.03;
@@ -510,6 +522,11 @@
       const outSlots = {};
       for (const m of ms) this.drawMiner(ctx, m, alpha, ts, t, ep, outSlots);
       for (const mo of ep.mice) if (M.revealed[mo.tile]) this.drawMouse(ctx, mo, alpha, ts, t);
+      if (ep.greeblesOn) for (const gr of ep.greebles) if (gr.awake && M.revealed[gr.tile]) {
+        const x = NYA.lerp(gr.px, gr.x, alpha), y = NYA.lerp(gr.py, gr.y, alpha);
+        this.drawGreeble(ctx, (x + 0.5) * ts, (y + 0.6) * ts, ts * 0.56, gr.look, t + gr.id, gr.scared, gr.cornered, gr.face);
+        if (gr.marked > ep.t) { ctx.fillStyle = '#ffe0e6'; ctx.beginPath(); ctx.arc((x + 0.5) * ts, (y + 0.3) * ts, ts * 0.07 * (1 + 0.3 * Math.sin(t * 12)), 0, Math.PI * 2); ctx.fill(); }
+      }
       // turret hairballs in flight
       for (let k = this.shots.length - 1; k >= 0; k--) {
         const s = this.shots[k];
@@ -518,6 +535,16 @@
         const f = s.t / s.dur, X = NYA.lerp(s.x0, s.x1, f) * ts, Y = (NYA.lerp(s.y0, s.y1, f) - Math.sin(f * Math.PI) * 0.5) * ts;
         ctx.fillStyle = '#9a6a5a'; ctx.beginPath(); ctx.arc(X, Y, Math.max(2, ts * 0.09), 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#c99a86'; ctx.beginPath(); ctx.arc(X - ts * 0.03, Y - ts * 0.03, Math.max(1, ts * 0.04), 0, Math.PI * 2); ctx.fill();
+      }
+      for (let k = this.beams.length - 1; k >= 0; k--) { // a tractor beam lifting a greeble back to the mothership
+        const b = this.beams[k];
+        b.life -= rdt;
+        if (b.life <= 0) { this.beams.splice(k, 1); continue; }
+        const f = b.life / b.max, X = (b.x + 0.5) * ts, Y = (b.y + 0.6) * ts;
+        const g = ctx.createLinearGradient(X, 0, X, Y);
+        g.addColorStop(0, 'rgba(157,255,122,0)'); g.addColorStop(1, `rgba(157,255,122,${0.5 * f})`);
+        ctx.fillStyle = g; ctx.fillRect(X - ts * 0.35 * f, 0, ts * 0.7 * f, Y);
+        this.drawGreeble(ctx, X, Y - (1 - f) * Y, ts * 0.42 * f, 0, ep.t, false, false, 1);
       }
       if (ep.darkness > 0) this.drawDarkness(ctx, M, ts, alpha, ep);
 
@@ -591,8 +618,9 @@
         } else if (this.toolMode === 'bomb' || this.toolMode === 'sonar' || this.toolMode === 'mewclear') {
           const r = this.toolMode === 'bomb' ? 1 : this.toolMode === 'sonar' ? game.sonarRadius() : 5;
           ctx.setLineDash([4, 3]);
-          if (this.toolMode === 'mewclear') { ctx.beginPath(); ctx.arc(X + ts / 2, Y + ts / 2, 5.5 * ts, 0, Math.PI * 2); ctx.stroke(); }
+          if (this.toolMode === 'mewclear') { ctx.beginPath(); ctx.arc(X + ts / 2, Y + ts / 2, NYA.MEWCLEAR_R * ts, 0, Math.PI * 2); ctx.stroke(); }
           else ctx.strokeRect(X - r * ts, Y - r * ts, ts * (2 * r + 1), ts * (2 * r + 1));
+          if (this.toolMode === 'bomb' && game.mew(4)) for (const [dx, dy] of [[2, 0], [-2, 0], [0, 2], [0, -2]]) ctx.strokeRect(X + dx * ts + 1, Y + dy * ts + 1, ts - 2, ts - 2); // the longer reach
           ctx.setLineDash([]);
         } else ctx.strokeRect(X + 1, Y + 1, ts - 2, ts - 2);
       }
@@ -762,7 +790,8 @@
       };
       for (const m of ep.miners) hole((NYA.lerp(m.px, m.x, alpha) + 0.5) * ts, (NYA.lerp(m.py, m.y, alpha) + 0.5) * ts, R);
       hole((M.x(M.elev) + 0.5) * ts, (M.y(M.elev) + 0.5) * ts, 2.5 * ts);
-      if (ep.def.quirk === 'crystal') { // crystal catnip glows in the dark
+      if (ep.greeblesOn) for (const gr of ep.greebles) if (gr.awake && M.revealed[gr.tile]) hole((NYA.lerp(gr.px, gr.x, alpha) + 0.5) * ts, (NYA.lerp(gr.py, gr.y, alpha) + 0.6) * ts, 0.8 * ts); // greebles carry their own lights
+      if (NYA.hasQuirk(ep.def, 'crystal')) { // crystal catnip glows in the dark
         for (let i = 0; i < M.n; i++) if (M.crystal[i] && M.type[i] === T.ORE && M.revealed[i]) hole((M.x(i) + 0.5) * ts, (M.y(i) + 0.55) * ts, 0.9 * ts);
       }
       ctx.drawImage(oc, 0, 0, oc.width, oc.height, 0, 0, W, H);
@@ -925,6 +954,52 @@
       ctx.fillStyle = '#ffd96a'; ctx.beginPath(); ctx.moveTo(x - w * 0.5, y + w * 0.25); ctx.lineTo(x + w * 0.5, y + w * 0.25); ctx.lineTo(x + w * 0.35, y - w * 0.3); ctx.closePath(); ctx.fill();
       ctx.fillStyle = '#d99a2a'; ctx.beginPath(); ctx.arc(x + w * 0.05, y + w * 0.05, w * 0.08, 0, Math.PI * 2); ctx.arc(x + w * 0.28, y - w * 0.08, w * 0.06, 0, Math.PI * 2); ctx.fill();
     }
+    // ---------------------------------------------------------------- Greeble Crash Site
+    // Saucer plating over the hard-stone texture: brushed metal panels with rivets and seams that follow the hull.
+    drawHull(ctx, X, Y, ts, i, M) {
+      ctx.fillStyle = '#9aa5b1'; ctx.fillRect(X, Y, ts, ts);
+      ctx.fillStyle = '#b8c2cc'; ctx.fillRect(X, Y, ts, ts * 0.4);
+      ctx.fillStyle = '#7d8893'; ctx.fillRect(X, Y + ts * 0.82, ts, ts * 0.18);
+      ctx.fillStyle = '#5c6670';
+      const r = Math.max(1, ts * 0.06);
+      for (const [fx, fy] of [[0.18, 0.2], [0.82, 0.2], [0.18, 0.7], [0.82, 0.7]]) ctx.fillRect(X + ts * fx - r / 2, Y + ts * fy - r / 2, r, r);
+      ctx.strokeStyle = '#4a535c'; ctx.lineWidth = Math.max(1, ts * 0.04);
+      ctx.beginPath(); // seams where the plating meets something that isn't hull
+      if (!M.hull[i - 1] || M.x(i) === 0) { ctx.moveTo(X + 0.5, Y); ctx.lineTo(X + 0.5, Y + ts); }
+      if (!M.hull[i - M.w] || M.y(i) === 0) { ctx.moveTo(X, Y + 0.5); ctx.lineTo(X + ts, Y + 0.5); }
+      ctx.stroke();
+      if ((i * 7) % 5 === 0) { ctx.fillStyle = 'rgba(157,255,122,0.55)'; ctx.fillRect(X + ts * 0.42, Y + ts * 0.45, ts * 0.16, ts * 0.1); } // a porthole light
+    }
+    // A greeble: a little hovering alien doodad, all antennae and panel bits. look 0–2 picks the model and its light.
+    drawGreeble(ctx, X, Y, s, look, t, scared, cornered, face) {
+      const LIGHT = ['#9dff7a', '#ff7eb6', '#7af0ff'][look % 3];
+      const bob = Math.sin(t * (scared ? 14 : 4)) * s * 0.08, shake = cornered ? Math.sin(t * 40) * s * 0.06 : 0;
+      ctx.save(); ctx.translate(X + shake, Y + bob); ctx.scale(face || 1, 1);
+      ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(0, s * 0.62 - bob, s * 0.45, s * 0.1, 0, 0, Math.PI * 2); ctx.fill(); // shadow
+      ctx.fillStyle = LIGHT; ctx.globalAlpha = 0.35 + 0.25 * Math.sin(t * 6); // hover glow
+      ctx.beginPath(); ctx.ellipse(0, s * 0.42, s * 0.3, s * 0.1, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = '#1a1020'; ctx.lineWidth = Math.max(1.5, s * 0.12); ctx.lineJoin = 'round';
+      const body = () => {
+        ctx.beginPath();
+        if (look === 1) ctx.rect(-s * 0.42, -s * 0.3, s * 0.84, s * 0.62); // a boxy one
+        else ctx.ellipse(0, 0, s * 0.5, look === 2 ? s * 0.42 : s * 0.32, 0, 0, Math.PI * 2);
+      };
+      body(); ctx.stroke();
+      ctx.fillStyle = '#c3ccd6'; body(); ctx.fill();
+      ctx.fillStyle = '#8e99a5'; ctx.fillRect(-s * 0.4, s * 0.02, s * 0.8, s * 0.12); // a band of greebling
+      ctx.fillStyle = '#5c6670'; for (let k = -2; k <= 2; k++) ctx.fillRect(k * s * 0.15 - s * 0.03, s * 0.04, s * 0.06, s * 0.08);
+      ctx.strokeStyle = '#1a1020'; ctx.lineWidth = Math.max(1, s * 0.07); // antenna
+      ctx.beginPath(); ctx.moveTo(s * 0.12, -s * 0.28); ctx.lineTo(s * 0.26, -s * 0.66); ctx.stroke();
+      ctx.fillStyle = Math.sin(t * (scared ? 18 : 5)) > 0 ? LIGHT : '#ffffff';
+      ctx.beginPath(); ctx.arc(s * 0.26, -s * 0.7, s * 0.1, 0, Math.PI * 2); ctx.fill();
+      if (look === 2) { ctx.beginPath(); ctx.moveTo(-s * 0.2, -s * 0.36); ctx.lineTo(-s * 0.34, -s * 0.58); ctx.stroke(); }
+      ctx.fillStyle = '#1a1020'; // two little LED eyes
+      const ey = -s * 0.1, eh = scared ? s * 0.16 : s * 0.1;
+      ctx.fillRect(s * 0.06, ey - eh / 2, s * 0.08, eh); ctx.fillRect(s * 0.24, ey - eh / 2, s * 0.08, eh);
+      ctx.restore();
+      if (scared && !cornered && Math.sin(t * 9) > 0.6) { ctx.fillStyle = '#ffffff'; ctx.font = `900 ${Math.max(8, s * 0.6)}px "Mochiy Pop One", sans-serif`; ctx.textAlign = 'center'; ctx.fillText('!', X, Y - s * 0.9); }
+    }
+
     drawMouse(ctx, mo, alpha, ts, t) {
       const D = NYA.MICE[mo.kind];
       const x = NYA.lerp(mo.px, mo.x, alpha), y = NYA.lerp(mo.py, mo.y, alpha);

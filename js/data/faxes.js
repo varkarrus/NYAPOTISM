@@ -37,6 +37,8 @@
   fax('nests', 'Home Wrecker', 'TWENTY-FIVE NESTS. THEY HAD MORTGAGES, DEAR. ♡', { xp: 0.03 }, g => (g.s.life.nests || 0) >= 25);
   fax('crystal', 'Crystal Clear', 'THE ROCK SINGS. DOC BOOM WANTS TO START A BAND. I SAID NO. SHE STARTED IT ANYWAY. ♡', { catnip: 0.03 }, g => (g.s.life.crystals || 0) >= 1);
   fax('cascade', 'Glass Harmonica', 'TEN CRYSTALS, ONE CHAIN. THE MICE UPSTAIRS FILED A NOISE COMPLAINT. ♡', { xp: 0.03 }, g => (g.s.life.bestCascade || 0) >= 10);
+  fax('greeble', 'Close Encounters', 'A GREEBLE FOLLOWED ME HOME. IT BEEPS WHEN I SING. I HAVE ADOPTED IT. ITS NAME IS KEVIN. ♡', { catnip: 0.03 }, g => (g.s.life.greebles || 0) >= 1);
+  fax('greeble100', 'Greeble Wrangler', 'ONE HUNDRED GREEBLES. THE MINISTRY OF HOLES CALLS THAT AN INVASION. I CALL IT A COLLECTION. ♡', { xp: 0.03 }, g => (g.s.life.greebles || 0) >= 100);
   fax('flood', 'Splash Zone', 'SOMEONE OPENED THE WRONG WALL. EVERYONE IS DAMP AND FURIOUS. ♡', { xp: 0.02 }, g => (g.s.life.floods || 0) >= 1);
   fax('milk1k', 'Dairy Queen', 'A THOUSAND LITERS. OBAA-CHAN WILL WANT SOME. (WHO IS OBAA-CHAN? LATER.)', { xp: 0.03 }, g => (g.s.life.milk || 0) >= 1000);
   fax('tier4', 'Udderly Ridiculous', 'THE DAIRY DEPTHS. I\u2019M SORRY FOR THE FAX TITLE. NOT VERY SORRY.', { catnip: 0.03 }, g => g.s.maxTierReached >= 4 || g.s.life.maxTier >= 4);
@@ -66,7 +68,7 @@
   NYA.FAX = {};
   for (const f of F) NYA.FAX[f.id] = f;
   // faxes about a mine's own gimmick stay a "?" on the board until you've reached that mine (no spoilers)
-  for (const [id, t] of Object.entries({ milk: 4, milk1k: 4, tier4: 4, sushi: 5, flood: 5, mice: 6, cheese: 6, exterminator: 6, nests: 6, crystal: 7, cascade: 7 })) NYA.FAX[id].tier = t;
+  for (const [id, t] of Object.entries({ milk: 4, milk1k: 4, tier4: 4, sushi: 5, flood: 5, mice: 6, cheese: 6, exterminator: 6, nests: 6, crystal: 7, cascade: 7, greeble: 8, greeble100: 8 })) NYA.FAX[id].tier = t;
 
   // A certain long-running pirate anime's episode count, kept current without updates: 1180 episodes as of
   // 2026-09-27, then Toei's 26-episodes-a-year schedule. Never goes below the anchor.

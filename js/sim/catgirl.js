@@ -163,7 +163,7 @@
       if (m.xpMult) f.xpMult *= m.xpMult;
       for (const k of ['scoreOre', 'luckyPaw', 'doubleDrop', 'zoomMult', 'whimsyNoLaser', 'ignoreLaser', 'boxSitter', 'zoomies3am',
         'powerNap', 'sleepy', 'nightOwl', 'butterfingers', 'menace', 'teamPlayer', 'loner', 'yarnWrangler', 'mudPuppy', 'boxWhisperer',
-        'nineLives', 'midas', 'crackSpread', 'lactose', 'waterproof', 'sushiSnob', 'mouser', 'pacifist', 'scaredy', 'cheeseMagnet', 'perfectPitch', 'crystalLove', 'buried', 'caffeine', 'hotWater', 'spanish', 'rampage', 'psychic']) {
+        'nineLives', 'midas', 'crackSpread', 'lactose', 'waterproof', 'sushiSnob', 'mouser', 'pacifist', 'scaredy', 'cheeseMagnet', 'perfectPitch', 'crystalLove', 'greebleFriend', 'buried', 'caffeine', 'hotWater', 'spanish', 'rampage', 'psychic']) {
         if (m[k] !== undefined) f[k] = m[k];
       }
       if (m.mainChar) { for (const k of ['power', 'haste', 'pace', 'stamina']) sb.mul(k, 1.5, src); f.mainChar = 1; }

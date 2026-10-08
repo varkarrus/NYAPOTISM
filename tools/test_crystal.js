@@ -6,7 +6,7 @@
 // Tier 7 before measuring (0 = on arrival). Target: Tier 7 on arrival is a wall like the Sushi Grotto
 // was (stone takes many swings); lasering crystals helps without being mandatory (active play is a bonus, not a tax).
 const path = require('path'); const root = path.join(__dirname, '..', 'js') + '/';
-['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js', 'data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
+['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js', 'data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/greebles.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
 const NYA = globalThis.NYA, T = NYA.T;
 const seed = process.argv[2] || '4', EPS = +(process.argv[3] || 6), LATER = +(process.argv[4] || 0);
 
@@ -26,7 +26,7 @@ function laserCrystals(ep) {
 
 function measure(json, tier, laser) {
   const g = NYA.Game.deserialize(json, { headless: true });
-  g.s.selectedTier = tier; g.s.catnip = 1e30; g.s.sushi = 1e9;
+  g.s.selectedTier = tier; g.s.tierUnlocked[tier] = 1; g.s.catnip = 1e30; g.s.sushi = 1e9; // a later run may not have re-surveyed it yet
   const sum = { n: 0, t: 0, catnip: 0, fc: 0, crystals: 0, bestCascade: 0, refracts: 0, flops: 0 };
   g.on((type, d) => {
     if (type !== 'episodeEnd') return;
