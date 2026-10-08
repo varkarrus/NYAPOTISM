@@ -228,6 +228,9 @@
   NYA.MAX_TIER = 9;
   // A tier has one headline quirk (`quirk`) and may bring back older ones too (`quirks`, user: old quirks should return).
   NYA.hasQuirk = (def, q) => !!def && (def.quirk === q || (!!def.quirks && def.quirks.indexOf(q) >= 0));
+  // Which quirk produces each purrmit currency: when a deeper mine's purrmit is short of it, the crew goes to grind
+  // the mine that makes it (user: past Tier 7, short on sushi should mean the Sushi Grotto, not the Mousehole Maze)
+  NYA.CUR_SOURCE = { sushi: 'water', cheese: 'mice', greebles: 'greebles', milk: 'milk' };
   // Crystal Catacombs (GDD §9.2). Crystals are tougher than ore, but every hit on one rings RES_HIT of its damage
   // into each neighbouring crystal, and a crystal that shatters sends RES_SHATTER of its max HP into its neighbours
   // RES_DELAY s later, so a softened cluster cascades. Lasering one crystal refracts the mark across its cluster.

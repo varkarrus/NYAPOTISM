@@ -294,6 +294,15 @@
     ffSpeed() { return this.loom('m2_ff') ? 8 : this.loomRowDone(3) ? 5 : this.loom('nm_ff') ? 3 : 2; }
     bankEff() { return this.loom('m2_bank') ? 0.75 : this.loom('nm_bank') ? 0.5 : 0.33; }
     purrmitCost(t) { return NYA.TIERS[t].purrmit; }
+    // the deepest unlocked mine above `below` that produces `cur` (NYA.CUR_SOURCE) and whose own purrmit you can pay
+    farmTier(cur, below) {
+      const q = NYA.CUR_SOURCE[cur];
+      if (!q) return 0;
+      for (let t = below - 1; t >= 1; t--) {
+        if (this.s.tierUnlocked[t] && NYA.hasQuirk(NYA.TIERS[t], q) && this.purrmitCur(t) !== cur && this.canPayPurrmit(t)) return t;
+      }
+      return 0;
+    }
     purrmitCur(t) { return NYA.TIERS[t].purrmitCur || 'catnip'; } // Tiers 7+ take sushi (GDD)
     canPayPurrmit(t) { return (this.s[this.purrmitCur(t)] || 0) >= this.purrmitCost(t); }
     hireCost() { return Math.ceil(10 * Math.pow(1.15, this.s.hires)); }
@@ -780,6 +789,14 @@
       const evq = this.s.pendingEvent;
       if (evq) return this.startEventEpisode(evq);
       let t = this.s.selectedTier;
+      if (this.s.tierUnlocked[t] && !this.canPayPurrmit(t)) { // short on a resource: go grind the mine that makes it
+        const cur = this.purrmitCur(t), farm = this.farmTier(cur, t);
+        if (farm) {
+          this.emit('toast', { text: 'Not enough ' + cur + ' for the ' + NYA.TIERS[t].name + ' purrmit. The crew heads to the ' + NYA.TIERS[farm].name + ' to get some, then straight back.', kind: 'warn' });
+          this.novel('farm:' + cur, 'Short on ' + cur + '? Shifts go to the ' + NYA.TIERS[farm].name + ' until you can pay for the deeper purrmit', 'mine');
+          t = farm;
+        }
+      }
       while (t > 1 && (!this.s.tierUnlocked[t] || !this.canPayPurrmit(t))) {
         if (this.s.tierUnlocked[t]) this.emit('toast', { text: 'Can’t afford the purrmit for ' + NYA.TIERS[t].name + (this.purrmitCur(t) !== 'catnip' ? ' (it costs ' + this.purrmitCur(t) + ')' : '') + ' — falling back.', kind: 'warn' });
         t--;

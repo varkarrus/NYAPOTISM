@@ -6,6 +6,13 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Sushi runs',
+      date: '2026-10-09',
+      items: [
+        'If you can’t pay a mine’s sushi purrmit, the shift now goes to the Sushi Grotto to catch more, then straight back to your mine once you can pay (it used to drop to the Mousehole Maze, which pays no sushi). The mine list says when it’s happening.',
+      ],
+    },
+    {
       title: 'Autopilot, an RP budget, walking costs stamina again',
       date: '2026-10-09',
       items: [

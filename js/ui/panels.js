@@ -115,7 +115,7 @@
         <div class="mt">T${t}</div>
         <div class="mi"><b>${esc(d.name)}</b> <span class="sz">${d.w}×${d.h}</span>
         <div class="desc">${esc(d.blurb)}</div>
-        <div class="ms">Purrmit: ${d.purrmit ? (d.purrmitCur === 'sushi' ? '🍣' : NIP) + fmt(d.purrmit) + (d.purrmitCur === 'sushi' ? ` <small>(you have ${fmt(s.sushi)})</small>` : '') : 'free'} · Episodes ${ms.eps} · Perfect ${ms.fc} · Best ${NIP}${fmt(ms.best || 0)}${NYA.tierDarkness(t) ? ` · 🌑 Darkness ${NYA.tierDarkness(t)}` : ''}${NYA.tierFooting(t) > 1 ? ` · 🥾 Slick floors: walking ÷${NYA.tierFooting(t).toFixed(1)}` : ''}</div></div>
+        <div class="ms">Purrmit: ${d.purrmit ? (d.purrmitCur === 'sushi' ? '🍣' : NIP) + fmt(d.purrmit) + (d.purrmitCur === 'sushi' ? ` <small>(you have ${fmt(s.sushi)}${s.sushi < d.purrmit && g.farmTier('sushi', t) ? `; short, so shifts go to the ${esc(NYA.TIERS[g.farmTier('sushi', t)].name)} until you can pay` : ''})</small>` : '') : 'free'} · Episodes ${ms.eps} · Perfect ${ms.fc} · Best ${NIP}${fmt(ms.best || 0)}${NYA.tierDarkness(t) ? ` · 🌑 Darkness ${NYA.tierDarkness(t)}` : ''}${NYA.tierFooting(t) > 1 ? ` · 🥾 Slick floors: walking ÷${NYA.tierFooting(t).toFixed(1)}` : ''}</div></div>
         ${sel ? '<div class="selbadge">SELECTED</div>' : ''}
       </div>`;
     }
