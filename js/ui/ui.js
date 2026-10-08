@@ -97,6 +97,7 @@
         }
         case 'mine': if (g.selectTier(+v)) { this.audio.sfx('click'); this.renderPanel(true); this.toast(`Next episode: ${NYA.TIERS[+v].name}`); } break;
         case 'order': g.toggleOrder(v); this.audio.sfx('stamp'); this.renderPanel(true); this.renderTools(); break;
+        case 'auto': if (g.autoToggle(v)) { this.audio.sfx('stamp'); this.renderPanel(true); } break;
         case 'defrag': this.audio.sfx('stamp'); this.toast('Pochi looks deeply satisfied.'); break;
         case 'unravel': this.confirmUnravel(); break;
         case 'ova': if (v === 'abandon') this.confirmAbandonOva(); else this.confirmOva(a.split(':')[2]); break;
@@ -253,9 +254,10 @@
         case 'trait': this.traitQueue.push(d); this.nextTrait(); break;
         case 'hire': this.toast(`<b>${esc(d.cg.name)} ${esc(d.cg.family)}</b> joins! Sgt. Paws: “${esc(d.line)}”`, 'paws'); this.renderPanel(true); break;
         case 'transfer': this.toast(`${esc(d.cg.name)} transferred to Corporate (+${fmt(d.refund)} catnip). Sgt. Paws: “${esc(d.line)}”`, 'paws'); break;
-        case 'research': if (d.done) { this.toast(`Research complete: <b>${esc(NYA.UPG[d.id].name)}</b>. Doc Boom: “${esc(d.line)}”`, 'doc'); this.audio.sfx('research'); this.renderPanel(true); } break;
+        case 'research': if (d.done && d.auto) this.renderPanel(true); // Autopilot research finishes quietly
+          else if (d.done) { this.toast(`Research complete: <b>${esc(NYA.UPG[d.id].name)}</b>. Doc Boom: “${esc(d.line)}”`, 'doc'); this.audio.sfx('research'); this.renderPanel(true); } break;
         case 'upgrade':
-          if (d.id === 'montage') this.montage(d.level);
+          if (d.id === 'montage' && !d.auto) this.montage(d.level); // the Autopilot's Montage Mixtape skips the show
           if (d.id === 'mewclear') this.renderPanel(true);
           this.renderTools();
           break;
@@ -707,7 +709,7 @@
       while (this.el.novel.children.length > 3) this.el.novel.firstChild.remove();
       this.audio.sfx('novel');
       setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 500); }, 4200);
-      const map = { building: d.key.split(':')[1], active: 'lab', mine: 'office', tool: 'lab', montage: 'barracks', mewclear: 'lab', refinery: 'refinery', loom: 'loom', prestige: 'office', research: 'lab' };
+      const map = { building: d.key.split(':')[1], active: 'lab', mine: 'office', tool: 'lab', montage: 'barracks', mewclear: 'lab', refinery: 'refinery', loom: 'loom', prestige: 'office', research: 'lab', auto: 'pochi' };
       const tab = map[d.kind];
       if (tab && tab !== this.tab) { this.newTabs[tab] = 1; this.renderTabs(); }
     }

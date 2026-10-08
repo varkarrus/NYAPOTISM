@@ -284,7 +284,24 @@
         <div class="desc">${esc(o.desc)}</div>
         <div class="stampz">${filed ? (run ? 'FILED' : 'PENDING') : 'click to file'}</div></div>`;
     }
-    h += `</div><div class="grid">${upgList(g, u => u.bld === 'pochi')}</div>`;
+    h += `</div>`;
+    // Autopilot (earned once Loom Pattern II opens): autobuyers for a season's opening purchases
+    const nAuto = g.autoEarned();
+    if (nAuto) {
+      h += `<h3 class="sec">Autopilot <small>${nAuto}/${NYA.AUTOPILOT.length} · no RP needed · click to switch on or off</small></h3><div class="orders">`;
+      NYA.AUTOPILOT.forEach((a, k) => {
+        if (k < nAuto) {
+          const on = g.autoOn(a.id);
+          h += `<div class="order ${on ? 'run' : 'pending'}" data-act="auto:${a.id}">
+        <div class="oname">${esc(a.name)}</div>
+        <div class="desc">${a.id === 'mk2' ? 'Raises the caps of every autobuyer above.' : 'Buys ' + esc(g.autoSummary(a)) + '.'}</div>
+        <div class="desc"><i>${esc(a.desc)}</i></div>
+        <div class="stampz">${on ? 'ON' : 'OFF'}</div></div>`;
+        } else if (k === nAuto) h += `<div class="order locked"><b>???</b> <small>Pochi files the next one when you unravel.</small></div>`;
+      });
+      h += `</div>`;
+    }
+    h += `<div class="grid">${upgList(g, u => u.bld === 'pochi')}</div>`;
     return h;
   }
 

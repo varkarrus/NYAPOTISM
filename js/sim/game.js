@@ -26,6 +26,7 @@
       catnip: 0, seasonCatnip: 0, lifetimeCatnip: 0, seasonYarnNip: 0, yarnNipInit: 0, milk: 0, sushi: 0, cheese: 0, greebles: 0,
       yarn: 0,
       upg: {}, loom: {},
+      auto: { n: 0, off: {} }, // Autopilot: how many autobuyers are earned, and which are switched off (lifetime, survives unravels and OVAs)
       research: null,
       buildings: { office: 1, refinery: 1 },
       tierUnlocked: { 1: 1 }, selectedTier: 1, maxTierReached: 1,
@@ -534,19 +535,19 @@
       if ((this.s[u.cur || 'catnip'] || 0) < cost) return { ok: false, why: 'Need ' + NYA.fmt(cost), poor: true, cost };
       return { ok: true, cost };
     }
-    buy(id) {
+    buy(id, auto) { // auto: bought by the Autopilot (the UI keeps it quiet)
       const c = this.canBuy(id);
       if (!c.ok) return false;
       const u = NYA.UPG[id];
       this.s[u.cur || 'catnip'] -= c.cost;
       if (u.timer) {
         const time = u.timer * (this.s.season > 1 ? 0.5 : 1) * (this.loom('m2_intern') ? 0.25 : 1);
-        this.s.research = { id, left: time, total: time };
-        this.emit('research', { id, start: true });
-      } else this.applyUpgrade(id);
+        this.s.research = { id, left: time, total: time, auto: auto ? 1 : 0 };
+        this.emit('research', { id, start: true, auto: !!auto });
+      } else this.applyUpgrade(id, auto);
       return true;
     }
-    applyUpgrade(id) {
+    applyUpgrade(id, auto) {
       const u = NYA.UPG[id];
       this.s.upg[id] = this.lvl(id) + 1;
       const l = this.lvl(id);
@@ -562,6 +563,9 @@
         }
       }
       if (id === 'pouch') this.syncActives();
+      if (id === 'bunk' && auto) { // the Autopilot's Bunk Bed Wrench also moves a reserve up into the new slot
+        while (this.s.active.length < this.crewCap() && this.s.reserve.length) this.s.active.push(this.s.reserve.shift());
+      }
       if (id === 'montage') { this.novel('montage:' + l, 'Training Montage ' + ['', 'I', 'II', 'III', 'IV'][l] + '! Level cap ' + this.levelCap(), 'montage'); if (l === 1) this.fax('montage', NYA.STORY_FAX.montage); }
       if (id === 'mewclear') {
         this.novel('mewclear:' + l, 'Project MEWCLEAR stage ' + l + ': ' + NYA.MEWCLEAR_NOTES[l] + ' (' + NYA.MEWCLEAR_STAGES[l].fx + ')', 'mewclear');
@@ -570,7 +574,7 @@
       if (id === 'polisher' || id === 'centrifuge') this.novel('upg:' + id, 'Refinery Module: ' + u.name, 'refinery');
       if (id === 'resonance') this.novel('upg:resonance', 'Groove Theory: chains spread!', 'research');
       if (id === 'resume') this.novel('upg:resume', 'Résumé Reader: Aptitudes revealed', 'research');
-      this.emit('upgrade', { id, level: l });
+      this.emit('upgrade', { id, level: l, auto: !!auto });
     }
     // An easy clear (NYA.EASY_CLEAR) stands in for every "full-clear this mine n times" requirement this run. Say so
     // when it's the thing that just opened a survey or a bunk.
@@ -590,8 +594,8 @@
       r.left -= dt;
       if (r.left <= 0) {
         this.s.research = null;
-        this.applyUpgrade(r.id);
-        this.emit('research', { id: r.id, done: true, line: this.rng.pick(NYA.BARKS.doc_research) });
+        this.applyUpgrade(r.id, r.auto);
+        this.emit('research', { id: r.id, done: true, auto: !!r.auto, line: this.rng.pick(NYA.BARKS.doc_research) });
       }
     }
 
@@ -1103,7 +1107,7 @@
         this.fax('pochi', NYA.STORY_FAX.pochi);
       }
       if (!B.loom && (s.skein.have || s.season > 1)) B.loom = 1;
-      if (B.loom && !s.novel['loom:pattern2'] && this.loomComplete(1)) this.loomPatternNews();
+      if (B.loom && (!s.novel['loom:pattern2'] || !s.auto.n) && this.loomComplete(1)) this.loomPatternNews();
       if (!B.tanuki && (s.maxTierReached >= 2 || s.season > 1)) {
         B.tanuki = 1; s.tanuki.nextAt = s.simTime;
         this.novel('bld:tanuki', 'Tanuki\u2019s Emporium! A travelling merchant sells limited-time event mines', 'building');
@@ -1182,6 +1186,7 @@
       this.announceShelf();
       this.novel('season:' + s.season, 'SEASON ' + s.season + '! A new verse of the opening theme', 'prestige');
       if (s.season === 2) this.fax('season2', NYA.STORY_FAX.season2);
+      if (!opts.noYarn && this.loomPatternOpen(2)) this.earnAutopilot(); // one more autobuyer per unravel
       this.episode = null; this.phase = 'idle'; this.packup = null; this.lastResult = null;
       this.emit('unravel', { gain, season: s.season, afterOva: !!opts.noYarn });
       this.startEpisode();
@@ -1253,10 +1258,58 @@
       while (s.active.length < this.crewCap() && s.reserve.length) s.active.push(s.reserve.shift());
       this.syncActives();
     }
+    // ------------------------------------------------------------ Autopilot (NYA.AUTOPILOT, user idea)
+    autoEarned() { return Math.min(this.s.auto.n || 0, NYA.AUTOPILOT.length); }
+    autoHas(id) { const k = NYA.AUTOPILOT.indexOf(NYA.AUTO[id]); return k >= 0 && k < this.autoEarned(); }
+    autoOn(id) { return this.autoHas(id) && !this.s.auto.off[id]; }
+    autoToggle(id) {
+      if (!this.autoHas(id)) return false;
+      const off = this.s.auto.off;
+      if (off[id]) delete off[id]; else off[id] = 1;
+      this.emit('auto', { id, on: !off[id] });
+      return true;
+    }
+    autoCap(a, id) {
+      const c = this.autoHas('mk2') && a.mk2 && a.mk2[id] != null ? a.mk2[id] : a.ids[id];
+      return c === 'max' ? NYA.UPG[id].max : c;
+    }
+    earnAutopilot() {
+      const A = this.s.auto, k = A.n || 0;
+      if (k >= NYA.AUTOPILOT.length) return;
+      const a = NYA.AUTOPILOT[k];
+      A.n = k + 1;
+      this.novel('auto:' + a.id, 'Autopilot: ' + a.name + '! ' + (a.id === 'mk2' ? 'Every stat cap goes up' : 'Pochi buys ' + this.autoSummary(a)), 'auto');
+      if (k === 0) this.emit('toast', { text: 'Pochi: \u201cYou keep filling out the same forms every time. I made you a rubber stamp. Find it in the Purrmit Office.\u201d', kind: 'pochi' });
+    }
+    // "Training Montage to max, Sharper Pickaxe to 15…" (UI and NEW! ribbon)
+    autoSummary(a) {
+      return Object.keys(a.ids).map(id => {
+        const u = NYA.UPG[id], cap = this.autoCap(a, id);
+        return u.name + (u.max === 1 ? '' : cap >= u.max ? ' to max' : ' to ' + cap);
+      }).join(', ');
+    }
+    // Runs once a second: research first (one at a time, in list order), then everything else cheapest-first.
+    tickAutopilot() {
+      if (!this.autoEarned()) return;
+      const want = (a, id) => this.autoOn(a.id) && this.lvl(id) < this.autoCap(a, id) && this.upgVisible(NYA.UPG[id]);
+      if (!this.s.research) {
+        outer: for (const a of NYA.AUTOPILOT) for (const id in a.ids) if (NYA.UPG[id].timer && want(a, id) && this.buy(id, true)) break outer;
+      }
+      for (let n = 0; n < 200; n++) {
+        let best = null, bc = Infinity;
+        for (const a of NYA.AUTOPILOT) for (const id in a.ids) {
+          if (NYA.UPG[id].timer || !want(a, id)) continue;
+          const c = this.canBuy(id);
+          if (c.ok && c.cost < bc) { bc = c.cost; best = id; }
+        }
+        if (!best || !this.buy(best, true)) break;
+      }
+    }
     // a finished pattern opens the next one (also checked on load, for saves that finished Pattern I before II existed)
     loomPatternNews() {
       if (this.loomComplete(1) && this.novel('loom:pattern2', 'Pattern I complete! Nyacolette casts on Pattern II: The Cable-Knit Cardigan', 'loom'))
         this.emit('toast', { text: 'Nyacolette: “Oh, you finished the sweater? Adorable. Now try a cardigan.”', kind: 'loom' });
+      if (this.loomComplete(1) && !this.s.auto.n) this.earnAutopilot(); // the first autobuyer comes with Pattern II
       if (NYA.LOOM_PATTERNS[1] && this.loomComplete(2)) this.novel('loom:pattern3', 'Pattern II complete! Pattern III is still on the needles (coming soon)', 'loom');
     }
     loomBuy(id) {
@@ -1327,7 +1380,7 @@
       this.tickResearch(dt);
       this.tickBlend(dt);
       this.tanukiT = (this.tanukiT || 0) - dt;
-      if (this.tanukiT <= 0) { this.tanukiT = 1; this.tickTanuki(); if (s.ova) this.checkOvaGoal(); }
+      if (this.tanukiT <= 0) { this.tanukiT = 1; this.tickTanuki(); if (s.ova) this.checkOvaGoal(); this.tickAutopilot(); }
       if (this.episode && this.episode.catterall && !this.catterallActive()) this.episode.setCatterall(false);
       if (this.phase === 'shift' && this.episode) {
         if (this.loom('nm_drone') && !this.episode.fullClear) {

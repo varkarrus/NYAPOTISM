@@ -6,6 +6,13 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Autopilot',
+      date: '2026-10-09',
+      items: [
+        'Late game: once the second big upgrade set opens, Pochi starts handing out Autopilot autobuyers, one at a time, that play the opening minutes of a fresh start for you: Training Montage, Perfectionism and Meowtherlode Radar, the first surveys, stat upgrades up to set levels, Bunk Beds, the Refinery, and Doc Boom’s one-off research. A last one raises their caps. Switch each on or off in the Purrmit Office.',
+      ],
+    },
+    {
       title: 'A second big upgrade set, tougher deep mines',
       date: '2026-10-09',
       items: [
@@ -340,7 +347,7 @@
       'Tier 5, Sushi Grotto (floods and sushi): it opens early, but you’ll arrive too soon. Making it yours takes around 3 hours.',
       'Tier 6, Mousehole Maze (mice, turrets and cheese): opens around 3–3.5 hours in, and it’s just as tough at first.',
       'Tier 7, Crystal Catacombs (refraction, resonance and sushi purrmits): opens around 4.5 hours in. Another wall at first.',
-      'Around 5 hours in, a second big upgrade set opens up. No spoilers!',
+      'Around 5 hours in, a second big upgrade set opens up, and Pochi starts automating your opening purchases. No spoilers!',
       'Tier 8, Greeble Crash Site (greebles to corner, a crashed saucer): opens around 6 hours in, and it’s a wall for a good while.',
       'Tier 9, Purrmafrost Caverns (sliding ice and the cold): opens around 15 hours in, and takes a good while to conquer.',
       'Late game: seven OVA challenge episodes, 21 releases in all, each with a permanent perk.',
