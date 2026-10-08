@@ -576,7 +576,7 @@
       if (id === 'bunk' && auto) { // the Autopilot's Bunk Bed Wrench also moves a reserve up into the new slot
         while (this.s.active.length < this.crewCap() && this.s.reserve.length) this.s.active.push(this.s.reserve.shift());
       }
-      if (id === 'montage') { this.novel('montage:' + l, 'Training Montage ' + ['', 'I', 'II', 'III', 'IV'][l] + '! Level cap ' + this.levelCap(), 'montage'); if (l === 1) this.fax('montage', NYA.STORY_FAX.montage); }
+      if (id === 'montage') { this.novel('montage:' + l, NYA.MONTAGE_NAMES[l] + '! Level cap ' + this.levelCap(), 'montage'); if (l === 1) this.fax('montage', NYA.STORY_FAX.montage); }
       if (id === 'mewclear') {
         this.novel('mewclear:' + l, 'Project MEWCLEAR stage ' + l + ': ' + NYA.MEWCLEAR_NOTES[l] + ' (' + NYA.MEWCLEAR_STAGES[l].fx + ')', 'mewclear');
         if (l === 10) { this.syncActives(); this.fax('mewclear', NYA.STORY_FAX.mewclear); }

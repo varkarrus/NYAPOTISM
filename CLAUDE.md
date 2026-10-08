@@ -40,6 +40,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - Headlamps vs darkness (Sight).
   - Pace vs mine size, rough ground (mud patches and rubble: `tierMud`, `tierRubble`) and slick floors: `tierFooting` divides all walking speed (`FOOTING_EARLY` ÷1.3 at T2, ÷1.7 at T3, then ÷4 at T4 and ×1.3 per tier). It mostly costs time: walking drains `WALK_DRAIN` (1/16) of a miner's mining rate (unfolded Haste × swing cost) per second, ÷ footing^`WALK_FOOTING` (0.5). Tying it to Haste keeps walking ~5–15% of a shift's stamina at every depth (a flat rate fell to ~0.1% past Tier 4).
   - Focus vs decoy tiles (TODO).
+- **Levels:** Training Montage I–VIII caps 5…75 (sequels V–VIII wait on Tiers 6–9 ever reached); XP per level ×1.45, so XP multipliers always buy levels. Levels past 30 give half stats (`NYA.LEVEL_FULL`, `NYA.LEVEL_FADE`). Traits at levels 3, 8, 15, 25, 40, 60.
 - **Crew size grows slowly.** Bunk Beds are hand-authored and progress-gated (`NYA.BUNKS`). The user wants about 3–5 miners through Tier 2.
 - **Animations must be readable.** Eyecatchers play picture-in-picture on a real-time clock and are never rushed or cut off. Pack-up time is a real sim cost: don't lengthen it for presentation.
 - **Novelty rhythm:** early on, a new system every few minutes. Mid-season gaps should stay under ~5–10 min (check the harness novelty timeline).

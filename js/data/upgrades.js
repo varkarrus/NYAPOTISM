@@ -128,10 +128,13 @@
     show: g => g.s.hires >= 2,
     desc: '+1 reserve slot. Reserves keep their levels and traits; swap between episodes for free.', flavor: 'Each locker contains one (1) emergency nap pillow.',
     fx: l => (2 + l) + ' reserve slots' });
-  def({ id: 'montage', bld: 'barracks', name: 'Training Montage', max: 4, costs: [120, 2500, 6e4, 2e6],
+  // Montages V–VIII are sequels, each waiting on a deeper mine (NYA.MONTAGE_TIER). XP per level keeps growing ×1.45, so
+  // every Purl of Wisdom rank (×2 XP) stays worth ~1.9 levels instead of dead past cap 30 (user playtest).
+  def({ id: 'montage', bld: 'barracks', name: 'Training Montage', max: 8, costs: [120, 2500, 6e4, 2e6, 2e11, 3e14, 2e16, 3e18],
     show: g => g.s.lifetimeCatnip >= 60,
-    desc: 'Raises the level cap: 5 → 10 → 15 → 20 → 30.', flavor: 'Comes with a real 80s training montage. The song is non-negotiable.',
-    fx: l => 'Level cap ' + NYA.LEVEL_CAPS[l] });
+    req: g => { const t = NYA.MONTAGE_TIER[g.lvl('montage') + 1]; return t && Math.max(g.s.maxTierReached, g.s.life.maxTier || 0) < t ? 'Sgt. Paws needs a tougher training ground for the sequel: reach Tier ' + t + ' (' + NYA.TIERS[t].name + ')' : null; },
+    desc: 'Raises the level cap: 5 → 10 → 15 → 20 → 30. The sequels (40, 50, 60, 75) need deeper mines to train in.', flavor: 'Comes with a real 80s training montage. The song is non-negotiable.',
+    fx: l => (l ? NYA.MONTAGE_NAMES[l] + ': level cap ' : 'Level cap ') + NYA.LEVEL_CAPS[l] });
 
   // ---------------- R&D Lab: Excavation ----------------
   def({ id: 'pick', bld: 'lab', branch: 'Excavation', name: 'Sharper Pickaxe', max: 60, base: 10, growth: 2.1,
@@ -348,7 +351,12 @@
   NYA.UPG = {};
   for (const u of U) NYA.UPG[u.id] = u;
 
-  NYA.LEVEL_CAPS = [5, 10, 15, 20, 30];
+  NYA.LEVEL_CAPS = [5, 10, 15, 20, 30, 40, 50, 60, 75];
+  NYA.LEVEL_FULL = 30;   // levels up to here give full stats...
+  NYA.LEVEL_FADE = 0.5;  // ...and each one past it gives this share (traits still come at 40 and 60)
+  NYA.MONTAGE_TIER = [0, 0, 0, 0, 0, 6, 7, 8, 9]; // the sequels need a deeper training ground (the deepest mine you've ever reached)
+  NYA.MONTAGE_NAMES = ['', 'Training Montage I', 'Training Montage II', 'Training Montage III', 'Training Montage IV',
+    'Montage V: The Next Level', 'Montage VI: Electric Boogaloo', 'Montage VII: Montage in Space', 'Montage VIII: On Ice'];
 
   NYA.upgCost = function (u, level) {
     if (u.costs) return u.costs[level] !== undefined ? u.costs[level] : Infinity;

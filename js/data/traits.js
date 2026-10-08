@@ -116,7 +116,7 @@
   NYA.TRAIT = {};
   for (const t of NYA.TRAITS) NYA.TRAIT[t.id] = t;
 
-  NYA.TRAIT_LEVELS = [3, 8, 15, 25, 40];
+  NYA.TRAIT_LEVELS = [3, 8, 15, 25, 40, 60]; // 40 and 60 come with the Montage sequels (caps 40–75)
 
   // Roll a trait for a catgirl in a given mine. Kinds 55/25/20, rarity-weighted, mine-flavored.
   NYA.rollTrait = function (rng, owned, mineKey, luck, maxTier, cg) {

@@ -106,14 +106,16 @@
     ctx = ctx || {};
     const sb = new StatBlock();
     const apt = NYA.aptInfo(cg.apt).mult;
-    const L = cg.level - 1;
+    // Levels past NYA.LEVEL_FULL (the Montage sequels) count NYA.LEVEL_FADE each: still worth chasing, but a crew of
+    // level-70 veterans would otherwise outgrow the deepest mine (at full value they took Tier 9 from ~10 swings to 3)
+    const L = Math.min(cg.level, NYA.LEVEL_FULL) - 1 + Math.max(0, cg.level - NYA.LEVEL_FULL) * NYA.LEVEL_FADE;
     // Levels
     sb.mul('power', 1 + 0.05 * L * apt, 'Level ' + cg.level);
     sb.mul('stamina', 1 + 0.05 * L * apt, 'Level ' + cg.level);
     sb.mul('haste', 1 + 0.015 * L * apt, 'Level ' + cg.level);
     sb.mul('pace', 1 + 0.015 * L * apt, 'Level ' + cg.level);
     sb.add('grit', Math.floor(L * apt), 'Level ' + cg.level);
-    sb.add('carry', Math.floor(cg.level / 5), 'Level ' + cg.level);
+    sb.add('carry', Math.floor((L + 1) / 5), 'Level ' + cg.level);
     // Research
     const lv = id => game.lvl(id);
     sb.mul('power', Math.pow(1.2, lv('pick')), 'Sharper Pickaxe');

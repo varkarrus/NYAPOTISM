@@ -6,6 +6,16 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Training Montage sequels',
+      date: '2026-10-09',
+      items: [
+        'Training Montage gets sequels: V: The Next Level (level cap 40), VI: Electric Boogaloo (50), VII: Montage in Space (60) and VIII: On Ice (75). Each needs a tougher training ground first: reach the Mousehole Maze, Crystal Catacombs, Greeble Crash Site or Purrmafrost Caverns once.',
+        'Each level still costs ×1.45 the XP of the one before, so the new caps take a good while to fill, and anything that speeds up XP stays worth having.',
+        'Traits at level 40 (it was in the table, but the cap stopped at 30) and a new one at 60.',
+        'Levels past 30 give half the stat growth of the first 30, so a crew of veterans doesn’t flatten the deepest mine.',
+      ],
+    },
+    {
       title: 'Sushi runs, a steadier Laser Drone',
       date: '2026-10-09',
       items: [

@@ -26,7 +26,7 @@ The game autosaves to `localStorage` every 30 s. You can export or import a save
 | Short-attention-span miner AI: Focus sampling, distractions, flop, Rescue Claw | 3.4 | `js/sim/episode.js` |
 | Laser pointer (Zoomies, dig-toward-fog), Spray Bottle, Whistle | 3.5, 3.7 | |
 | Stamina/Grit/walk drain, full-clear bonus, S–D ratings | 3.6–3.7 | |
-| Catgirls: applicant board hiring, levels, aptitude, ~40 traits with mine-flavored rolls | 4 | `js/data/traits.js` |
+| Catgirls: applicant board hiring, levels (Training Montage I–VIII, cap 75; the sequels wait on Tiers 6–9), aptitude, ~40 traits with mine-flavored rolls (at levels 3, 8, 15, 25, 40, 60) | 4 | `js/data/traits.js` |
 | Refinery Mk, Polisher, Centrifuge, **Tora's Special Blend** gamble | 6.2 | |
 | Actives: Blunt (tolerance), Hairball Bomb, Tuna Time, Sonar, Hotbox, Treat Bag, Catterall, **Mewclear Option** | 7 | |
 | R&D tree (5 branches, plus Defense and Xenology paid in cheese and greebles) and Project MEWCLEAR's 10 stages, each with its own bonus and gated by depth (`NYA.MEWCLEAR_STAGES`), with the warhead sprite evolving | 7.1, 8 | |
