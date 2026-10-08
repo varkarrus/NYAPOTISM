@@ -34,7 +34,7 @@ The game autosaves to `localStorage` every 30 s. You can export or import a save
 | Purrmit Office standing orders, Requisition Points (boot-screen bar), auto-cast, auto-hire, Blunt Rotation | 11 | |
 | Banked Time and Fast-Forward | 12 | |
 | ~45 Faxes from Auntie (achievements with bonuses) | 13 | |
-| Schrödinger's Skein → Unravel → Yarn → **Quantum Loom** 5×5 sweater with stripes, Timeline Anchors, Laser Drone | 14 | |
+| Schrödinger's Skein → Unravel → Yarn → **Quantum Loom**: 5×5 patterns with row and column stripes. Pattern I (Timeline Anchors, Laser Drone…) and **Pattern II**, which opens once Pattern I is complete (Star Search aptitude promotions past SS, Pace/Carry/stamina knits, ten anchors, cheaper standing orders, deeper yarn). Knit multipliers fade past rank 5 and cap at 15 (`NYA.knitEff`) | 14 | `js/data/loom.js` |
 | **OVAs**: seven challenge tapes (Lights Out, Nine to Five, Budget Cuts, No Laser Zone, Monday, One Cat Army, No OSHA Compliance) × three releases, each with a permanent perk, spread over Seasons 5–27. Playing a tape saves your current run, which resumes when the OVA ends | 15 | `js/data/ovas.js` |
 | Episode titles, Tora barks, eyecatchers (12, three of them rare), next-episode previews, opening-theme verses | 21 | |
 | City-pop music per mine (FM e-piano, bass, drum machine), synthesized SFX | 22.2 | `js/audio.js` |
@@ -122,4 +122,4 @@ The simulation layer (`js/sim`, `js/data`, `js/core`) has no DOM access. The bro
 
 ## Not built yet (from the GDD)
 
-Workshop and equipment, more mouse and turret types, more OVAs, spin-offs (Farm, Fishing, Canteen, Alchemy, Idols), The Movie and the Reboot, NYANZER, The Nine Lives, Tiers 7–12, alternate mines, cave-ins and bamboo, Loom patterns 2–6, and the Fax Macro language.
+Workshop and equipment, more mouse and turret types, more OVAs, spin-offs (Farm, Fishing, Canteen, Alchemy, Idols), The Movie and the Reboot, NYANZER, The Nine Lives, Tiers 10–12, alternate mines, cave-ins and bamboo, Loom patterns 3–6, and the Fax Macro language.

@@ -180,7 +180,7 @@
     const st = g.statsFor(cg);
     const need = NYA.xpNeed(cg.level);
     const capped = cg.level >= g.levelCap();
-    const apt = g.lvl('resume') ? `<span class="apt apt-${NYA.aptGrade(cg)}">${NYA.aptGrade(cg)}</span>` : '';
+    const apt = g.lvl('resume') ? `<span class="apt ${NYA.aptClass(cg)}">${NYA.aptGrade(cg)}</span>` : '';
     const traits = cg.traits.map(t => { const d = NYA.TRAIT[t]; return `<span class="trait ${d.kind} r-${d.rarity}" data-tip="trait:${t}">${esc(d.name)}</span>`; }).join('');
     const nextT = NYA.TRAIT_LEVELS.find(l => l > cg.level);
     return `<div class="cg ${where}" data-cg="${cg.id}">
@@ -211,7 +211,7 @@
     const untilTurn = NYA.BOARD_TURN - (B.turn % NYA.BOARD_TURN);
     const appCard = (c, k) => {
       if (!c) return `<div class="app empty"><div class="app-wait">📋</div><div class="ms">Next applicant arrives after this episode</div></div>`;
-      const apt = g.lvl('resume') ? `<span class="apt apt-${NYA.aptGrade(c)}">${NYA.aptGrade(c)}</span>` : `<span class="apt apt-q" title="Aptitude hidden. Résumé Reader (R&amp;D) reveals it.">?</span>`;
+      const apt = g.lvl('resume') ? `<span class="apt ${NYA.aptClass(c)}">${NYA.aptGrade(c)}</span>` : `<span class="apt apt-q" title="Aptitude hidden. Résumé Reader (R&amp;D) reveals it.">?</span>`;
       const star = g.applicantMatch(c) ? `<span class="app-star" title="Tuxedo Club would love her">★ Tuxedo Club match</span>` : '';
       const leaving = k === 0 && B.apps.filter(Boolean).length === NYA.BOARD_SIZE ? `<div class="ms">Leaves in ${untilTurn} episode${untilTurn > 1 ? 's' : ''}</div>` : '';
       return `<div class="app"><div class="por" data-apor="${k}"></div>
@@ -265,7 +265,7 @@
     let h = `<div class="phead">${npcHead('pochi')}<div><h2>Purrmit Office</h2><p class="quip">“Sign here. And here. And here. Do not scratch the form.”</p></div></div>`;
     // 80s boot-screen memory bar
     let blocks = '';
-    for (const id of running) blocks += `<div class="blk o-${id}" style="flex:${NYA.ORDERS[id].rp}" title="${esc(NYA.ORDERS[id].name)}">${NYA.ORDERS[id].rp}</div>`;
+    for (const id of running) blocks += `<div class="blk o-${id}" style="flex:${g.orderRp(id)}" title="${esc(NYA.ORDERS[id].name)}">${g.orderRp(id)}</div>`;
     if (max - used > 0) blocks += `<div class="blk free" style="flex:${max - used}">${max - used} free</div>`;
     h += `<div class="boot"><div class="bt">REQUISITION MEMORY TEST: ${used}/${max} RP ALLOCATED</div><div class="mem">${blocks}</div>
       <button class="ghost tiny" data-act="defrag">Defragment</button></div>`;
@@ -280,7 +280,7 @@
         continue;
       }
       h += `<div class="order ${filed ? (run ? 'run' : 'pending') : ''}" data-act="order:${id}">
-        <div class="oname">${esc(o.name)} <span class="rp">${o.rp} RP</span></div>
+        <div class="oname">${esc(o.name)} <span class="rp">${g.orderRp(id)} RP</span></div>
         <div class="desc">${esc(o.desc)}</div>
         <div class="stampz">${filed ? (run ? 'FILED' : 'PENDING') : 'click to file'}</div></div>`;
     }
@@ -292,24 +292,31 @@
   function loom(g) {
     const s = g.s;
     let h = `<div class="phead">${npcHead('nyacolette')}<div><h2>Quantum Loom</h2><p class="quip">Spool count: <b class="yarnc">🧶 ${fmt(s.yarn)}</b> yarn. Every stitch is a timeline.</p></div></div>`;
-    h += `<div class="sweater"><div class="sw-title">Pattern I: The Starter Sweater</div><div class="swgrid">`;
-    NYA.LOOM.forEach((row, r) => {
-      h += `<div class="rowlab ${g.loomRowDone(r) ? 'done' : ''}" data-tip="stripe:r${r}">${esc(NYA.LOOM_ROWS[r])}</div>`;
-      row.forEach(n => {
-        const l = g.loom(n.id);
-        const maxed = n.max ? l >= n.max : l >= 1;
-        const cost = NYA.loomCost(n, l);
-        const can = !maxed && s.yarn >= cost;
-        h += `<div class="knot ${l ? 'owned' : ''} ${can ? 'afford' : ''} ${maxed ? 'max' : ''}" data-act="loom:${n.id}" data-tip="loom:${n.id}">
+    // newest open pattern on top: that's the one you're knitting
+    const open = NYA.LOOM_PATTERNS.filter(P => g.loomPatternOpen(P.n)).reverse();
+    for (const P of open) {
+      const pn = P.n, tip = pn === 1 ? 'stripe' : 'stripe' + pn, done = g.loomComplete(pn);
+      h += `<div class="sweater"><div class="sw-title">${esc(P.name)}${done ? ' <span class="sw-done">★ COMPLETE ★</span>' : ''}</div><div class="swgrid">`;
+      P.grid.forEach((row, r) => {
+        h += `<div class="rowlab ${g.loomRowDone(r, pn) ? 'done' : ''}" data-tip="${tip}:r${r}">${esc(P.rows[r])}</div>`;
+        row.forEach(n => {
+          const l = g.loom(n.id);
+          const maxed = n.max ? l >= n.max : l >= 1;
+          const cost = NYA.loomCost(n, l);
+          const can = !maxed && s.yarn >= cost;
+          h += `<div class="knot ${l ? 'owned' : ''} ${can ? 'afford' : ''} ${maxed ? 'max' : ''}" data-act="loom:${n.id}" data-tip="loom:${n.id}">
           <div class="kn">${esc(n.name)}</div>
           <div class="kl">${n.growth ? 'Rank ' + l : l ? '✓' : ''}</div>
           ${maxed ? '' : `<div class="kc">🧶${fmt(cost)}</div>`}
         </div>`;
+        });
       });
-    });
-    h += `<div></div>` + [0, 1, 2, 3, 4].map(c => `<div class="collab ${g.loomColDone(c) ? 'done' : ''}" data-tip="stripe:c${c}">${g.loomColDone(c) ? '★' : '·'}</div>`).join('');
-    h += `</div></div>`;
-    h += `<p class="mini">Complete a row or column to finish a stripe for a bonus. Finish the whole sweater for… something.</p>`;
+      h += `<div></div>` + [0, 1, 2, 3, 4].map(c => `<div class="collab ${g.loomColDone(c, pn) ? 'done' : ''}" data-tip="${tip}:c${c}">${g.loomColDone(c, pn) ? '★' : '·'}</div>`).join('');
+      h += `</div></div>`;
+    }
+    const last = open[0].n;
+    h += `<p class="mini">Complete a row or column to finish a stripe for a bonus. ${last === 1 ? 'Finish the whole sweater for… something.'
+      : g.loomComplete(last) ? 'Pattern ' + ['', 'I', 'II', 'III'][last + 1] + ' is still on Nyacolette\u2019s drafting table. She says it\u2019s \u201cbasically a cardigan, but worse.\u201d' : 'Finish this pattern for… something else.'}</p>`;
     return h;
   }
 

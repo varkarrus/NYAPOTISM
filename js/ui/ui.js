@@ -937,7 +937,7 @@
       }
       if (k === 'fax') { const f = NYA.FAX[a]; return `<b>${esc(f.name)}</b><div class="tfax">${esc(f.text)}</div>${Object.entries(f.bonus).map(([kk, v]) => `+${Math.round(v * 100)}% ${kk}`).join(', ')}`; }
       if (k === 'loom') { const n = NYA.LOOM_NODE[a]; const l = g.loom(a); return `<b>${esc(n.name)}</b>${n.growth ? ` <small>Rank ${l}</small>` : ''}<br>${esc(n.desc)}${n.fx ? `<br><span class="tfx">${esc(n.fx(l))} → ${esc(n.fx(l + 1))}</span>` : ''}`; }
-      if (k === 'stripe') { const r = a[0] === 'r'; const S = (r ? NYA.LOOM_ROW_STRIPES : NYA.LOOM_COL_STRIPES)[+a.slice(1)]; return `<b>${esc(S.name)}</b><br>${esc(S.desc)}`; }
+      if (/^stripe\d*$/.test(k)) { const P = NYA.LOOM_PATTERNS[(+k.slice(6) || 1) - 1]; const S = (a[0] === 'r' ? P.rowStripes : P.colStripes)[+a.slice(1)]; return `<b>${esc(S.name)}</b><br>${esc(S.desc)}`; }
       if (k === 'active') {
         const d = NYA.ACTIVES[a], s = g.s.act[a];
         return `<b>${esc(d.name)}</b> <kbd>${d.key}</kbd><br>${esc(d.desc)}<br><small>Cooldown ${NYA.fmtTime(d.cd)} · charges ${s ? s.ch : 0}/${g.activeMaxCharges(a)}${g.orderRunning('cast_' + a) ? ' · AUTO-CAST filed' : ''}</small>${a === 'bomb' ? `<br><small>Damage here: ${fmt(g.bombDamage(g.episode ? g.episode.tier : 1))}</small>` : ''}${a === 'blunt' ? `<br><small>Restores ${Math.round(g.bluntPotency() * 100)}% (×0.8 per repeat dose on the same catgirl)</small>` : ''}`;

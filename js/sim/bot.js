@@ -164,7 +164,7 @@
         while (bought) {
           bought = false;
           let best = null, bc = 1e99;
-          for (const row of NYA.LOOM) for (const n of row) {
+          for (const P of NYA.LOOM_PATTERNS) if (g.loomPatternOpen(P.n)) for (const row of P.grid) for (const n of row) {
             const l = g.loom(n.id);
             if (n.max ? l >= n.max : l >= 1) continue;
             const c = NYA.loomCost(n, l);

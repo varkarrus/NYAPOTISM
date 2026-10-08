@@ -6,6 +6,16 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'A second big upgrade set, tougher deep mines',
+      date: '2026-10-09',
+      items: [
+        'Late game (no spoilers): once you finish the first big upgrade set, a second one opens. It has its own stripes, cheaper standing orders, and Star Search, which can turn up applicants graded past SS (SSS, then S×4, S×5…).',
+        'The repeatable multipliers in that first set now fade after rank 5 (each rank is worth 80% of the one before) and stop at rank 15. Ranks you already bought past 15 stay, but only 15 count.',
+        'The Crystal Catacombs, Greeble Crash Site and Purrmafrost Caverns are tougher: harder rock, and more stamina per swing. They were too easy once the first upgrade set was done.',
+        'Fixed: a fax earned in the very first second of a game could arrive twice.',
+      ],
+    },
+    {
       title: 'Laser Drone fix',
       date: '2026-10-09',
       items: [
@@ -321,7 +331,7 @@
 
   // What the current build actually contains, so a playtester knows where the content ends.
   NYA.FRONTIER = {
-    summary: 'Roughly 9 hours of new things, with the OVA challenges along the way. After that, the last mine keeps you busy a while, then just bigger numbers.',
+    summary: 'Roughly 15 hours of new things, with the OVA challenges along the way. After that, the last mine keeps you busy a while, then just bigger numbers.',
     items: [
       'Tiers 1–3 in your first run (Tier 3 at about 40 minutes).',
       'Something big around the 1 hour mark. No spoilers!',
@@ -330,8 +340,9 @@
       'Tier 5, Sushi Grotto (floods and sushi): it opens early, but you’ll arrive too soon. Making it yours takes around 3 hours.',
       'Tier 6, Mousehole Maze (mice, turrets and cheese): opens around 3–3.5 hours in, and it’s just as tough at first.',
       'Tier 7, Crystal Catacombs (refraction, resonance and sushi purrmits): opens around 4.5 hours in. Another wall at first.',
-      'Tier 8, Greeble Crash Site (greebles to corner, a crashed saucer): opens around 6 hours in.',
-      'Tier 9, Purrmafrost Caverns (sliding ice and the cold): opens around 9 hours in, and takes a good while to conquer.',
+      'Around 5 hours in, a second big upgrade set opens up. No spoilers!',
+      'Tier 8, Greeble Crash Site (greebles to corner, a crashed saucer): opens around 6 hours in, and it’s a wall for a good while.',
+      'Tier 9, Purrmafrost Caverns (sliding ice and the cold): opens around 15 hours in, and takes a good while to conquer.',
       'Late game: seven OVA challenge episodes, 21 releases in all, each with a permanent perk.',
       'Not built yet: Tiers 10+, equipment, and more late-game content.',
     ],

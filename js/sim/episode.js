@@ -985,7 +985,7 @@
     // ---------------------------------------------------------------- mining
     swing(m) {
       const M = this.mine, i = m.target, f = m.s.flags;
-      m.stamina -= this.swingCost(m) * (m.s.swingMult || 1);
+      m.stamina -= this.swingCost(m) * (m.s.swingMult || 1) * (this.cfg.swingSoft || 1); // Wool Socks (Loom II): swings only, not walking
       const ty = M.type[i];
       let dmg = m.s.power;
       if (ty === T.DIRT) dmg *= f.dmg.dirt;
@@ -1018,7 +1018,8 @@
     giveXP(m, base) {
       if (m.ghost) return;
       const treat = (m.cg.treatUntil || 0) > this.game.s.simTime ? 2 : 1;
-      const amt = base * NYA.tierXP(this.tier) * (m.s.flags.xpMult || 1) * this.game.xpMult() * treat;
+      const vet = this.cfg.vetXP && m.cg.anchored ? 1.5 : 1; // Veteran's Pay (Loom II)
+      const amt = base * NYA.tierXP(this.tier) * (m.s.flags.xpMult || 1) * this.game.xpMult() * treat * vet;
       m.xp += amt;
       const lv = this.game.giveXP(m.cg, amt, this.def.key);
       if (lv) {

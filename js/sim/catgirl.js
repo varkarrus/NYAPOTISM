@@ -105,7 +105,7 @@
   NYA.buildStats = function (game, cg, ctx) {
     ctx = ctx || {};
     const sb = new StatBlock();
-    const apt = NYA.APTITUDES[cg.apt].mult;
+    const apt = NYA.aptInfo(cg.apt).mult;
     const L = cg.level - 1;
     // Levels
     sb.mul('power', 1 + 0.05 * L * apt, 'Level ' + cg.level);
@@ -130,11 +130,19 @@
     sb.add('grit', 2 * lv('calcium'), 'Calcium Supplements (milk)');
     sb.mul('power', Math.pow(1.1, lv('wasabi')), 'Wasabi Kick (sushi)');
     // Loom
-    const lm = id => game.loom(id);
-    sb.mul('power', Math.pow(1.5, lm('km_power')), 'Muscle Mittens (yarn)');
-    sb.mul('stamina', Math.pow(1.5, lm('km_stamina')), 'Cozy Scarf (yarn)');
+    const lm = id => game.loom(id), kn = id => game.knit(id);
+    sb.mul('power', Math.pow(1.5, kn('km_power')), 'Muscle Mittens (yarn)');
+    sb.mul('stamina', Math.pow(1.5, kn('km_stamina')), 'Cozy Scarf (yarn)');
     if (cg.anchored && game.loomRowDone(2)) {
       for (const k of ['power', 'haste', 'pace', 'stamina']) sb.mul(k, 1.25, 'Anchor Stripe');
+    }
+    sb.mul('pace', Math.pow(1.15, kn('k2_pace')), 'Leg Warmers (yarn)');
+    sb.add('carry', Math.round(2 * kn('k2_carry')), 'Pocket Knit (yarn)');
+    if (cg.anchored && game.loomRowDone(2, 2)) {
+      for (const k of ['power', 'haste', 'pace', 'stamina']) sb.mul(k, 1.25, 'Anchor Stripe II');
+    }
+    if (cg.anchored && lm('a2_reunion')) {
+      for (const k of ['power', 'haste', 'pace', 'stamina']) sb.mul(k, 1.5, 'Class Reunion (yarn)');
     }
     // Faxes
     const fb = game.faxBonus();
@@ -193,5 +201,13 @@
     return NYA.foldStats(sb.finalize());
   };
 
-  NYA.aptGrade = cg => NYA.APTITUDES[cg.apt].g;
+  // Star Search (Loom II) can promote past SS: every grade beyond it is one more S and ×1.2.
+  NYA.aptInfo = apt => {
+    if (apt < NYA.APTITUDES.length) return NYA.APTITUDES[apt];
+    const top = NYA.APTITUDES.length - 1;
+    return { g: 'S'.repeat(apt - 2), mult: NYA.APTITUDES[top].mult * Math.pow(1.2, apt - top) };
+  };
+  NYA.aptLabel = apt => apt <= 5 ? NYA.aptInfo(apt).g : 'S\u00d7' + (apt - 2); // SSS, then S×4, S×5…
+  NYA.aptGrade = cg => NYA.aptLabel(cg.apt);
+  NYA.aptClass = cg => 'apt-' + (cg.apt >= NYA.APT_SS ? 'SS' : NYA.APTITUDES[cg.apt].g);
 })(globalThis.NYA = globalThis.NYA || {});

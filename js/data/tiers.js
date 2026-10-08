@@ -176,7 +176,7 @@
     comp: { air: 0.12, bedrock: 0.1, ore: 0.04, hard: 0.2, stone: 0.54 }, // plus ~1 tile in 16 of crystal catnip (minegen)
     purrmit: 10, purrmitCur: 'sushi', // GDD: sushi is the purrmit currency for Tiers 7-9 (the aliens have a sushi thing)
     quirk: 'crystal', box: true,
-    nipTier: 6, diffTier: 6.5,
+    nipTier: 6, diffTier: 6.6, // 6.5 was too easy once Loom Pattern I was done
     blurb: 'Glittering catacombs studded with CRYSTAL CATNIP. Quirk: REFRACTION, laser one crystal and its whole cluster lights up. RESONANCE, every hit on a crystal rings through its neighbours, and a shattering crystal can set off the rest. Purrmits cost SUSHI.',
     pal: {
       floor: '#2c2640', floor2: '#352e4d', fog: '#0c0a16', fog2: '#141024',
@@ -193,7 +193,7 @@
     comp: { air: 0.13, bedrock: 0.08, ore: 0.07, hard: 0.2, stone: 0.5 }, // plus the saucer and its crater (minegen)
     purrmit: 25, purrmitCur: 'sushi', // GDD: the aliens have a sushi thing
     quirk: 'greebles', quirks: ['greebles', 'grooved'], box: true, // the crash left grooved impact fractures (Tier 2's quirk returns)
-    nipTier: 7, diffTier: 7.2, // 7.5 arrived at 40-160 swings and stayed a wall for 15+ seasons (late-game growth is slower)
+    nipTier: 7, diffTier: 7.5, // a wall for ~10 seasons after arrival, until Loom Pattern II is under way (7.2 was too easy after Pattern I)
     blurb: 'A crashed alien saucer in a crater of cracked rock. Quirk: GREEBLES, alien doodads that scoot away from your crew. They’re quicker than a catgirl, so corner them in a dead end or close in from both sides. The crash left GROOVED fractures too. Purrmits cost SUSHI.',
     pal: {
       floor: '#2a3036', floor2: '#323a41', fog: '#0b0e11', fog2: '#12171b',
@@ -211,7 +211,7 @@
     purrmit: 40, purrmitCur: 'sushi',
     quirk: 'ice', box: true,
     cold: 3, // swings (and walking) cost ×3 stamina: Grit and Thermal Undies matter here
-    nipTier: 8, diffTier: 7.8,
+    nipTier: 8, diffTier: 8.3, // 7.8 fell to one swing per stone once Pattern II was done; 8.3 keeps it chewy (no Tier 10 yet)
     blurb: 'Frozen caverns, mostly open space, floored with ice. Quirk: SLIDING, step onto ice and you slide until something stops you, so the crew plans routes around it (and sometimes slides somewhere with no way back). The COLD makes every swing cost ×3 stamina. Purrmits cost SUSHI.',
     pal: {
       floor: '#2e3442', floor2: '#363d4d', fog: '#0b1018', fog2: '#121a26',

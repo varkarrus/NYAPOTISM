@@ -85,6 +85,7 @@
     // ------------------------------------------------------------ lookups
     lvl(id) { return this.s.upg[id] || 0; }
     loom(id) { return this.s.loom[id] || 0; }
+    knit(id) { return NYA.knitEff(this.loom(id)); } // a knit multiplier's effective ranks (capped, fading)
     fc(t) { return (this.s.mine[t] && this.s.mine[t].fc) || 0; }
     easyClear(t) { return !!(this.s.mine[t] && this.s.mine[t].easy); } // this run (NYA.EASY_CLEAR)
     hasSRank(t) { return !!(this.s.lifeMine[t] && this.s.lifeMine[t].s); }
@@ -105,15 +106,17 @@
       }
       return (this._faxBonus = b);
     }
-    loomRowDone(r) { return NYA.LOOM[r].every(n => this.loom(n.id) >= 1); }
-    loomColDone(c) { return NYA.LOOM.every(row => this.loom(row[c].id) >= 1); }
-    loomComplete() { return NYA.LOOM.every(row => row.every(n => this.loom(n.id) >= 1)); }
+    // p: which Loom pattern (NYA.LOOM_PATTERNS, 1-based)
+    loomRowDone(r, p) { return NYA.LOOM_PATTERNS[(p || 1) - 1].grid[r].every(n => this.loom(n.id) >= 1); }
+    loomColDone(c, p) { return NYA.LOOM_PATTERNS[(p || 1) - 1].grid.every(row => this.loom(row[c].id) >= 1); }
+    loomComplete(p) { return NYA.LOOM_PATTERNS[(p || 1) - 1].grid.every(row => row.every(n => this.loom(n.id) >= 1)); }
+    loomPatternOpen(p) { return p === 1 || this.loomComplete(p - 1); }
 
     catnipMultParts() {
       const parts = [];
       const fb = this.faxBonus();
       if (fb.catnip) parts.push(['Faxes from Auntie', 1 + fb.catnip]);
-      if (this.loom('km_catnip')) parts.push(['Catnip Cable-Knit', Math.pow(2, this.loom('km_catnip'))]);
+      if (this.loom('km_catnip')) parts.push(['Catnip Cable-Knit', Math.pow(2, this.knit('km_catnip'))]);
       if (this.lvl('milkbath')) parts.push(['Milk Bath', Math.pow(1.25, this.lvl('milkbath'))]);
       if (this.lvl('otoro')) parts.push(['Otoro Platter', Math.pow(1.25, this.lvl('otoro'))]);
       if (this.lvl('gouda')) parts.push(['Aged Gouda', Math.pow(1.25, this.lvl('gouda'))]);
@@ -122,6 +125,9 @@
       if (this.loomColDone(0)) parts.push(['Cast-On Stripe', 1.5]);
       if (this.loomColDone(2)) parts.push(['Cable Stripe', 1.5]);
       if (this.loomColDone(4)) parts.push(['Bind-Off Stripe', 2]);
+      if (this.loomRowDone(1, 2)) parts.push(['Multiplier Stripe II', 5]);
+      if (this.loomColDone(0, 2)) parts.push(['Cast-On Stripe II', 2]);
+      if (this.loomColDone(2, 2)) parts.push(['Cable Stripe II', 2]);
       return parts;
     }
     catnipMult() { return this.catnipMultParts().reduce((a, p) => a * p[1], 1); }
@@ -131,19 +137,21 @@
     haulCatnip(ep) { return (ep.haul.value + ep.haul.thread * 40 * ep.tierBase) * this.nipMult(ep); }
     xpMult() {
       let m = 1 + this.faxBonus().xp;
-      m *= Math.pow(2, this.loom('km_xp'));
+      m *= Math.pow(2, this.knit('km_xp'));
       if (this.loomColDone(1)) m *= 1.5;
       if (this.loomColDone(3)) m *= 1.5;
+      if (this.loomColDone(1, 2)) m *= 2;
+      if (this.loomColDone(3, 2)) m *= 2;
       m *= 1 + 0.15 * this.ovaPerk('osha'); // OVA perk: Hazard Pay
       if (this.mew(9)) m *= 1.25;
       return m;
     }
     refineryMult() { return this.ovaIs('budget') ? 1 : Math.pow(1.5, this.lvl('refinery')); }
-    fullClearMult() { return 1.25 + 0.15 * this.lvl('perfection') + 0.25 * this.loom('km_clear'); }
+    fullClearMult() { return 1.25 + 0.15 * this.lvl('perfection') + 0.25 * this.knit('km_clear'); }
     packUpTime() { return Math.max(NYA.OVA_PACKUP_FLOOR[this.ovaPerk('nine')], 6 - 0.5 * this.lvl('drills')); }
     laserMax() { return 3 + this.lvl('batteries'); }
     crewCap() { return this.ovaIs('onecat') ? 1 : 1 + this.lvl('bunk'); }
-    reserveCap() { return 2 + this.lvl('lockers'); }
+    reserveCap() { return 2 + this.lvl('lockers') + (this.loom('m2_lockers') ? 3 : 0); }
     levelCap() { return NYA.LEVEL_CAPS[this.lvl('montage')]; }
     polishExp() { return this.ovaIs('budget') ? 1 : [1, 1.15, 1.3][this.lvl('polisher')]; }
 
@@ -169,6 +177,7 @@
     // Greeble Crash Site: Greeble Treats slow them down
     // Purrmafrost Caverns: Thermal Undies soften the cold
     iceCfg() { return { coldSoft: Math.pow(0.85, this.lvl('thermals')) }; }
+    loomCfg() { return { swingSoft: Math.pow(0.85, this.knit('k2_socks')), vetXP: !!this.loom('a2_vet') }; }
     onSlide(ep, len) {
       if (this.novel('slide', 'ICE! Step onto it and you slide until something stops you. The crew plans around it, and the cold makes every swing cost more', 'mine'))
         this.emit('toast', { text: 'Doc Boom: \u201cIt\u2019s not a bug, it\u2019s PHYSICS! Wheeeee! \u2026Someone get the Rescue Claw.\u201d', kind: 'doc' });
@@ -281,13 +290,13 @@
     sonarRadius() { return 3 + (this.mew(2) ? 1 : 0); }
     activeCd(id) { return NYA.ACTIVES[id].cd * (id === 'bomb' && this.mew(3) ? 0.75 : 1); }
     rpMax() { return 5 + 2 * this.lvl('cabinet') + 2 * this.lvl('coproc') + (this.loom('nm_desk') ? 4 : 0); }
-    ffSpeed() { return this.loomRowDone(3) ? 5 : this.loom('nm_ff') ? 3 : 2; }
-    bankEff() { return this.loom('nm_bank') ? 0.5 : 0.33; }
+    ffSpeed() { return this.loom('m2_ff') ? 8 : this.loomRowDone(3) ? 5 : this.loom('nm_ff') ? 3 : 2; }
+    bankEff() { return this.loom('m2_bank') ? 0.75 : this.loom('nm_bank') ? 0.5 : 0.33; }
     purrmitCost(t) { return NYA.TIERS[t].purrmit; }
     purrmitCur(t) { return NYA.TIERS[t].purrmitCur || 'catnip'; } // Tiers 7+ take sushi (GDD)
     canPayPurrmit(t) { return (this.s[this.purrmitCur(t)] || 0) >= this.purrmitCost(t); }
     hireCost() { return Math.ceil(10 * Math.pow(1.15, this.s.hires)); }
-    anchorSlots() { return this.loom('ta_5') ? 5 : this.loom('ta_3') ? 3 : this.loom('ta_2') ? 2 : this.loom('ta_1') ? 1 : 0; }
+    anchorSlots() { return this.loom('a2_anchor10') ? 10 : this.loom('a2_anchor7') ? 7 : this.loom('ta_5') ? 5 : this.loom('ta_3') ? 3 : this.loom('ta_2') ? 2 : this.loom('ta_1') ? 1 : 0; }
 
     // ------------------------------------------------------------ novelty
     novel(key, label, kind) {
@@ -397,14 +406,15 @@
       if (o.tanuki) return !!this.s.buildings.tanuki;
       return true;
     }
-    rpUsed() { return this.runningOrders().reduce((a, id) => a + NYA.ORDERS[id].rp, 0); }
+    orderRp(id) { return Math.max(1, NYA.ORDERS[id].rp - (this.loomRowDone(3, 2) ? 1 : 0)); } // Mechanics Stripe II
+    rpUsed() { return this.runningOrders().reduce((a, id) => a + this.orderRp(id), 0); }
     runningOrders() {
       if (!this.s.buildings.pochi) return [];
       let used = 0;
       const out = [];
       for (const id of this.s.orders) {
         if (!this.orderAvailable(id)) continue;
-        const rp = NYA.ORDERS[id].rp;
+        const rp = this.orderRp(id);
         if (used + rp <= this.rpMax()) { used += rp; out.push(id); }
       }
       return out;
@@ -530,7 +540,7 @@
       const u = NYA.UPG[id];
       this.s[u.cur || 'catnip'] -= c.cost;
       if (u.timer) {
-        const time = u.timer * (this.s.season > 1 ? 0.5 : 1);
+        const time = u.timer * (this.s.season > 1 ? 0.5 : 1) * (this.loom('m2_intern') ? 0.25 : 1);
         this.s.research = { id, left: time, total: time };
         this.emit('research', { id, start: true });
       } else this.applyUpgrade(id);
@@ -593,7 +603,22 @@
       const used = {};
       for (const c of this.s.crew) used[c.name] = 1;
       for (const c of this.s.board.apps) if (c) used[c.name] = 1;
-      return NYA.makeCatgirl(this.rng, { usedNames: used, ep: this.s.episodeNum });
+      const cg = NYA.makeCatgirl(this.rng, { usedNames: used, ep: this.s.episodeNum });
+      // Star Search (Loom II): roll for a promotion, and on a success roll again, so grades chain (GDD §14.3)
+      const p = 0.05 * Math.min(NYA.KNIT_MAX, this.loom('k2_star'));
+      if (p > 0) {
+        let k = 0;
+        while (k < 40 && this.rng.chance(p)) k++;
+        if (k) {
+          cg.apt += k; cg.starred = k;
+          this.novel('starsearch', 'STAR SEARCH! A promoted applicant on the board: ' + NYA.aptLabel(cg.apt), 'crew');
+          if (cg.apt >= 6 && !this.s.novel['starsearch:wow']) {
+            this.novel('starsearch:wow', 'STAR SEARCH! An ' + NYA.aptLabel(cg.apt) + ' applicant!', 'crew');
+            this.fax('starsearch', 'AN ' + NYA.aptLabel(cg.apt) + ' APPLICANT?? WHERE DID YOU FIND HER. NO. DON\u2019T TELL ME. HIRE HER BEFORE THE TANUKI DOES ♡');
+          }
+        }
+      }
+      return cg;
     }
     openBoard() { // first fill, once the Barracks exist (also covers saves from before the board)
       const B = this.s.board;
@@ -658,10 +683,12 @@
       if (!cg) return null;
       B.apps[slot] = null;
       this.s.catnip -= cost;
-      if (this.loom('ta_fresh')) {
-        cg.level = 3;
-        const tid = NYA.rollTrait(this.rng, cg.traits, 'burrow', 0, Math.max(this.s.maxTierReached, this.s.life.maxTier || 0), cg);
-        if (tid) { cg.traits.push(tid); cg.traitMines.push('burrow'); if (NYA.TRAIT[tid].onGain) NYA.TRAIT[tid].onGain(cg); }
+      if (this.loom('ta_fresh') || this.loom('a2_head')) {
+        cg.level = this.loom('a2_head') ? 10 : 3;
+        for (let k = 0; k < (this.loom('a2_head') ? 2 : 1); k++) {
+          const tid = NYA.rollTrait(this.rng, cg.traits, 'burrow', 0, Math.max(this.s.maxTierReached, this.s.life.maxTier || 0), cg);
+          if (tid) { cg.traits.push(tid); cg.traitMines.push('burrow'); if (NYA.TRAIT[tid].onGain) NYA.TRAIT[tid].onGain(cg); }
+        }
       }
       this.s.crew.push(cg);
       (roomActive ? this.s.active : this.s.reserve).push(cg.id);
@@ -763,7 +790,7 @@
       let box = false;
       const boxEligible = !this.s.skein.have && !this.s.ova && (def.box || (t === 2 && this.loom('sk_hum')));
       if (boxEligible) {
-        let p = (NYA.BOX_CHANCE[t] || 0.005) + 0.02 * this.loom('sk_box') + this.s.skein.pity;
+        let p = (NYA.BOX_CHANCE[t] || (t >= 7 && this.loom('s2_box') ? NYA.BOX_CHANCE[6] : 0.005)) + 0.02 * this.loom('sk_box') + 0.05 * this.loom('s2_box') + this.s.skein.pity;
         for (const cg of this.activeCrew()) if (cg.traits.indexOf('box_whisperer') >= 0) p += 0.03;
         if (this.rng.chance(p)) { box = true; this.s.skein.pity = 0; }
         else this.s.skein.pity += this.loom('sk_hum') ? 0.02 : 0.01;
@@ -787,7 +814,7 @@
         junctions: this.lvl('junctions') > 0,
         purrmit: cost, purrmitCur: cur,
       };
-      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg(), this.greebleCfg(), this.iceCfg());
+      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg(), this.greebleCfg(), this.iceCfg(), this.loomCfg());
       cfg.headlamp += this.ovaPerk('lights');
       if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
@@ -858,7 +885,7 @@
         pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')), resonanceMult: (1 + 0.15 * this.lvl('fork')) * (this.mew(7) ? 1.5 : 1), junctions: this.lvl('junctions') > 0,
         event: q.ev, ghosts: ev.ghosts || 0,
       };
-      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg(), this.greebleCfg(), this.iceCfg());
+      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg(), this.greebleCfg(), this.iceCfg(), this.loomCfg());
       cfg.headlamp += this.ovaPerk('lights');
       if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
@@ -906,23 +933,24 @@
       let catnip = ore * ref * clearMult * glob * evMult;
       if (ep.event) { s.life.events = (s.life.events || 0) + 1; s.life.wishes = (s.life.wishes || 0) + ep.wishes; }
       let blendCut = 0;
-      const yarnDiv = NYA.yarnDiv(ep.def, ep.tier); // see NYA.YARN_TIER_FROM
+      const yarnDiv = NYA.yarnDiv(ep.def, ep.tier) / (ep.tier >= 7 && this.loom('s2_deep') ? 3 : 1); // see NYA.YARN_TIER_FROM; Deep Spool (Loom II)
       if (s.blend && s.blend.active) { blendCut = catnip * 0.5; catnip -= blendCut; s.blend.pot += blendCut; s.blend.potYarn = (s.blend.potYarn || 0) + blendCut / yarnDiv; }
       s.catnip += catnip;
       this.boardEpisodeEnd();
-      const sushi = ep.haul.sushi;
+      const resMult = Math.pow(1.5, this.knit('k2_res')); // Mohair Blend (Loom II)
+      const sushi = Math.round(ep.haul.sushi * resMult);
       if (sushi > 0) {
         s.sushi += sushi; s.life.sushi = (s.life.sushi || 0) + sushi;
         if (this.novel('sushi', 'First sushi! Tora opens a Sushi Bar at the Refinery', 'refinery')) this.emit('toast', { text: 'Tora: \u201cRaw fish growing on ROCKS?! …Pass the soy sauce.\u201d', kind: 'tora' });
       }
-      const cheese = ep.haul.cheese;
+      const cheese = Math.round(ep.haul.cheese * resMult);
       if (cheese > 0) {
         s.cheese += cheese; s.life.cheese = (s.life.cheese || 0) + cheese;
         if (this.novel('cheese', 'First cheese! Spend it on turrets in R&D (Defense) and at Tora’s Cheese Cave', 'lab')) this.emit('toast', { text: 'Doc Boom: \u201cCHEESE! Do you know what I can build with cheese?! …Turrets. Mostly turrets.\u201d', kind: 'doc' });
       }
-      const greebles = ep.haul.greebles;
+      const greebles = Math.round(ep.haul.greebles * resMult);
       if (greebles > 0) { s.greebles += greebles; s.life.greebles = (s.life.greebles || 0) + greebles; }
-      const milk = ep.haul.milk;
+      const milk = ep.haul.milk * resMult;
       if (milk > 0) {
         s.milk += milk; s.life.milk = (s.life.milk || 0) + milk;
         if (this.novel('milk', 'First milk! The Creamery opens at the Refinery', 'refinery')) this.emit('toast', { text: 'Tora: \u201cMilk?! In MY refinery?! …Fine. I\u2019ll make it work.\u201d', kind: 'tora' });
@@ -1075,6 +1103,7 @@
         this.fax('pochi', NYA.STORY_FAX.pochi);
       }
       if (!B.loom && (s.skein.have || s.season > 1)) B.loom = 1;
+      if (B.loom && !s.novel['loom:pattern2'] && this.loomComplete(1)) this.loomPatternNews();
       if (!B.tanuki && (s.maxTierReached >= 2 || s.season > 1)) {
         B.tanuki = 1; s.tanuki.nextAt = s.simTime;
         this.novel('bld:tanuki', 'Tanuki\u2019s Emporium! A travelling merchant sells limited-time event mines', 'building');
@@ -1103,7 +1132,7 @@
         let ok = false;
         try { ok = f.check(this); } catch (e) { ok = false; }
         if (ok) {
-          this.s.faxes[f.id] = Math.floor(this.s.simTime);
+          this.s.faxes[f.id] = Math.max(1, Math.floor(this.s.simTime)); // 0 would read as "not received"
           got = true;
           this.emit('fax', { id: f.id, name: f.name, text: f.text, bonus: f.bonus });
         }
@@ -1112,11 +1141,14 @@
     }
 
     // ------------------------------------------------------------ prestige
-    yarnExp() { return this.loom('sk_exp2') ? 0.5 : this.loom('sk_exp1') ? 0.45 : NYA.YARN_EXP; }
+    yarnExp() { return (this.loom('sk_exp2') ? 0.5 : this.loom('sk_exp1') ? 0.45 : NYA.YARN_EXP) + (this.loom('s2_exp') ? 0.03 : 0) + (this.loom('s2_exp2') ? 0.05 : 0); }
     yarnMult() {
       let m = 1 + this.faxBonus().yarn;
       if (this.loom('sk_mult')) m *= 1.5;
       if (this.loomRowDone(4)) m *= 1.5;
+      if (this.loom('s2_mult')) m *= 2;
+      if (this.loomRowDone(4, 2)) m *= 2;
+      if (this.loomColDone(4, 2)) m *= 1.5;
       return m;
     }
     yarnPreview() {
@@ -1164,7 +1196,7 @@
       const s = this.s;
       this._ovaClear = false;
       s.seasonCatnip = 0; s.seasonYarnNip = 0; s.seasonTime = 0; s.episodes = 0;
-      s.catnip = this.loom('hs_cash') ? 300 : 0;
+      s.catnip = this.loom('h2_cash') && !s.ova ? 1e6 : this.loom('hs_cash') ? 300 : 0;
       s.milk = 0; s.sushi = 0; s.cheese = 0; s.greebles = 0;
       s.upg = {};
       s.research = null;
@@ -1186,7 +1218,7 @@
         const cg = NYA.makeCatgirl(this.rng, { ep: s.episodeNum });
         s.crew.push(cg); s.active.push(cg.id);
       }
-      if (this.loomRowDone(0)) {
+      for (let k = (this.loomRowDone(0) ? 1 : 0) + (this.loomRowDone(0, 2) && !s.ova ? 1 : 0); k > 0; k--) { // Head Start Stripes I and II
         const cg = NYA.makeCatgirl(this.rng, { ep: s.episodeNum });
         s.crew.push(cg); (s.active.length < this.crewCap() ? s.active : s.reserve).push(cg.id);
       }
@@ -1203,11 +1235,16 @@
     // when bought: yarn only arrives at an unravel, so buying them always happens mid-season.
     applyHeadStarts() {
       const s = this.s, up = (id, lv) => { if ((s.upg[id] || 0) < lv) s.upg[id] = lv; };
-      up('bunk', (this.loom('hs_bunks') ? 2 : 0) + (this.loomRowDone(0) ? 1 : 0));
+      const h2 = !s.ova; // Pattern II's head starts skip OVAs: they'd hand over goals like "reach Tier 4" for free
+      up('bunk', (this.loom('hs_bunks') ? 2 : 0) + (this.loomRowDone(0) ? 1 : 0) + (h2 && this.loom('h2_bunks') ? 2 : 0) + (h2 && this.loomRowDone(0, 2) ? 1 : 0));
       if (this.loom('hs_refinery')) up('refinery', 3);
       if (this.loom('hs_lab')) { up('blunt', 1); up('bomb', 1); up('spray', 1); up('drills', 4); }
       if (this.loom('hs_maps')) { up('mine2', 1); s.tierUnlocked[2] = 1; }
       if (this.loom('nm_desk')) s.buildings.pochi = 1;
+      // Loom Pattern II head starts
+      if (h2 && this.loom('h2_maps')) for (let t = 2; t <= 4; t++) { up('mine' + t, 1); s.tierUnlocked[t] = 1; }
+      if (h2 && this.loom('h2_montage')) up('montage', 3);
+      if (h2 && this.loom('h2_lab')) { for (const id of ['tuna', 'sonar', 'treat', 'hotbox']) up(id, 1); up('batteries', 3); }
       const bud = this.ovaPerk('budget'); // OVA perk: Expense Account
       if (bud >= 1) up('refinery', 2);
       if (bud >= 2) up('polisher', 1);
@@ -1216,9 +1253,15 @@
       while (s.active.length < this.crewCap() && s.reserve.length) s.active.push(s.reserve.shift());
       this.syncActives();
     }
+    // a finished pattern opens the next one (also checked on load, for saves that finished Pattern I before II existed)
+    loomPatternNews() {
+      if (this.loomComplete(1) && this.novel('loom:pattern2', 'Pattern I complete! Nyacolette casts on Pattern II: The Cable-Knit Cardigan', 'loom'))
+        this.emit('toast', { text: 'Nyacolette: “Oh, you finished the sweater? Adorable. Now try a cardigan.”', kind: 'loom' });
+      if (NYA.LOOM_PATTERNS[1] && this.loomComplete(2)) this.novel('loom:pattern3', 'Pattern II complete! Pattern III is still on the needles (coming soon)', 'loom');
+    }
     loomBuy(id) {
       const n = NYA.LOOM_NODE[id];
-      if (!n) return false;
+      if (!n || !this.loomPatternOpen(n.pattern)) return false;
       const l = this.loom(id);
       if (n.max && l >= n.max) return false;
       const cost = NYA.loomCost(n, l);
@@ -1226,17 +1269,22 @@
       this.s.yarn -= cost;
       this.s.loom[id] = l + 1;
       this._faxBonus = null;
-      const row0Was = this.loomRowDone(0) && !(NYA.LOOM[0].some(n => n.id === id) && l === 0);
+      const row0Was = [1, 2].map(p => this.loomRowDone(0, p) && !(NYA.LOOM_PATTERNS[p - 1].grid[0].some(n => n.id === id) && l === 0));
       this.applyHeadStarts();
       if (id === 'hs_cash' && l === 0) this.s.catnip += 300;
-      if (!row0Was && this.loomRowDone(0)) { // Head Start Stripe's free recruit, right now too
+      if (id === 'h2_cash' && l === 0 && !this.s.ova) this.s.catnip += 1e6;
+      for (const p of [1, 2]) if (!row0Was[p - 1] && this.loomRowDone(0, p) && !(p === 2 && this.s.ova)) { // Head Start Stripe's free recruit, right now too
         const cg = NYA.makeCatgirl(this.rng, { ep: this.s.episodeNum });
         if (this.s.active.length < this.crewCap()) { this.s.crew.push(cg); this.s.active.push(cg.id); }
         else if (this.s.reserve.length < this.reserveCap()) { this.s.crew.push(cg); this.s.reserve.push(cg.id); }
       }
       if (l === 0) this.novel('loom:' + id, 'Loom: ' + n.name, 'loom');
-      for (let r = 0; r < 5; r++) if (this.loomRowDone(r)) this.novel('stripe:r' + r, NYA.LOOM_ROW_STRIPES[r].name + '!', 'loom');
-      for (let c = 0; c < 5; c++) if (this.loomColDone(c)) this.novel('stripe:c' + c, NYA.LOOM_COL_STRIPES[c].name + '!', 'loom');
+      for (const P of NYA.LOOM_PATTERNS) {
+        const pre = P.n === 1 ? 'stripe:' : 'stripe' + P.n + ':';
+        for (let r = 0; r < 5; r++) if (this.loomRowDone(r, P.n)) this.novel(pre + 'r' + r, P.rowStripes[r].name + '!', 'loom');
+        for (let c = 0; c < 5; c++) if (this.loomColDone(c, P.n)) this.novel(pre + 'c' + c, P.colStripes[c].name + '!', 'loom');
+      }
+      this.loomPatternNews();
       this.emit('loom', { id });
       return true;
     }
@@ -1284,7 +1332,8 @@
       if (this.phase === 'shift' && this.episode) {
         if (this.loom('nm_drone') && !this.episode.fullClear) {
           const v2 = this.loom('nm_drone2');
-          this.episode.droneTick(dt, v2 ? 5 : 2, v2 ? 2 : 4);
+          const v3 = this.loom('m2_drone3');
+          this.episode.droneTick(dt, v3 ? 8 : v2 ? 5 : 2, v3 ? 1 : v2 ? 2 : 4);
         }
         this.runOrders(dt);
         this.episode.tick(dt);
