@@ -17,33 +17,19 @@
   // up (playtest: moving up shouldn't be an instant big gain). Stay-vs-jump at unlock: ~2x, was 3-4x.
   // A tier can set diffTier to be as tough as a (fractional) tier: the Mousehole Maze is a sidegrade.
   NYA.tierDiff = t => (NYA.TIERS && NYA.TIERS[t] && NYA.TIERS[t].diffTier) || t;
-  NYA.tierHP = t => { const d = NYA.tierDiff(t); return Math.pow(5, d - 1) * Math.pow(NYA.DEEP_HP, Math.max(0, d - 4)); }; // tile HP
+  NYA.tierHP = t => { const d = NYA.tierDiff(t); return Math.pow(NYA.HP_GROWTH, d - 1) * Math.pow(NYA.DEEP_HP, Math.max(0, d - 4)); }; // tile HP
+  NYA.HP_GROWTH = 5;
   // Past Dairy Depths you only arrive after a few prestiges' worth of Loom and milk multipliers: on arrival at
   // Tier 5 the crew broke stone in 0.35 swings and had ~2000 swings of stamina (Tier 4 in Season 1: ~5 and
   // ~250), so the rock was easier than Dairy Depths. Deep tiers toughen faster to make up for it.
-  NYA.DEEP_HP = 10;
+  NYA.DEEP_HP = 15; // 10 → 15 with the pacing rebalance: Sushi Grotto opens in Season 1 as the first prestige wall
   NYA.DEEP_RESIST = 5;
-  NYA.tierResist = t => { const d = NYA.tierDiff(t); return Math.pow(2.0, d - 1) * Math.pow(NYA.DEEP_RESIST, Math.max(0, d - 4)) / NYA.tierTough(t); }; // stamina per swing
-  // Toughness: from Dairy Depths down, rock is tougher still, hard stone most of all (HP × tough^TOUGH_EXP), so
-  // dirt, stone and hard stone stay distinct while a stay's own income grows Power 10-50x (playtest: everything
-  // was a one-shot by mid-stay). Swings cost ÷tough stamina, and ore pays ×tierRich, so clearing slows down but
-  // catnip per swing and the economy hold.
-  NYA.tierTough = t => { const d = NYA.tierDiff(t); return d < 4 ? 1 : NYA.TOUGH_T4 * Math.pow(NYA.TOUGH_GROWTH, d - 4); };
-  NYA.TOUGH_T4 = 3; NYA.TOUGH_GROWTH = 1.5;
-  NYA.TOUGH_EXP = { [T.DIRT]: 0.5 }; // everything else (stone, hard stone, ore, boxes, nests) ×tough; dirt stays soft
-  NYA.toughOf = (t, ty) => Math.pow(NYA.tierTough(t), NYA.TOUGH_EXP[ty] != null ? NYA.TOUGH_EXP[ty] : 1);
-  // Richness: ore value multiplier that pays for the extra swings, the tougher rock in between and slick floors
-  NYA.tierRich = t => { const d = NYA.tierDiff(t); return d < 4 ? 1 : NYA.RICH_T4 * Math.pow(NYA.RICH_GROWTH, d - 4); };
-  NYA.RICH_T4 = 2; NYA.RICH_GROWTH = 1.35;
-  // Frontier pushback (the user's rule of thumb): in the deepest mine you've opened, a walk across the mine should take
-  // a few seconds and blocks should take more than one swing, however long you stay and however strong the crew gets
-  // (a stay's own income grows Power 10-50x). Once a strong miner (top quarter of the crew) would break stone in under
-  // PUSH_STONE swings, or cross the mine's width in under PUSH_CROSS s, that mine toughens / slickens to match, with
-  // x^(1 - PUSH_SOFT) so upgrades still help a little. Shallower mines never push back: go there to flex or farm.
-  // The mine pays the slowdown back: ore is worth (and swings cost stamina) the estimated factor the pushback slows the
-  // shift by (extra swings over this mine's tiles, slower walking, PUSH_WALK = share of crew time spent walking), so
-  // income stays on the curve it had while the shift stays watchable.
-  NYA.PUSH_STONE = 1.6; NYA.PUSH_CROSS = 3.5; NYA.PUSH_SOFT = 0.15; NYA.PUSH_WALK = 0.5; NYA.PUSH_PAY = 1.4;
+  NYA.tierResist = t => { const d = NYA.tierDiff(t); return Math.pow(2.0, d - 1) * Math.pow(NYA.DEEP_RESIST, Math.max(0, d - 4)); }; // stamina per swing
+  // Richness: ore is worth an extra RICH_STEP per tier on top of tierBase's ×10. Mines are paced so the next one or two
+  // open before a crew outgrows the current one (CLAUDE.md), which means shifts run longer with weaker crews; richer
+  // ore keeps catnip per second where it was.
+  NYA.tierRich = t => Math.pow(NYA.RICH_STEP, NYA.tierDiff(t) - 1);
+  NYA.RICH_STEP = 1.35;
   NYA.tierXP = t => Math.pow(2.5, t - 1);         // XP per swing / item
 
   // Counter-pressures: every stat faces something that grows each tier, so upgrading it keeps
@@ -73,8 +59,9 @@
   // Pace <- footing: from Dairy Depths down the whole floor is slick (spilled milk, then standing water, then worse)
   // and walking speed is divided by this. Comfy Boots alone is ×1.1 a level, so without it crews crossed a Tier 4-6
   // mine in under a second (46-84 tiles/s) and walking fell from ~half of crew time to a quarter (playtest).
-  NYA.tierFooting = t => { const d = NYA.tierDiff(t); return d < 4 ? 1 : NYA.FOOTING_T4 * Math.pow(NYA.FOOTING_GROWTH, d - 4); };
-  NYA.FOOTING_T4 = 3; NYA.FOOTING_GROWTH = 1.3;
+  NYA.tierFooting = t => { const d = NYA.tierDiff(t); return d < 4 ? NYA.FOOTING_EARLY[Math.max(0, Math.round(d) - 1)] : NYA.FOOTING_T4 * Math.pow(NYA.FOOTING_GROWTH, d - 4); };
+  NYA.FOOTING_EARLY = [1, 1.3, 1.7]; // Tiers 1-3
+  NYA.FOOTING_T4 = 4; NYA.FOOTING_GROWTH = 1.3;
   NYA.MUD_SLOW = 0.5; NYA.RUBBLE_SLOW = 0.65; NYA.TANGLE_SLOW = 0.4;
   NYA.RUBBLE_STEPS = 2;
 
@@ -215,7 +202,7 @@
   NYA.CHAN_DELAY = 3;       // Turret-chan waits this long for you to place turrets yourself
 
   // Schrödinger's Box base chance per episode by tier (GDD §14.1)
-  NYA.BOX_CHANCE = { 3: 0.1, 4: 0.08, 5: 0.15, 6: 0.35 }; // T3 was 0.05: frontier pushback made its shifts ~2x longer, so fewer rolls an hour
+  NYA.BOX_CHANCE = { 3: 0.05, 4: 0.08, 5: 0.15, 6: 0.35 };
   NYA.PIPE_HALF = 12; // flow = rate / (1 + pipeLength / 12)  (GDD §9.2)
   // Pumping costs stamina close to mining's rate (a swing costs 1 swing cost, at 2-4 swings/s). At 0.6 swing
   // costs/s the pumper outlasted everyone, and the shift sat waiting on one catgirl at a pump (playtest).

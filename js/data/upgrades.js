@@ -93,9 +93,9 @@
     { cost: 15 },
     { cost: 90 },
     { cost: 1500, tier: 2 },
-    { cost: 4e4, fc: [2, 3] },
+    { cost: 4e4, fc: [2, 2] },
     { cost: 1e6, tier: 3 },
-    { cost: 2.5e7, fc: [3, 5] },
+    { cost: 2.5e7, fc: [3, 2] },
     { cost: 6e8, tier: 4 },
     { cost: 2e11, tier: 5 },
     { cost: 2e14, tier: 6 },
@@ -241,6 +241,9 @@
     show: g => g.s.maxTierReached >= 2,
     desc: '+4% chance each catnip tile rolls +1 quality at generation.', flavor: 'Doc Boom whispers encouragement to the bedrock.',
     fx: l => (4 * l) + '% +quality' });
+  // Survey prices and perfect-clear counts are set so the next mine opens while the current one is still chewy (the
+  // user's rule, CLAUDE.md): you often arrive "too early", and the deep mines, not the prices, are the prestige wall.
+  // Check with tools/frontier.js.
   // Surveys ask you to prove yourself (perfect clears of the previous mine) only the first time ever.
   // Once you've been to a mine, later runs just pay for the survey: you know the way down.
   // One easy clear (crew above half stamina, NYA.EASY_CLEAR) proves it too: no grinding a mine you've outclassed.
@@ -251,30 +254,30 @@
   };
   def({ id: 'mine2', bld: 'lab', branch: 'Exploration', name: 'Survey: Scratching Post Quarry', max: 1, base: 600, timer: 10,
     show: g => g.s.stats.fullClears >= 1,
-    req: g => NYA.surveyReq(g, 2, 1, 3),
+    req: g => NYA.surveyReq(g, 2, 1, 2),
     desc: 'Unlocks Tier 2 — Scratching Post Quarry. Grooved stone shatters in chains.', flavor: 'Prove you’re ready before you’re allowed to be underprepared.',
     unlock: 'mine:2' });
-  def({ id: 'mine3', bld: 'lab', branch: 'Exploration', name: 'Survey: Yarnball Caverns', max: 1, base: 1.5e5, timer: 20,
+  def({ id: 'mine3', bld: 'lab', branch: 'Exploration', name: 'Survey: Yarnball Caverns', max: 1, base: 3.6e4, timer: 20,
     show: g => g.s.maxTierReached >= 2,
-    req: g => NYA.surveyReq(g, 3, 2, 5),
+    req: g => NYA.surveyReq(g, 3, 2, 2),
     desc: 'Unlocks Tier 3 — Yarnball Caverns. Tangles, air pockets… and Schrödinger’s Box.', flavor: 'Somewhere down there, something hums.',
     unlock: 'mine:3' });
 
-  def({ id: 'mine4', bld: 'lab', branch: 'Exploration', name: 'Survey: Dairy Depths', max: 1, base: 2e7, timer: 30,
+  def({ id: 'mine4', bld: 'lab', branch: 'Exploration', name: 'Survey: Dairy Depths', max: 1, base: 6e6, timer: 30,
     show: g => g.s.maxTierReached >= 3,
     // no Skein gate (spoiler, and the user wants Dairy Depths reachable first run), but priced so the
     // Skein usually turns up first (check with tools/skeinrace.js)
-    req: g => NYA.surveyReq(g, 4, 3, 10),
+    req: g => NYA.surveyReq(g, 4, 3, 2),
     desc: 'Unlocks Tier 4 — Dairy Depths. Milk nodes, pumpjacks and pipes… and a new resource: MILK.', flavor: 'Doc Boom swears the cave is "lactating." Nobody asked her to elaborate.',
     unlock: 'mine:4' });
-  def({ id: 'mine5', bld: 'lab', branch: 'Exploration', name: 'Survey: Sushi Grotto', max: 1, base: 2e10, timer: 40,
+  def({ id: 'mine5', bld: 'lab', branch: 'Exploration', name: 'Survey: Sushi Grotto', max: 1, base: 3e8, timer: 40,
     show: g => g.s.maxTierReached >= 4,
-    req: g => NYA.surveyReq(g, 5, 4, 10),
+    req: g => NYA.surveyReq(g, 5, 4, 2),
     desc: 'Unlocks Tier 5 — Sushi Grotto. Flooded chambers, wet catgirls… and wild nigiri: a new resource, SUSHI.', flavor: 'Doc Boom packed a snorkel. And a lunchbox. Mostly the lunchbox.',
     unlock: 'mine:5' });
-  def({ id: 'mine6', bld: 'lab', branch: 'Exploration', name: 'Survey: Mousehole Maze', max: 1, base: 5e12, timer: 50,
+  def({ id: 'mine6', bld: 'lab', branch: 'Exploration', name: 'Survey: Mousehole Maze', max: 1, base: 5e10, timer: 50,
     show: g => g.s.maxTierReached >= 5,
-    req: g => NYA.surveyReq(g, 6, 5, 10),
+    req: g => NYA.surveyReq(g, 6, 5, 2),
     desc: 'Unlocks Tier 6 — Mousehole Maze. Mouse nests, mice, turrets… and a new resource: CHEESE.', flavor: 'Doc Boom’s survey drone came back covered in tiny bite marks.',
     unlock: 'mine:6' });
   def({ id: 'junctions', bld: 'lab', branch: 'Logistics', name: 'Pipe Junctions', max: 1, base: 6e7, timer: 20,

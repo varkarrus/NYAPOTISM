@@ -6,23 +6,15 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
-      title: 'The deepest mine pushes back',
+      title: 'Mines open sooner, take longer',
       date: '2026-10-09',
       items: [
-        'Rule of thumb: your deepest mine should always be fun to watch. Each catgirl takes a few seconds to cross it, and she doesn’t break every block in one hit. When your crew outclasses the deepest mine you’ve opened, it now pushes back: the rock toughens and the floors get slicker to match them, so stone takes a couple of swings, hard stone a few, and a walk across the mine takes a few seconds.',
-        'It pays you back for the slower shifts: ore, milk, sushi and cheese are worth more, and swings cost less stamina, so your income keeps growing as before. Look for “⛰ Pushback ×N” on the HUD (hover it for details).',
-        'Mines above your deepest one never push back. Go back to one to watch your crew tear through it, or to farm something.',
-        'Schrödinger’s Box turns up a bit more often in Yarnball Caverns (shifts there run longer now).',
+        'New mines open sooner: surveys cost much less and each asks for only 2 perfect clears of the mine before it. The idea is that you unlock the next mine or two before your crew can zoom through the current one breaking everything in one hit.',
+        'That means you’ll often arrive somewhere a little too early: the rock takes a lot of swings and the crew tires fast. That’s intended. Keep working the mine before it, and come back to conquer the new one.',
+        'Mines take longer to clear and are worth more for it: ore is worth ×1.35 more per mine down, so catnip per second stays about the same. Floors are slick from Scratching Post Quarry down (walking ÷1.3, ÷1.7, then ÷4 in Dairy Depths and slicker below), and the Sushi Grotto and deeper are much tougher. Bunk Beds ask for fewer perfect clears too.',
+        'Gone: the “pushback” from the last update, and the extra deep-mine toughness before it. Pacing does that job now.',
         'Fixed: Lights Out let you buy Headlamps and Whisker Sonar, which do nothing there. OVAs now lock upgrades that are no use during the tape (No Laser Zone locks Laser Batteries too).',
-      ],
-    },
-    {
-      title: 'Deep mines: tougher rock, richer ore',
-      date: '2026-10-09',
-      items: [
-        'From Dairy Depths down, rock is tougher (×3 in Dairy Depths, ×4.5 in Sushi Grotto, ×5.7 in Mousehole Maze), so dirt, stone and hard stone feel different again instead of all breaking in one swing. Swings cost that much less stamina down there, and ore is worth more (×2, ×2.7, ×3.2) to pay for the extra digging. Shifts in deep mines run longer and pay more.',
-        'Slick floors are stronger: walking is ÷3 in Dairy Depths, ÷3.9 in Sushi Grotto and ÷4.6 in Mousehole Maze. Long walks matter again.',
-        'The mine list shows each deep mine’s footing, toughness and richness.',
+        'An empty Schrödinger’s Box now says “A frayed knot…”',
       ],
     },
     {
@@ -290,12 +282,12 @@
   NYA.FRONTIER = {
     summary: 'Roughly 5 hours of new things, then the OVA challenges (several more hours). After that, just bigger numbers.',
     items: [
-      'Tiers 1–3 in your first run (Tier 3 at about 1 hour).',
-      'Something big around the 1h 15m mark. No spoilers!',
-      'Tier 4, Dairy Depths (milk pumping), at about 1h 30m.',
+      'Tiers 1–3 in your first run (Tier 3 at about 40 minutes).',
+      'Something big around the 1 hour mark. No spoilers!',
+      'Tier 4, Dairy Depths (milk pumping), at about 1 hour.',
       'Tanuki’s limited-time event mines, R&D and MEWCLEAR, standing orders, swing techniques.',
-      'Tier 5, Sushi Grotto (floods and sushi), around 3–4 hours in.',
-      'Tier 6, Mousehole Maze (mice, turrets and cheese), around 4–5 hours in.',
+      'Tier 5, Sushi Grotto (floods and sushi): it opens early, but you’ll arrive too soon. Making it yours takes around 3 hours.',
+      'Tier 6, Mousehole Maze (mice, turrets and cheese): opens around 4 hours in, and it’s just as tough at first.',
       'Late game: seven OVA challenge episodes, 21 releases in all, each with a permanent perk.',
       'Not built yet: Tiers 7+, equipment, and more late-game content.',
     ],

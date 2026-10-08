@@ -90,8 +90,10 @@
       const top = un[un.length - 1];
       let pick = top;
       // milestone grinding
-      if (!s.tierUnlocked[2] && g.lvl('mine2') === 0 && g.fc(1) < 3) pick = 1;
-      else if (s.tierUnlocked[2] && !s.tierUnlocked[3] && g.fc(2) < 5) {
+      // (perfect clears a survey still asks for: read from the survey itself)
+      const fcNeeded = n => g.lvl('mine' + n) === 0 && !!(NYA.UPG['mine' + n] && NYA.UPG['mine' + n].req(g));
+      if (!s.tierUnlocked[2] && fcNeeded(2)) pick = 1;
+      else if (s.tierUnlocked[2] && !s.tierUnlocked[3] && fcNeeded(3)) {
         const ts = this.tierStats[2];
         pick = 2;
         // if tier 2 full clears are hopeless right now, farm tier 1 for upgrades
@@ -170,6 +172,8 @@
           if (u.id === 'grit' && s.maxTierReached < 2) w = 0.3;
           if (u.id === 'cabinet' && g.runningOrders().length >= s.orders.length) w = 0.05;
           const cost = g.upgCost(u.id);
+          // an eager explorer saves up for the next mine's survey if it's within ~10 minutes of this run's income
+          if (u.unlock && u.unlock.startsWith('mine:') && cost <= 600 * s.seasonCatnip / Math.max(60, s.seasonTime)) w = 1e9;
           const score = w / cost;
           if (score > bestScore) { bestScore = score; best = u; }
         }
@@ -177,7 +181,10 @@
         if (!g.buy(best.id)) break;
       }
       // prestige decision
-      if (s.skein.have && this.unravelAt !== 'never') {
+      // judged once per shift, right after it pays out: catnip lands at shift end, so between paydays a 3-minute
+      // shift made the rate look like it was falling and the bot unravelled runs early for a handful of yarn
+      if (s.skein.have && this.unravelAt !== 'never' && g.lastResult && g.lastResult !== this._judged) {
+        this._judged = g.lastResult;
         const since = s.seasonTime - (s.skein.foundAt || 0);
         const y = g.yarnPreview();
         // rate from the unrounded yarn: whole-yarn steps made the rate "fall" between steps early in a fast run

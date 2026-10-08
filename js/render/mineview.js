@@ -250,7 +250,7 @@
           case 'boxopen':
             this.burst(e.i, e.outcome === 'skein' ? '#c9a8ff' : '#c9925a', 30, 5, 0.15);
             if (e.outcome === 'skein') { this.flashOn('#ffffff', 0.9); this.sfx('skein'); if (this.banners) this.banners('skein'); }
-            else { this.pop(M.x(e.i) + 0.5, M.y(e.i), 'Tangled Thread…', '#c9a8ff', true); this.sfx('empty'); }
+            else { this.pop(M.x(e.i) + 0.5, M.y(e.i), 'A frayed knot…', '#c9a8ff', true); this.sfx('empty'); } // (afraid not)
             break;
           case 'fullclear': this.sfx('fullclear'); if (this.banners) this.banners('fullclear'); break;
           case 'unmark': this.rings.push({ i: e.i, life: 0.5, max: 0.5, col: '#9b93a8', r0: 0.3, r1: 1.0 }); break;
