@@ -1565,16 +1565,29 @@
         for (const i of this.frontier) if (!this.isMarked(i)) pool.push(i);
         if (!pool.length) return;
       }
-      let best = -1, bs = -1e9;
-      for (let k = 0; k < focus; k++) {
-        const i = rng.pick(pool);
+      // value (ore left × quality, boxes, fog) minus distance from the elevator
+      const score = i => {
         let d = 99;
         for (const nb of M.nbrs(i)) if (this.homeDist[nb] >= 0) d = Math.min(d, this.homeDist[nb]);
         const v = (M.type[i] === T.ORE ? (M.dens[i] - M.dropped[i]) * M.q[i] : M.type[i] === T.BOX ? 6 : 0.3);
-        const s = v * 1.5 - (d === 99 ? 6 : d * 0.2) + rng.next();
+        return v * 1.5 - (d === 99 ? 6 : d * 0.2);
+      };
+      let best = -1, bs = -1e9;
+      for (let k = 0; k < focus; k++) {
+        const i = rng.pick(pool);
+        const s = score(i) + rng.next();
         if (s > bs) { bs = s; best = i; }
       }
-      if (best >= 0) this.addMark(best, true);
+      if (best < 0) return;
+      // Keep the tile it's already pointing at unless this one is genuinely better (playtest: it hopped to a new
+      // tile every tick, so the crew kept getting pulled around and never finished the job).
+      // Judged against what the tile was worth when it was marked, so it doesn't walk away from a half-dug tile.
+      const cur = this.marks.find(k => k.drone);
+      if (cur) {
+        const cs = Math.max(cur.ds == null ? -1e9 : cur.ds, score(cur.idx));
+        if (score(best) <= cs + Math.max(1, NYA.DRONE_SWITCH * Math.abs(cs))) return;
+      }
+      if (this.addMark(best, true)) { const mk = this.marks.find(k => k.drone && k.idx === best); if (mk) mk.ds = score(best); }
     }
   }
 

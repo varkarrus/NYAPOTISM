@@ -26,6 +26,7 @@
   NYA.DEEP_RESIST = 5;
   NYA.WALK_DRAIN = 1 / 16; // walking drains this share of a miner's mining stamina per second (1/16 × base Haste 2 = the old flat ⅛)
   NYA.WALK_FOOTING = 0.5;  // walking drain per second ÷ footing^this: slick floors stretch a walk, and it costs √ of that in stamina
+  NYA.DRONE_SWITCH = 0.25;  // the Laser Drone moves its mark only for a tile scoring 25% better than its current one (at least +1)
   NYA.tierResist = t => { const d = NYA.tierDiff(t); return Math.pow(2.0, d - 1) * Math.pow(NYA.DEEP_RESIST, Math.max(0, d - 4)); }; // stamina per swing
   // Richness: ore is worth an extra RICH_STEP per tier on top of tierBase's ×10. Mines are paced so the next one or two
   // open before a crew outgrows the current one (CLAUDE.md), which means shifts run longer with weaker crews; richer

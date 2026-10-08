@@ -6,9 +6,10 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
-      title: 'Sushi runs',
+      title: 'Sushi runs, a steadier Laser Drone',
       date: '2026-10-09',
       items: [
+        'The Laser Drone keeps pointing at its tile until the crew is done with it, and only switches when it spots one that’s genuinely better. It used to hop to a new tile every few seconds (every second with the fastest firmware), pulling the crew around so they never finished anything.',
         'If you can’t pay a mine’s sushi purrmit, the shift now goes to the Sushi Grotto to catch more, then straight back to your mine once you can pay (it used to drop to the Mousehole Maze, which pays no sushi). The mine list says when it’s happening.',
       ],
     },
