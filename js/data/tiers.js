@@ -30,11 +30,20 @@
   // catnip per swing and the economy hold.
   NYA.tierTough = t => { const d = NYA.tierDiff(t); return d < 4 ? 1 : NYA.TOUGH_T4 * Math.pow(NYA.TOUGH_GROWTH, d - 4); };
   NYA.TOUGH_T4 = 3; NYA.TOUGH_GROWTH = 1.5;
-  NYA.TOUGH_EXP = { [T.DIRT]: 0.5, [T.HARD]: 1.5 }; // everything else (stone, ore, boxes, nests) ×tough
+  NYA.TOUGH_EXP = { [T.DIRT]: 0.5 }; // everything else (stone, hard stone, ore, boxes, nests) ×tough; dirt stays soft
   NYA.toughOf = (t, ty) => Math.pow(NYA.tierTough(t), NYA.TOUGH_EXP[ty] != null ? NYA.TOUGH_EXP[ty] : 1);
   // Richness: ore value multiplier that pays for the extra swings, the tougher rock in between and slick floors
   NYA.tierRich = t => { const d = NYA.tierDiff(t); return d < 4 ? 1 : NYA.RICH_T4 * Math.pow(NYA.RICH_GROWTH, d - 4); };
   NYA.RICH_T4 = 2; NYA.RICH_GROWTH = 1.35;
+  // Frontier pushback (the user's rule of thumb): in the deepest mine you've opened, a walk across the mine should take
+  // a few seconds and blocks should take more than one swing, however long you stay and however strong the crew gets
+  // (a stay's own income grows Power 10-50x). Once a strong miner (top quarter of the crew) would break stone in under
+  // PUSH_STONE swings, or cross the mine's width in under PUSH_CROSS s, that mine toughens / slickens to match, with
+  // x^(1 - PUSH_SOFT) so upgrades still help a little. Shallower mines never push back: go there to flex or farm.
+  // The mine pays the slowdown back: ore is worth (and swings cost stamina) the estimated factor the pushback slows the
+  // shift by (extra swings over this mine's tiles, slower walking, PUSH_WALK = share of crew time spent walking), so
+  // income stays on the curve it had while the shift stays watchable.
+  NYA.PUSH_STONE = 1.6; NYA.PUSH_CROSS = 3.5; NYA.PUSH_SOFT = 0.15; NYA.PUSH_WALK = 0.5; NYA.PUSH_PAY = 1.4;
   NYA.tierXP = t => Math.pow(2.5, t - 1);         // XP per swing / item
 
   // Counter-pressures: every stat faces something that grows each tier, so upgrading it keeps
@@ -206,7 +215,7 @@
   NYA.CHAN_DELAY = 3;       // Turret-chan waits this long for you to place turrets yourself
 
   // Schrödinger's Box base chance per episode by tier (GDD §14.1)
-  NYA.BOX_CHANCE = { 3: 0.05, 4: 0.08, 5: 0.15, 6: 0.35 };
+  NYA.BOX_CHANCE = { 3: 0.1, 4: 0.08, 5: 0.15, 6: 0.35 }; // T3 was 0.05: frontier pushback made its shifts ~2x longer, so fewer rolls an hour
   NYA.PIPE_HALF = 12; // flow = rate / (1 + pipeLength / 12)  (GDD §9.2)
   // Pumping costs stamina close to mining's rate (a swing costs 1 swing cost, at 2-4 swings/s). At 0.6 swing
   // costs/s the pumper outlasted everyone, and the shift sat waiting on one catgirl at a pump (playtest).

@@ -477,6 +477,7 @@
       if (!this.s.buildings[u.bld]) return { ok: false, why: 'Building locked' };
       if (this.lvl(id) >= u.max) return { ok: false, why: 'MAX', max: true };
       if (this.ovaIs('budget') && u.bld === 'refinery' && !u.cur) return { ok: false, why: 'Budget Cuts: the Refinery is frozen', locked: true };
+      if (this.s.ova && (NYA.OVA[this.s.ova.id].useless || []).indexOf(id) >= 0) return { ok: false, why: NYA.OVA[this.s.ova.id].name + ': no use during this OVA', locked: true };
       if (this.s.research && this.s.research.id === id) return { ok: false, why: 'In progress…' };
       if (u.req) { const r = u.req(this); if (r) return { ok: false, why: r, locked: true }; }
       if (u.timer && this.s.research) return { ok: false, why: 'Doc Boom is busy', busy: true };
@@ -696,6 +697,12 @@
     }
 
     // ------------------------------------------------------------ mines
+    // the deepest mine opened this run: it pushes back against a crew that outclasses it (Episode.frontierPushback)
+    isFrontier(t) { let top = 1; for (const k in this.s.tierUnlocked) if (this.s.tierUnlocked[k]) top = Math.max(top, +k); return t >= top; }
+    onPushback() {
+      const ep = this.episode;
+      if (ep && (ep.pushRock > 1.05 || ep.pushFloor > 1.05)) this.novel('pushback', 'Your crew outclasses this mine, so it pushes back: tougher rock and slicker floors. Open a deeper mine to really cut loose (or go flex in an old one)', 'mine');
+    }
     selectTier(t) {
       if (!this.s.tierUnlocked[t]) return false;
       this.s.selectedTier = t;
@@ -746,6 +753,7 @@
         pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')),
         junctions: this.lvl('junctions') > 0,
         purrmit: cost,
+        frontier: this.isFrontier(t),
       };
       Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg());
       cfg.headlamp += this.ovaPerk('lights');
@@ -754,7 +762,8 @@
       if (this.catterallActive()) this.episode.setCatterall(true);
       this.phase = 'shift';
       if (NYA.tierMud(t) > 0) this.novel('terrain', 'Rough ground! Mud and rubble slow your crew down. Pace matters now', 'mine');
-      if (NYA.tierFooting(t) > 1) this.novel('footing', 'Deep mine! Slick floors (walking ÷' + NYA.tierFooting(t).toFixed(1) + '), tougher rock (hard stone most of all) and richer ore. Swings cost less stamina down here', 'mine');
+      this.onPushback();
+      if (NYA.tierFooting(t) > 1) this.novel('footing', 'Deep mine! Slick floors (walking ÷' + NYA.tierFooting(t).toFixed(1) + '), tougher rock and richer ore. Swings cost less stamina down here', 'mine');
       this.emit('episodeStart', { ep: this.episode, num: this.s.episodeNum, tier: t });
       return this.episode;
     }
@@ -816,7 +825,7 @@
         resonance: this.lvl('resonance') > 0, polishExp: this.polishExp(), centrifuge: this.lvl('centrifuge'),
         bluntPotency: this.bluntPotency(), droneMarks: 1, purrmit: 0,
         pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')), junctions: this.lvl('junctions') > 0,
-        event: q.ev, ghosts: ev.ghosts || 0,
+        event: q.ev, ghosts: ev.ghosts || 0, frontier: this.isFrontier(t),
       };
       Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg());
       cfg.headlamp += this.ovaPerk('lights');
@@ -825,6 +834,7 @@
       if (this.catterallActive()) this.episode.setCatterall(true);
       this.phase = 'shift';
       this.novel('event:' + q.ev, 'Event mine: ' + ev.name + '!', 'event');
+      this.onPushback();
       this.emit('episodeStart', { ep: this.episode, num: this.s.episodeNum, tier: t, event: q.ev });
       return this.episode;
     }

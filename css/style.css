@@ -87,6 +87,7 @@ kbd { font-family: var(--dot); font-size: 13px; background: rgba(255,255,255,.12
 #hud { display: flex; gap: 16px; padding: 6px 12px; font-size: 13px; color: var(--muted); flex-wrap: wrap; min-height: 30px; }
 #hud b { color: var(--text); }
 #hud .catt { color: #fff; background: #4a0a3a; padding: 0 8px; border-radius: 6px; letter-spacing: 3px; }
+#hud .push { color: #ffd9a0; }
 #hud .tuna { color: #1a1020; background: var(--blue); padding: 0 8px; border-radius: 6px; font-weight: 800; }
 #mineWrap { position: relative; flex: 1; min-height: 0; overflow: hidden; }
 #mineWrap canvas#mine { position: absolute; inset: 0; cursor: crosshair; touch-action: none; }

@@ -6,10 +6,21 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'The deepest mine pushes back',
+      date: '2026-10-09',
+      items: [
+        'Rule of thumb: your deepest mine should always be fun to watch. Each catgirl takes a few seconds to cross it, and she doesn’t break every block in one hit. When your crew outclasses the deepest mine you’ve opened, it now pushes back: the rock toughens and the floors get slicker to match them, so stone takes a couple of swings, hard stone a few, and a walk across the mine takes a few seconds.',
+        'It pays you back for the slower shifts: ore, milk, sushi and cheese are worth more, and swings cost less stamina, so your income keeps growing as before. Look for “⛰ Pushback ×N” on the HUD (hover it for details).',
+        'Mines above your deepest one never push back. Go back to one to watch your crew tear through it, or to farm something.',
+        'Schrödinger’s Box turns up a bit more often in Yarnball Caverns (shifts there run longer now).',
+        'Fixed: Lights Out let you buy Headlamps and Whisker Sonar, which do nothing there. OVAs now lock upgrades that are no use during the tape (No Laser Zone locks Laser Batteries too).',
+      ],
+    },
+    {
       title: 'Deep mines: tougher rock, richer ore',
       date: '2026-10-09',
       items: [
-        'From Dairy Depths down, rock is tougher (×3 in Dairy Depths, ×4.5 in Sushi Grotto, ×5.7 in Mousehole Maze), and hard stone most of all, so dirt, stone and hard stone feel different again instead of all breaking in one swing. Swings cost that much less stamina down there, and ore is worth more (×2, ×2.7, ×3.2) to pay for the extra digging. Shifts in deep mines run longer and pay more.',
+        'From Dairy Depths down, rock is tougher (×3 in Dairy Depths, ×4.5 in Sushi Grotto, ×5.7 in Mousehole Maze), so dirt, stone and hard stone feel different again instead of all breaking in one swing. Swings cost that much less stamina down there, and ore is worth more (×2, ×2.7, ×3.2) to pay for the extra digging. Shifts in deep mines run longer and pay more.',
         'Slick floors are stronger: walking is ÷3 in Dairy Depths, ÷3.9 in Sushi Grotto and ÷4.6 in Mousehole Maze. Long walks matter again.',
         'The mine list shows each deep mine’s footing, toughness and richness.',
       ],

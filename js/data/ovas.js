@@ -21,6 +21,7 @@
     {
       id: 'lights', name: 'Lights Out', icon: '🔦',
       limiter: 'Fog only clears 1 tile around you, miners only notice ore right next to them, and Whisker Sonar is out of order.',
+      useless: ['headlamp', 'sonar'], // can't be bought during the tape (they'd do nothing)
       goals: [fc(3), fc(4), fc(4, 5)],
       perk: 'Night Vision', perkText: L => '+' + L + ' Sight in every mine',
       fax: 'THE POWER WENT OUT. THE GIRLS SAY THEY CAN SEE IN THE DARK. THEY CANNOT. ♡',
@@ -42,6 +43,7 @@
     {
       id: 'nolaser', name: 'No Laser Zone', icon: '🚫',
       limiter: 'No laser pointer, no drone. The crew picks every target on her own.',
+      useless: ['batteries'],
       goals: [tier(4), fc(4, 3), fc(4, 10)],
       perk: 'Sharp Eyes', perkText: L => '+' + L + ' Focus for every catgirl',
       fax: 'THE LASER POINTER HAS BEEN CONFISCATED FOR "SAFETY". IT WAS ME. I CONFISCATED IT. ♡',

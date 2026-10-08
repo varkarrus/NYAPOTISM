@@ -68,6 +68,8 @@
       this.recomputeField();
       this.crewCtx = { mineKey: this.def.key, tier: this.tier, crew: cfg.crew, sRankHere: game.hasSRank ? game.hasSRank(this.tier) : false };
       this.miners = cfg.crew.map((cg, k) => this.makeMiner(cg, k));
+      this.pushRock = 1; this.pushFloor = 1; this.pushRich = 1;
+      if (cfg.frontier) this.frontierPushback();
       for (const m of this.miners) if (m.s.flags.psychic) m.psychicNext = NYA.PSYCHIC_GAP[0] * 0.5 + this.rng.next() * NYA.PSYCHIC_GAP[0];
       this.initMice(); // js/sim/mice.js
       if (cfg.ghosts) this.addGhosts(cfg.ghosts);
@@ -75,6 +77,35 @@
     }
 
     ev(e) { if (!this.headless) this.events.push(e); }
+
+    // The deepest mine you've opened matches a crew that outclasses it (see NYA.PUSH_*): tougher rock and slicker
+    // floors, measured on a strong miner so weak ones don't water it down. It pays the slowdown back in ore value
+    // and stamina per swing.
+    frontierPushback() {
+      const M = this.mine, crew = this.miners;
+      if (!crew.length) return;
+      const ref = f => { const v = crew.map(f).sort((a, b) => b - a); return v[Math.floor(v.length / 4)]; };
+      const soft = x => x > 1 ? Math.pow(x, 1 - NYA.PUSH_SOFT) : 1;
+      const stoneHP = NYA.BASE_HP[T.STONE] * NYA.tierHP(this.tier) * NYA.toughOf(this.tier, T.STONE);
+      this.pushRock = soft(ref(m => m.s.power) * NYA.PUSH_STONE / stoneHP);
+      this.pushFloor = soft(ref(m => m.s.pace) / this.footing / (M.w / NYA.PUSH_CROSS));
+      let mineSlow = 1;
+      if (this.pushRock > 1) {
+        const pw = crew.map(m => m.s.power).sort((a, b) => a - b), P = pw[pw.length >> 1]; // the slowdown a typical miner feels
+        let s0 = 0, s1 = 0;
+        for (let i = 0; i < this.n; i++) {
+          if (!(M.maxHp[i] > 0)) continue;
+          s0 += Math.max(1, Math.ceil(M.maxHp[i] / P - 1e-9));
+          M.maxHp[i] *= this.pushRock; M.hp[i] *= this.pushRock;
+          s1 += Math.max(1, Math.ceil(M.maxHp[i] / P - 1e-9));
+        }
+        mineSlow = s0 ? s1 / s0 : 1;
+        this.resist /= mineSlow; // the extra swings cost no extra stamina
+      }
+      this.footing *= this.pushFloor;
+      this.pushRich = Math.pow(NYA.PUSH_WALK * this.pushFloor + (1 - NYA.PUSH_WALK) * mineSlow, NYA.PUSH_PAY);
+      this.tierBase *= this.pushRich;
+    }
 
     // Obon: ghost catgirls from past timelines (no XP, no roster slot)
     addGhosts(n) {
@@ -454,7 +485,7 @@
           const L = Math.max(1, this.homeDist[p.stand]);
           let flow = this.pumpRate * dt * cafP * (m.s.flags.lactose ? 1.3 : 1) / (1 + L / NYA.PIPE_HALF);
           flow = Math.min(flow, M.milk[node]);
-          M.milk[node] -= flow; this.haul.milk += flow; m.milk += flow;
+          M.milk[node] -= flow; this.haul.milk += flow * this.pushRich; m.milk += flow * this.pushRich; // frontier payback (frontierPushback)
           p.pumping = this.t;
           m.milkXP = (m.milkXP || 0) + flow;
           if (m.milkXP >= 1) { const w = Math.floor(m.milkXP); m.milkXP -= w; this.giveXP(m, 2 * w); }
@@ -1120,8 +1151,8 @@
           this.ev({ t: 'menace', m: m.id });
           continue;
         }
-        if (it.sushi) { this.haul.sushi += it.sushi; sushi += it.sushi; this.haul.items++; delivered++; continue; } // nigiri: sushi, no catnip
-        if (it.cheese) { this.haul.cheese += it.cheese; cheese += it.cheese; delivered++; continue; } // mouse crumbs and nest wheels
+        if (it.sushi) { const su = it.sushi * this.pushRich; this.haul.sushi += su; sushi += su; this.haul.items++; delivered++; continue; } // nigiri: sushi, no catnip
+        if (it.cheese) { const ch = it.cheese * this.pushRich; this.haul.cheese += ch; cheese += ch; delivered++; continue; } // mouse crumbs and nest wheels
         const v = this.itemValue(it);
         value += v; delivered++;
         this.haul.value += v; this.haul.items++;
@@ -1259,7 +1290,7 @@
       return true;
     }
     useBomb(idx, dmg) {
-      this.bombs.push({ i: idx, at: this.t + 0.55, dmg });
+      this.bombs.push({ i: idx, at: this.t + 0.55, dmg: dmg * this.pushRock });
       this.st.bombs++;
       this.ev({ t: 'bombthrow', i: idx });
       return true;
