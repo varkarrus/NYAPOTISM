@@ -106,6 +106,7 @@
   }
   const shadeHex = (h, a) => NYA.shade(h, a);
   const FOLD_COLS = ['#ffd23f', '#7af0e0', '#ff7eb6', '#b69cff', '#ff9e7a', '#7af0a0'];
+  const PRISM_COLS = ['143,242,255', '201,182,255', '255,158,220', '180,255,214'];
 
   // ---------------------------------------------------------------- view
   class MineView {
@@ -183,6 +184,7 @@
     sfx(name, a, b) {
       if (!this.audio) return;
       if (this.sfxBudget > 14 && (name === 'tink' || name === 'chip')) return;
+      if (name === 'chime' && this.sfxBudget > 6) return; // a big cascade rings dozens of crystals at once
       this.sfxBudget++;
       this.audio.sfx(name, a, b);
     }
@@ -254,6 +256,27 @@
             break;
           case 'fullclear': this.sfx('fullclear'); if (this.banners) this.banners('fullclear'); break;
           case 'unmark': this.rings.push({ i: e.i, life: 0.5, max: 0.5, col: '#9b93a8', r0: 0.3, r1: 1.0 }); break;
+          case 'ring': // a crystal humming from a hit or a neighbour's shatter
+            this.rings.push({ i: e.i, life: 0.3, max: 0.3, col: '#8ff2ff', r0: 0.25, r1: 0.75 });
+            this.sfx('chime', e.i);
+            break;
+          case 'shatter':
+            this.burst(e.i, '#8ff2ff', 10, 4, 0.1); this.burst(e.i, '#e7d6ff', 6, 3, 0.08);
+            this.rings.push({ i: e.i, life: 0.45, max: 0.45, col: '#c9b6ff', r0: 0.3, r1: 1.4 });
+            if (e.n >= 3) this.pop(M.x(e.i) + 0.5, M.y(e.i), 'RESONANCE ×' + e.n, '#8ff2ff', e.n >= 8);
+            this.shake = Math.max(this.shake, Math.min(0.15, 0.02 * e.n));
+            this.sfx('shatter', e.n);
+            break;
+          case 'refract':
+            this.pop(M.x(e.i) + 0.5, M.y(e.i) - 0.2, 'REFRACTION ×' + e.n, '#e7d6ff', false);
+            this.rings.push({ i: e.i, life: 0.6, max: 0.6, col: '#e7d6ff', r0: 0.3, r1: 1.8 });
+            this.sfx('prism');
+            break;
+          case 'buried': this.rings.push({ i: e.i, life: 1, max: 1, col: '#fff2b0', r0: 0.3, r1: 1.8 }); if (m) this.pop(M.x(e.i) + 0.5, M.y(e.i) - 0.4, 'Funny story…', '#fff2b0', true); break;
+          case 'unburied':
+            if (m) this.pop(m.x + 0.5, m.y - 0.5, e.dug ? 'FREED!' : '…don’t ask.', '#fff2b0', e.dug);
+            if (e.dug) { this.burst(e.i, '#fff2b0', 12, 3, 0.1); this.sfx('levelup'); }
+            break;
           case 'mark': this.sfx(e.drone ? 'drone' : 'laser'); this.rings.push({ i: e.i, life: 0.4, max: 0.4, col: e.drone ? '#7af0e0' : '#ff3b5c', r0: 1.2, r1: 0.3 }); break;
           case 'bombthrow': this.bombsVis.push({ i: e.i, t: 0, dur: 0.55 }); this.sfx('throw'); break;
           case 'boom':
@@ -401,6 +424,7 @@
             ctx.drawImage(base[v], X, Y, ts, ts);
             if (ty === T.ORE && M.mochi[i]) this.drawMochi(ctx, X, Y, ts, i, t);
             else if (ty === T.ORE && M.sushi[i]) this.drawNigiriTile(ctx, X, Y, ts, i, t);
+            else if (ty === T.ORE && M.crystal && M.crystal[i]) this.drawCrystal(ctx, X, Y, ts, i, t, valMult);
             else if (ty === T.ORE) this.drawOre(ctx, X, Y, ts, i, t, valMult);
             else if (ty === T.NEST) this.drawNest(ctx, X, Y, ts, i, t);
             if (ty === T.GROOVE && Math.sin(t * 2 + M.groove[i]) > 0.92) { ctx.fillStyle = 'rgba(255,240,200,0.25)'; ctx.fillRect(X, Y, ts, ts); }
@@ -443,11 +467,22 @@
         const X = M.x(mk.idx) * ts + ts / 2, Y = M.y(mk.idx) * ts + ts / 2;
         const fresh = ep.t - mk.t0 < 3;
         const pulse = 0.5 + 0.5 * Math.sin(t * 10 + mk.idx);
-        const col = mk.drone ? '122,240,224' : '255,59,92';
+        const prism = mk.refract != null; // lit up through its crystal cluster (T7 refraction)
+        if (mk.rescue) { // a buried crewmate: a soft gold beacon, no laser dot
+          const g = ctx.createRadialGradient(X, Y, 0, X, Y, ts * (0.7 + 0.15 * pulse));
+          g.addColorStop(0, 'rgba(255,242,176,0.5)'); g.addColorStop(1, 'rgba(255,242,176,0)');
+          ctx.fillStyle = g; ctx.fillRect(X - ts, Y - ts, ts * 2, ts * 2);
+          continue;
+        }
+        const col = prism ? PRISM_COLS[mk.idx % PRISM_COLS.length] : mk.drone ? '122,240,224' : '255,59,92';
+        if (prism && fresh) { // the beam bending through the cluster, fading out over a few seconds
+          ctx.strokeStyle = `rgba(${col},${0.5 * (1 - (ep.t - mk.t0) / 3)})`; ctx.lineWidth = Math.max(1, ts * 0.05);
+          ctx.beginPath(); ctx.moveTo(M.x(mk.refract) * ts + ts / 2, M.y(mk.refract) * ts + ts / 2); ctx.lineTo(X, Y); ctx.stroke();
+        }
         const g = ctx.createRadialGradient(X, Y, 0, X, Y, ts * (fresh ? 0.75 : 0.55));
         g.addColorStop(0, `rgba(${col},${0.55 + 0.3 * pulse})`); g.addColorStop(1, `rgba(${col},0)`);
         ctx.fillStyle = g; ctx.fillRect(X - ts, Y - ts, ts * 2, ts * 2);
-        ctx.fillStyle = mk.drone ? '#c8fff6' : '#ffe0e6';
+        ctx.fillStyle = prism ? '#ffffff' : mk.drone ? '#c8fff6' : '#ffe0e6';
         ctx.beginPath(); ctx.arc(X + Math.sin(t * 13) * ts * 0.04, Y + Math.cos(t * 11) * ts * 0.04, ts * 0.09, 0, Math.PI * 2); ctx.fill();
       }
 
@@ -641,6 +676,12 @@
         ctx.fillStyle = 'rgba(255,255,255,0.55)';
         ctx.fillRect(X + (fx - r * 0.35) * ts, Y + (fy - r * 0.45) * ts, Math.max(1, ts * 0.05), Math.max(1, ts * 0.05));
       }
+      this.drawOreCount(ctx, X, Y, ts, left, ml);
+      if (valMult) this.drawTileValue(ctx, X, Y, ts, i, q, left, valMult);
+      this.twinkle(ctx, X, Y, ts, i, t);
+    }
+    // how many items are left in an ore tile, once that's more than its sprite shows
+    drawOreCount(ctx, X, Y, ts, left, ml) {
       if (left >= 4 && left <= 5) {
         for (let k = 0; k < left - 3; k++) { ctx.fillStyle = '#fff'; ctx.fillRect(X + ts * (0.12 + k * 0.12), Y + ts * 0.08, ts * 0.08, ts * 0.08); }
       } else if (left > 5) {
@@ -649,18 +690,55 @@
         ctx.lineWidth = 3; ctx.strokeStyle = '#1a1020'; ctx.strokeText(String(left), X + ts * 0.96, Y + ts * 0.34);
         ctx.fillStyle = ml ? '#ff7eb6' : '#fff'; ctx.fillText(String(left), X + ts * 0.96, Y + ts * 0.34);
       }
-      if (valMult) { // catnip this tile is still worth, after multipliers (before the Full-Clear Bonus)
-        const txt = NYA.fmt(left * this.ep.itemValue({ q, d: M.dens[i] }) * valMult);
-        const s = Math.max(8, Math.min(ts * 0.27, ts * 1.7 / Math.max(3, txt.length)));
-        ctx.font = `800 ${s}px "M PLUS Rounded 1c", sans-serif`; ctx.textAlign = 'center';
-        ctx.lineWidth = 2.5; ctx.strokeStyle = '#000'; ctx.strokeText(txt, X + ts / 2, Y + ts - 2);
-        ctx.fillStyle = '#b8ffcf'; ctx.fillText(txt, X + ts / 2, Y + ts - 2);
-      }
+    }
+    // catnip this tile is still worth, after multipliers (before the Full-Clear Bonus)
+    drawTileValue(ctx, X, Y, ts, i, q, left, valMult) {
+      const M = this.ep.mine;
+      const txt = NYA.fmt(left * this.ep.itemValue({ q, d: M.dens[i] }) * valMult);
+      const s = Math.max(8, Math.min(ts * 0.27, ts * 1.7 / Math.max(3, txt.length)));
+      ctx.font = `800 ${s}px "M PLUS Rounded 1c", sans-serif`; ctx.textAlign = 'center';
+      ctx.lineWidth = 2.5; ctx.strokeStyle = '#000'; ctx.strokeText(txt, X + ts / 2, Y + ts - 2);
+      ctx.fillStyle = '#b8ffcf'; ctx.fillText(txt, X + ts / 2, Y + ts - 2);
+    }
+    twinkle(ctx, X, Y, ts, i, t) {
       if (Math.sin(t * 2.5 + i * 1.7) > 0.95) {
         ctx.fillStyle = '#fff';
         const sx = X + ts * (0.25 + ((i * 13) % 50) / 100), sy = Y + ts * 0.3;
         ctx.fillRect(sx - ts * 0.08, sy, ts * 0.16, ts * 0.03); ctx.fillRect(sx - ts * 0.015, sy - ts * 0.065, ts * 0.03, ts * 0.16);
       }
+    }
+    // ---------------------------------------------------------------- Crystal Catacombs
+    // A clump of faceted crystal-catnip shards growing out of the rock, cyan to violet (rainbow when rare).
+    // It glows harder while it's ringing (damaged), and the gem at its foot shows the catnip quality.
+    drawCrystal(ctx, X, Y, ts, i, t, valMult) {
+      const M = this.ep.mine, left = M.dens[i] - M.dropped[i];
+      const q = M.q[i], qi = NYA.qInfo(q);
+      const hue = q > 5 ? (t * 60 + i * 40) % 360 : 185 + ((i * 47) % 90);
+      const hurt = M.hp[i] < M.maxHp[i];
+      const g = ctx.createRadialGradient(X + ts / 2, Y + ts * 0.6, 0, X + ts / 2, Y + ts * 0.6, ts * 0.7);
+      g.addColorStop(0, `hsla(${hue},90%,75%,${hurt ? 0.5 + 0.25 * Math.sin(t * 20 + i) : 0.35})`); g.addColorStop(1, `hsla(${hue},90%,75%,0)`);
+      ctx.fillStyle = g; ctx.fillRect(X - ts * 0.2, Y - ts * 0.2, ts * 1.4, ts * 1.4);
+      const shards = left >= 3 ? [[0.26, -0.42, 0.58], [0.5, 0.06, 0.84], [0.76, 0.44, 0.56]] // [x, lean, height]
+        : left === 2 ? [[0.34, -0.3, 0.66], [0.64, 0.3, 0.78]] : [[0.5, 0.06, 0.84]];
+      for (const [fx, lean, h] of shards) this.drawShard(ctx, X + fx * ts, Y + ts * 0.9, ts * 0.27, ts * h, lean, hue);
+      NYA.drawOreShape(ctx, qi.shape, X + ts * 0.5, Y + ts * 0.82, ts * 0.09, qi.color, '#1a1020');
+      this.drawOreCount(ctx, X, Y, ts, left, false);
+      if (valMult) this.drawTileValue(ctx, X, Y, ts, i, q, left, valMult);
+      this.twinkle(ctx, X, Y, ts, i, t);
+    }
+    // a hexagonal prism seen side-on: base at x,y, pointing up and leaning by `lean` radians
+    drawShard(ctx, x, y, w, h, lean, hue) {
+      const hw = w / 2;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(lean);
+      ctx.fillStyle = `hsl(${hue},90%,84%)`; // lit facet
+      ctx.beginPath(); ctx.moveTo(-hw, 0); ctx.lineTo(-hw, -h * 0.72); ctx.lineTo(0, -h); ctx.lineTo(0, 0); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = `hsl(${hue + 25},75%,60%)`; // shaded facet
+      ctx.beginPath(); ctx.moveTo(hw, 0); ctx.lineTo(hw, -h * 0.72); ctx.lineTo(0, -h); ctx.lineTo(0, 0); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#1a1020'; ctx.lineWidth = Math.max(1, w * 0.12); ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.moveTo(-hw, 0); ctx.lineTo(-hw, -h * 0.72); ctx.lineTo(0, -h); ctx.lineTo(hw, -h * 0.72); ctx.lineTo(hw, 0); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.fillRect(-hw * 0.62, -h * 0.66, Math.max(1, w * 0.14), h * 0.42);
+      ctx.restore();
     }
 
     // Deeper mines are darker: a dim layer with headlamp light pools around each miner.
@@ -684,6 +762,9 @@
       };
       for (const m of ep.miners) hole((NYA.lerp(m.px, m.x, alpha) + 0.5) * ts, (NYA.lerp(m.py, m.y, alpha) + 0.5) * ts, R);
       hole((M.x(M.elev) + 0.5) * ts, (M.y(M.elev) + 0.5) * ts, 2.5 * ts);
+      if (ep.def.quirk === 'crystal') { // crystal catnip glows in the dark
+        for (let i = 0; i < M.n; i++) if (M.crystal[i] && M.type[i] === T.ORE && M.revealed[i]) hole((M.x(i) + 0.5) * ts, (M.y(i) + 0.55) * ts, 0.9 * ts);
+      }
       ctx.drawImage(oc, 0, 0, oc.width, oc.height, 0, 0, W, H);
     }
 
@@ -940,18 +1021,34 @@
         case 'rescue': anim = 'flat'; break;
         case 'drop': anim = 'idle'; eyes = 'happy'; break;
         case 'wait': anim = 'idle'; break;
+        case 'buried': anim = 'idle'; eyes = 'open'; mouth = 'flat'; break;
       }
       if (ep.catterall && anim !== 'sleep' && anim !== 'loaf') { eyes = 'pin'; mouth = 'none'; }
       let lift = 0;
       if (m.state === 'rescue') { const f = 1 - m.timer / 2.4; lift = f < 0.4 ? 0 : (f < 0.7 ? (f - 0.4) * 8 : 0); }
       const X = (x + 0.5) * ts, Y = (y + 0.92) * ts - lift * ts;
       const look = m.cg;
+      const buried = m.state === 'buried'; // "Funny Story…": only her head pokes out of the rock
+      if (buried) { ctx.save(); ctx.beginPath(); ctx.rect(x * ts, y * ts - ts * 0.3, ts, ts * 1.3); ctx.clip(); }
       if (m.ghost) { ctx.globalAlpha = 0.55 + 0.15 * Math.sin(t * 3 + m.id); }
       NYA.drawCatgirl(ctx, X, Y - (m.ghost ? ts * 0.08 * (1 + Math.sin(t * 2 + m.id)) : 0), ts * 0.98, { fur: look.fur, hair: look.hair, outfit: look.outfit, hat: !ep.cfg.noHats }, {
         lantern: !!m.ghost || this.ep.eventKey === 'obon',
         anim, t: t + m.id * 0.37, face, swing, eyes, mouth, droop, bag: m.bag.length, lamp: true, fold: m.s.fold || 0, ghost: m.ghost,
       });
       ctx.globalAlpha = 1;
+      if (buried) {
+        ctx.restore();
+        const rx = x * ts, ry = y * ts + ts * 0.55, wig = Math.sin(t * 9 + m.id) * ts * 0.02;
+        ctx.fillStyle = ep.def.pal.stone; ctx.fillRect(rx, ry, ts, ts * 0.45);
+        ctx.fillStyle = ep.def.pal.stone2;
+        for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.arc(rx + ts * (0.12 + k * 0.25) + wig, ry + ts * 0.02, ts * 0.13, 0, Math.PI * 2); ctx.fill(); }
+        ctx.fillStyle = ep.def.pal.stone3; ctx.fillRect(rx, ry + ts * 0.3, ts, ts * 0.15);
+        if (Math.sin(t * 1.7 + m.id) > 0.3) { // "help~"
+          ctx.font = `800 ${Math.max(8, ts * 0.32)}px "M PLUS Rounded 1c", sans-serif`; ctx.textAlign = 'center';
+          ctx.lineWidth = 3; ctx.strokeStyle = '#1a1020'; ctx.strokeText('help~', X, y * ts - ts * 0.12);
+          ctx.fillStyle = '#fff2b0'; ctx.fillText('help~', X, y * ts - ts * 0.12);
+        }
+      }
       // butterfly / pebble props
       if (m.state === 'distract' && m.dkind === 'butterfly') {
         const bx = X + Math.sin(t * 5 + m.id) * ts * 0.4, by = Y - ts * (0.9 + 0.15 * Math.sin(t * 7));
@@ -971,7 +1068,7 @@
         ctx.beginPath(); ctx.moveTo(X - ts * 0.3, cy + ts * 0.35); ctx.lineTo(X - ts * 0.2, cy); ctx.lineTo(X + ts * 0.2, cy); ctx.lineTo(X + ts * 0.3, cy + ts * 0.35); ctx.stroke();
       }
       // stamina pip bar
-      if (m.state !== 'out' || !m.flopped) {
+      if ((m.state !== 'out' || !m.flopped) && !buried) {
         const f = NYA.clamp(m.stamina / m.maxSt, 0, 1);
         const bw = ts * 0.6, bx = X - bw / 2, by = Y + ts * 0.02;
         ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(bx - 1, by - 1, bw + 2, Math.max(3, ts * 0.08) + 2);

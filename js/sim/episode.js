@@ -28,6 +28,7 @@
       this.loose = []; this.itemId = 1;
       this.marks = [];
       this.chainQ = []; this.chainCounts = {}; this.chainId = 0;
+      this.resQ = []; this.resCounts = {}; this.resId = 0; // Crystal Catacombs: shatter pulses waiting to land, crystals per cascade
       this.bombs = [];
       this.tunaUntil = 0; this.hotbox = null; this.catterall = false;
       this.haul = { value: 0, items: 0, byQ: new Array(12).fill(0), glow: 0, motherlode: 0, thread: 0, lost: 0, milk: 0, sushi: 0, cheese: 0 };
@@ -69,6 +70,7 @@
       this.crewCtx = { mineKey: this.def.key, tier: this.tier, crew: cfg.crew, sRankHere: game.hasSRank ? game.hasSRank(this.tier) : false };
       this.miners = cfg.crew.map((cg, k) => this.makeMiner(cg, k));
       for (const m of this.miners) if (m.s.flags.psychic) m.psychicNext = NYA.PSYCHIC_GAP[0] * 0.5 + this.rng.next() * NYA.PSYCHIC_GAP[0];
+      this.buryMiners();
       this.initMice(); // js/sim/mice.js
       if (cfg.ghosts) this.addGhosts(cfg.ghosts);
       if (this.event && this.event.goldfish) this.addGoldfish(this.event.goldfish);
@@ -98,6 +100,46 @@
         const at = open.splice(this.rng.int(0, open.length - 1), 1)[0];
         this.loose.push({ id: this.itemId++, idx: at, q: this.rng.int(3, 6), d: 1, fish: true, claim: 0 });
       }
+    }
+
+    // "Funny Story…": she starts the shift sealed inside a random rock. A rescue mark (not a laser, so it costs no
+    // mark and even laser-ignorers answer it) pulls the crew to dig her out. She can't do anything and doesn't tire
+    // until her rock breaks. If nobody else is left to dig, she wriggles out the back way and turns up at the elevator.
+    buryMiners() {
+      const M = this.mine, buried = this.miners.filter(m => m.s.flags.buried && !m.ghost);
+      if (!buried.length) return;
+      const rng = new NYA.RNG('buried:' + this.cfg.seed), dr = this.digReach(), ex = M.x(M.elev), ey = M.y(M.elev), spots = [];
+      for (let i = 0; i < M.n; i++) {
+        const ty = M.type[i];
+        if ((ty === T.DIRT || ty === T.STONE || ty === T.HARD) && dr[i] && !M.water[i] && Math.abs(M.x(i) - ex) + Math.abs(M.y(i) - ey) > 3) spots.push(i);
+      }
+      for (const m of buried) {
+        if (!spots.length) break;
+        const i = spots.splice(rng.int(0, spots.length - 1), 1)[0];
+        m.state = 'buried'; m.tile = i; m.x = m.px = M.x(i); m.y = m.py = M.y(i); m.aloneT = 0;
+        this.reveal(i);
+        this.marks.push({ idx: i, t0: 0, rescue: m.id });
+        this.st.buried = (this.st.buried || 0) + 1;
+        this.ev({ t: 'buried', i, m: m.id });
+      }
+      if (this.game.onBuried) this.game.onBuried(this);
+    }
+    tickBuried(m, dt) {
+      const M = this.mine;
+      if (M.isOpen(m.tile)) { this.unbury(m, this.homeDist[m.tile] >= 0); return; }
+      const help = this.miners.some(o => o !== m && o.state !== 'out' && o.state !== 'buried' && !o.ghost);
+      m.aloneT = help ? 0 : m.aloneT + dt;
+      if (m.aloneT >= NYA.BURIED_WRIGGLE) this.unbury(m, false);
+    }
+    // dug out where she was, or (wriggled out, or freed into a pocket the crew can't walk to) at the elevator
+    unbury(m, dug) {
+      const M = this.mine;
+      for (let k = this.marks.length - 1; k >= 0; k--) if (this.marks[k].rescue === m.id) this.marks.splice(k, 1);
+      if (!dug) { const e = M.elev; m.tile = e; m.x = m.px = M.x(e); m.y = m.py = M.y(e); }
+      else this.st.dugOut = (this.st.dugOut || 0) + 1;
+      this.toIdle(m, 0.6);
+      this.emote(m, dug ? 'heart' : 'dots', 1.5);
+      this.ev({ t: 'unburied', m: m.id, i: m.tile, dug });
     }
 
     makeMiner(cg, k) {
@@ -227,6 +269,11 @@
         this.end('timeup');
         return;
       }
+      if (this.resQ.length) {
+        const keep = [];
+        for (const r of this.resQ) { if (r.at <= t) this.resonate(r); else keep.push(r); }
+        this.resQ = keep;
+      }
       if (this.chainQ.length) {
         const keep = [];
         for (const c of this.chainQ) {
@@ -261,7 +308,7 @@
     whimsyOf(m) {
       if (this.catterall) return 0;
       let w = m.s.whimsy;
-      if (m.s.flags.whimsyNoLaser && this.marks.length === 0) w *= 1.5;
+      if (m.s.flags.whimsyNoLaser && !this.marks.some(k => !k.rescue)) w *= 1.5;
       return w;
     }
     swingCost(m) {
@@ -294,6 +341,7 @@
 
     updateMiner(m, dt) {
       if (m.emoteT > 0) { m.emoteT -= dt; if (m.emoteT <= 0) m.emote = null; }
+      if (m.state === 'buried') { this.tickBuried(m, dt); return; }
       if (this.waterOn) {
         if (this.mine.water[m.tile] && !m.s.flags.waterproof) {
           if (!(m.wetT > 0)) { this.emote(m, 'wet', 1.2); this.ev({ t: 'wet', m: m.id }); this.st.wet = (this.st.wet || 0) + 1; }
@@ -636,7 +684,7 @@
       const M = this.mine, ty = M.type[i];
       if (ty === T.ORE) {
         const left = (M.dens[i] - M.dropped[i]) / (M.sushi[i] ? 1 : this.densMult);
-        return left * (M.q[i] + (M.glow[i] ? 2 : 0)) * (m.s.flags.scoreOre || 1);
+        return left * (M.q[i] + (M.glow[i] ? 2 : 0)) * (m.s.flags.scoreOre || 1) * (M.crystal[i] ? m.s.flags.crystalLove || 1 : 1);
       }
       if (ty === T.BOX) return 6;
       if (ty === T.NEST) return 7;
@@ -682,8 +730,9 @@
       }
       const markSet = new Set();
       const farMarks = [];
-      if (!f.ignoreLaser) {
+      {
         for (const mk of this.marks) {
+          if (f.ignoreLaser && !mk.rescue) continue; // a buried crewmate yelling for help isn't a laser
           if (this.isFront[mk.idx]) { cands.push(mk.idx); markSet.add(mk.idx); }
           else if (!M.isOpen(mk.idx) || !M.revealed[mk.idx]) {
             farMarks.push(mk);
@@ -930,10 +979,17 @@
       }
     }
 
-    damage(i, dmg, m) {
+    damage(i, dmg, m, cid) {
       const M = this.mine, ty = M.type[i];
       if (ty === T.OPEN || ty === T.ELEV || ty === T.BEDROCK) return;
+      if (M.crystal[i]) this.crystalCid = cid || 0; // which cascade a break here belongs to (0: a fresh one)
       M.hp[i] -= dmg;
+      // Resonance: a swing on a crystal rings through every neighbouring crystal (no further splash from the splash)
+      if (m && M.crystal[i] && ty === T.ORE) {
+        const ring = dmg * NYA.RES_HIT * (m.s.flags.perfectPitch ? 2 : 1) * (this.cfg.resonanceMult || 1);
+        for (const nb of M.nbrs(i)) if (M.crystal[nb] && M.type[nb] === T.ORE) this.damage(nb, ring, null);
+        this.ev({ t: 'ring', i });
+      }
       if (ty === T.ORE) {
         const layer = M.maxHp[i] / M.dens[i];
         const should = Math.min(M.dens[i], Math.floor((M.maxHp[i] - Math.max(0, M.hp[i])) / layer + 1e-6));
@@ -1020,6 +1076,7 @@
       if (this.rubbleP > 0 && (ty === T.DIRT || ty === T.STONE || ty === T.HARD || ty === T.GROOVE) && this.roughRng.chance(this.rubbleP)) M.rubble[i] = NYA.RUBBLE_STEPS;
       if (ty === T.ORE || ty === T.BOX || ty === T.NEST) this.resLeft--;
       if (ty === T.NEST) this.nestBroken(i, m);
+      if (ty === T.ORE && M.crystal[i]) this.shatter(i, m);
       if (ty === T.ORE && M.cluster[i] >= 0) {
         const c = M.cluster[i];
         this.clusterLeft[c]--;
@@ -1045,6 +1102,28 @@
           if ((t2 === T.STONE || t2 === T.GROOVE) && this.rng.chance(m.s.flags.crackSpread)) this.chainQ.push({ i: nb, at: this.t + 0.12, cid: -1 });
         }
       }
+    }
+
+    // A crystal shattered: its neighbours take a pulse of RES_SHATTER × its max HP a moment later (resQ), which can
+    // shatter them in turn. Breaks along one pulse chain count as one cascade (st.bestCascade).
+    shatter(i, m) {
+      const M = this.mine;
+      let cid = this.crystalCid || 0;
+      if (!cid) { cid = ++this.resId; this.resCounts[cid] = 0; }
+      this.crystalCid = 0;
+      this.resCounts[cid]++;
+      this.st.crystals = (this.st.crystals || 0) + 1;
+      if (this.resCounts[cid] > (this.st.bestCascade || 0)) this.st.bestCascade = this.resCounts[cid];
+      const pulse = M.maxHp[i] * NYA.RES_SHATTER * (this.cfg.resonanceMult || 1);
+      for (const nb of M.nbrs(i)) if (M.crystal[nb] && M.type[nb] === T.ORE) this.resQ.push({ i: nb, at: this.t + NYA.RES_DELAY, dmg: pulse, cid });
+      this.ev({ t: 'shatter', i, n: this.resCounts[cid] });
+      if (this.game.onCrystal) this.game.onCrystal(this, this.resCounts[cid]);
+    }
+    resonate(r) {
+      const M = this.mine;
+      if (!(M.crystal[r.i] && M.type[r.i] === T.ORE)) return;
+      this.damage(r.i, r.dmg, null, r.cid);
+      if (M.type[r.i] === T.ORE) this.ev({ t: 'ring', i: r.i });
     }
 
     startChain(i) {
@@ -1210,14 +1289,31 @@
       if (M.revealed[idx] && M.isOpen(idx)) return false;
       if (this.marks.some(k => k.idx === idx)) return false;
       this.marks.push({ idx, t0: this.t, drone: !!drone });
+      // Refraction: a mark on a seen crystal splits across its whole cluster, free of the mark cap
+      if (!drone && M.crystal[idx] && M.revealed[idx] && M.type[idx] === T.ORE) {
+        const seen = new Set([idx]), q = [idx];
+        while (q.length) {
+          const c = q.pop();
+          for (const nb of M.nbrs(c)) {
+            if (seen.has(nb) || !M.crystal[nb] || M.type[nb] !== T.ORE) continue;
+            seen.add(nb); q.push(nb);
+            if (!this.marks.some(k => k.idx === nb)) this.marks.push({ idx: nb, t0: this.t, refract: idx });
+          }
+        }
+        if (seen.size > 1) { this.st.refracts = (this.st.refracts || 0) + 1; this.ev({ t: 'refract', i: idx, n: seen.size }); if (this.game.onRefract) this.game.onRefract(this); }
+      }
       const max = drone ? 0 : (this.cfg.laserMax || 3);
       if (drone) {
         const dm = this.marks.filter(k => k.drone);
         if (dm.length > (this.cfg.droneMarks || 1)) this.marks.splice(this.marks.indexOf(dm[0]), 1);
         this.st.droneMarks++;
       } else {
-        const pm = this.marks.filter(k => !k.drone);
-        if (pm.length > max) this.marks.splice(this.marks.indexOf(pm[0]), 1);
+        const pm = this.marks.filter(k => !k.drone && !k.refract && !k.rescue);
+        if (pm.length > max) {
+          const old = pm[0]; // the oldest mark goes, and the crystals it refracted onto with it
+          this.marks.splice(this.marks.indexOf(old), 1);
+          for (let k = this.marks.length - 1; k >= 0; k--) if (this.marks[k].refract === old.idx) this.marks.splice(k, 1);
+        }
         this.st.marks++;
       }
       this.ev({ t: 'mark', i: idx, drone: !!drone });
@@ -1232,8 +1328,13 @@
     }
     removeMark(idx) {
       const k = this.marks.findIndex(m => m.idx === idx);
-      if (k >= 0) { this.marks.splice(k, 1); return true; }
-      return false;
+      if (k < 0) return false;
+      const mk = this.marks[k];
+      if (mk.rescue) return false; // she's still in there
+      this.marks.splice(k, 1);
+      const src = mk.refract != null ? mk.refract : idx; // a refracted mark comes off with the whole cluster's
+      for (let j = this.marks.length - 1; j >= 0; j--) if (this.marks[j].refract === src || this.marks[j].idx === src) this.marks.splice(j, 1);
+      return true;
     }
     isMarked(idx) { return this.marks.some(m => m.idx === idx); }
     setForbid(idx, on) {
@@ -1247,7 +1348,7 @@
     minerById(id) { return this.miners.find(m => m.id === id); }
     useBlunt(id, potency) {
       const m = this.minerById(id);
-      if (!m || m.state === 'rescue') return false;
+      if (!m || m.state === 'rescue' || m.state === 'buried') return false;
       this.restore(m, potency);
       this.release(m);
       m.flopped = false; m.bored = false; m.clockOut = false;
@@ -1321,7 +1422,7 @@
       if (!M.isOpen(idx) || this.homeDist[idx] < 0) return false;
       this.hotbox = { idx, until: this.t + 30 };
       for (const m of this.miners) {
-        if (m.state === 'rescue') continue;
+        if (m.state === 'rescue' || m.state === 'buried') continue;
         this.bfs(m.tile);
         if (this._dist[idx] < 0) continue;
         this.release(m);

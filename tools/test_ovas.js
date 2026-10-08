@@ -26,7 +26,7 @@ for (const o of NYA.OVAS) {
     runUntil(() => false, 5 * 60);
     if (!g.ovaReleaseReady(o.id)) { console.log(`  ${o.name}: never got to start ${NYA.OVA_RELEASES[rel]} (season ${g.s.season})`); break; }
     const ep = g.phase === 'shift' && g.episode && !g.episode.ended ? g.episode : null;
-    const before = { season: g.s.season, yarn: g.s.yarn, catnip: g.s.catnip + (ep && !ep.eventKey ? ep.cfg.purrmit : 0), upg: JSON.stringify(g.s.upg),
+    const before = { season: g.s.season, yarn: g.s.yarn, catnip: g.s.catnip + (ep && !ep.eventKey && (ep.cfg.purrmitCur || 'catnip') === 'catnip' ? ep.cfg.purrmit : 0), upg: JSON.stringify(g.s.upg),
       crew: JSON.stringify(g.s.crew.map(c => [c.id, c.level, c.xp])), tiers: JSON.stringify(g.s.tierUnlocked) };
     if (!g.startOva(o.id)) { console.log(`  ${o.name} ${NYA.OVA_RELEASES[rel]}: could not start (unlocked: ${g.ovaUnlocked(o.id)})`); break; }
     const goal = g.ovaGoal();
@@ -34,7 +34,7 @@ for (const o of NYA.OVAS) {
     const cleared = !g.s.ova;
     // the resumed run starts a shift on the same tick, so add that shift's purrmit back before comparing
     const ep2 = g.phase === 'shift' && g.episode ? g.episode : null;
-    const after = { season: g.s.season, yarn: g.s.yarn, catnip: g.s.catnip + (ep2 && !ep2.eventKey ? ep2.cfg.purrmit : 0), upg: JSON.stringify(g.s.upg),
+    const after = { season: g.s.season, yarn: g.s.yarn, catnip: g.s.catnip + (ep2 && !ep2.eventKey && (ep2.cfg.purrmitCur || 'catnip') === 'catnip' ? ep2.cfg.purrmit : 0), upg: JSON.stringify(g.s.upg),
       crew: JSON.stringify(g.s.crew.map(c => [c.id, c.level, c.xp])), tiers: JSON.stringify(g.s.tierUnlocked) };
     const diff = Object.keys(before).filter(k => k === 'catnip' ? Math.abs(after.catnip - before.catnip) > 1e-9 * before.catnip + 1e-6 : after[k] !== before[k]);
     const back = cleared && !diff.length;

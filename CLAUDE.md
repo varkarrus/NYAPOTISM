@@ -15,8 +15,9 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
 - **Per-tier scaling lives in `js/data/tiers.js`:** `tierBase`, `tierHP`, `tierResist`, `tierXP`, `tierDensityP`, `tierCrumble`, `tierDarkness`, `tierFooting`, `tierRich`. New tiers get these for free.
   - Past Tier 4, HP and resist grow an extra `DEEP_HP`/`DEEP_RESIST` per tier, because players only arrive after a few prestiges' worth of multipliers.
   - A tier can override `nipTier` (what its ore pays, read with `NYA.tierNip`) and `diffTier` (how tough it is, may be fractional). The Mousehole Maze uses both to be a cheese sidegrade.
-- **New tiers:** add the `NYA.TIERS[n]` entry and raise `NYA.MAX_TIER`. Gate the survey with `NYA.surveyReq(g, tier, fcTier, n)`, so the perfect-clear requirement only applies to the first unlock. One easy clear (crew above half stamina, `NYA.EASY_CLEAR`) also satisfies it. Add a `STORY_FAX.tierN`, a bunk, music `prog` and a dev-save milestone.
-- **Yarn** comes from `s.seasonYarnNip`, not `seasonCatnip`: catnip earned past Tier 4 counts ÷`NYA.YARN_TIER_DIV` per tier. Any new catnip payout that should count toward yarn adds to both.
+- **Mine order is not fixed.** The GDD's tier list isn't sacred: reorder, or add new mines in between, as the design needs. The user has new quirk ideas since the GDD, and wants old quirks to come back in later mines (remixed or combined), not appear once and vanish.
+- **New tiers:** add the `NYA.TIERS[n]` entry and raise `NYA.MAX_TIER`. Gate the survey with `NYA.surveyReq(g, tier, fcTier, n)`, so the perfect-clear requirement only applies to the first unlock. One easy clear (crew above half stamina, `NYA.EASY_CLEAR`) also satisfies it. Add a `STORY_FAX.tierN`, a bunk, music `prog` and a dev-save milestone. A tier's purrmit can cost another currency with `purrmitCur` (Tier 7 costs sushi): go through `game.purrmitCost(t)` / `purrmitCur(t)` / `canPayPurrmit(t)`.
+- **Yarn** comes from `s.seasonYarnNip`, not `seasonCatnip`: catnip earned past Tier 4 counts less, ÷`NYA.yarnDiv(def, tier)`: ÷`YARN_TIER_DIV` (100) per tier up to the Sushi Grotto, then ÷10 per tier, so a deeper mine is never a worse yarn farm per item. Any new catnip payout that should count toward yarn adds to both.
 - **Events:**
   - Game → UI: `game.emit(type, data)`.
   - Episode → renderer: `ep.ev({ t: ... })`. These are dropped when running headless.
@@ -50,6 +51,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - `node tools/harness.js --minutes 150 --seed 1` gives the novelty timeline and checkpoints. Add `--quiet --json` for scripting, and check seeds 2–4 too.
   - `node tools/harness.js --minutes 480 --seasons 7 --seed 4` runs a multi-season prestige check.
   - `node tools/test_mice.js 4` measures the Mousehole Maze at first arrival: Tier 5 vs Tier 6 with no turrets, Turret-chan, and smart turrets.
+  - `node tools/test_crystal.js 4` measures the Crystal Catacombs at first arrival: Tier 6 vs Tier 7 left alone and with a player lasering crystal clusters.
   - `node tools/seasons.js 4 8` prints catnip, yarn and tier times per season. Add `--max-tier 4` to compare against the economy without newer mines.
   - `node tools/test_events.js` and `node tools/test_pump.js` cover the event mines and the Tier 4 pumps.
   - `node tools/diag.js --minutes 30` shows where miner time goes.

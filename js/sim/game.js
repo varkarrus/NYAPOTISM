@@ -150,6 +150,14 @@
       const ws = this.lvl('wetsuit');
       return { wetPace: NYA.WET_PACE + 0.1 * ws, wetDrain: NYA.WET_DRAIN - 0.25 * ws, drain: this.lvl('drain') };
     }
+    // Crystal Catacombs: resonance cascades and refracted marks
+    onCrystal(ep, cascade) {
+      if (this.novel('crystal', 'CRYSTAL CATNIP! Every hit rings through its neighbours, and a shattering crystal can set off the rest', 'mine'))
+        this.emit('toast', { text: 'Doc Boom: \u201cListen to that! It\u2019s RESONATING! Hit one, they all feel it. Hit enough of them and\u2026 well. Stand back.\u201d', kind: 'doc' });
+      if (cascade >= 5) this.novel('cascade', 'Resonance cascade! ' + cascade + ' crystals in one chain', 'mine');
+    }
+    onBuried() { this.novel('buried', 'Funny story… a catgirl started the shift stuck in a rock! The crew will dig her out', 'mine'); }
+    onRefract() { this.novel('refract', 'Refraction! Lasering one crystal marks its whole cluster, and doesn\u2019t use up your laser marks', 'tool'); }
     onFlood() { this.novel('flood', 'FLOOD! Opening a chamber lets the water in. Wet catgirls walk at half speed and tire twice as fast', 'mine'); }
     // Mousehole Maze: turret slots and damage, crew damage vs mice, Turret-chan's training
     miceCfg() {
@@ -191,7 +199,7 @@
       const ep = this.phase === 'shift' && this.episode && !this.episode.ended ? this.episode : null;
       if (ep) { // the shift that got interrupted is handed back: its purrmit, or its event mine
         if (ep.eventKey) { const q = { ev: ep.eventKey, tier: ep.tier }; if (!run.pendingEvent) run.pendingEvent = q; else run.tanuki.queue.unshift(q); }
-        else run.catnip += ep.cfg.purrmit || 0;
+        else run[ep.cfg.purrmitCur || 'catnip'] += ep.cfg.purrmit || 0;
       }
       s.suspended = { at: s.simTime, run };
       s.ova = { id, rel };
@@ -255,6 +263,8 @@
     ffSpeed() { return this.loomRowDone(3) ? 5 : this.loom('nm_ff') ? 3 : 2; }
     bankEff() { return this.loom('nm_bank') ? 0.5 : 0.33; }
     purrmitCost(t) { return NYA.TIERS[t].purrmit; }
+    purrmitCur(t) { return NYA.TIERS[t].purrmitCur || 'catnip'; } // Tiers 7+ take sushi (GDD)
+    canPayPurrmit(t) { return (this.s[this.purrmitCur(t)] || 0) >= this.purrmitCost(t); }
     hireCost() { return Math.ceil(10 * Math.pow(1.15, this.s.hires)); }
     anchorSlots() { return this.loom('ta_5') ? 5 : this.loom('ta_3') ? 3 : this.loom('ta_2') ? 2 : this.loom('ta_1') ? 1 : 0; }
 
@@ -709,12 +719,12 @@
       const evq = this.s.pendingEvent;
       if (evq) return this.startEventEpisode(evq);
       let t = this.s.selectedTier;
-      while (t > 1 && (!this.s.tierUnlocked[t] || this.s.catnip < this.purrmitCost(t))) {
-        if (this.s.tierUnlocked[t]) this.emit('toast', { text: 'Can’t afford the purrmit for ' + NYA.TIERS[t].name + ' — falling back.', kind: 'warn' });
+      while (t > 1 && (!this.s.tierUnlocked[t] || !this.canPayPurrmit(t))) {
+        if (this.s.tierUnlocked[t]) this.emit('toast', { text: 'Can’t afford the purrmit for ' + NYA.TIERS[t].name + (this.purrmitCur(t) !== 'catnip' ? ' (it costs ' + this.purrmitCur(t) + ')' : '') + ' — falling back.', kind: 'warn' });
         t--;
       }
-      const cost = this.purrmitCost(t);
-      this.s.catnip -= cost;
+      const cost = this.purrmitCost(t), cur = this.purrmitCur(t);
+      this.s[cur] -= cost;
       const def = NYA.TIERS[t];
       this.s.episodeNum++;
       this.s.episodes++;
@@ -744,9 +754,9 @@
         centrifuge: this.lvl('centrifuge'),
         bluntPotency: this.bluntPotency(),
         droneMarks: 1,
-        pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')),
+        pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')), resonanceMult: 1 + 0.15 * this.lvl('fork'),
         junctions: this.lvl('junctions') > 0,
-        purrmit: cost,
+        purrmit: cost, purrmitCur: cur,
       };
       Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg());
       cfg.headlamp += this.ovaPerk('lights');
@@ -816,7 +826,7 @@
         laserMax: this.laserMax(), headlamp: this.lvl('headlamp') + (ev.headlamp || 0), headless: this.headless,
         resonance: this.lvl('resonance') > 0, polishExp: this.polishExp(), centrifuge: this.lvl('centrifuge'),
         bluntPotency: this.bluntPotency(), droneMarks: 1, purrmit: 0,
-        pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')), junctions: this.lvl('junctions') > 0,
+        pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')), resonanceMult: 1 + 0.15 * this.lvl('fork'), junctions: this.lvl('junctions') > 0,
         event: q.ev, ghosts: ev.ghosts || 0,
       };
       Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg());
@@ -867,7 +877,7 @@
       let catnip = ore * ref * clearMult * glob * evMult;
       if (ep.event) { s.life.events = (s.life.events || 0) + 1; s.life.wishes = (s.life.wishes || 0) + ep.wishes; }
       let blendCut = 0;
-      const yarnDiv = Math.pow(NYA.YARN_TIER_DIV, Math.max(0, (ep.def.nipTier || ep.tier) - NYA.YARN_TIER_FROM)); // see NYA.YARN_TIER_FROM
+      const yarnDiv = NYA.yarnDiv(ep.def, ep.tier); // see NYA.YARN_TIER_FROM
       if (s.blend && s.blend.active) { blendCut = catnip * 0.5; catnip -= blendCut; s.blend.pot += blendCut; s.blend.potYarn = (s.blend.potYarn || 0) + blendCut / yarnDiv; }
       s.catnip += catnip;
       this.boardEpisodeEnd();
@@ -903,6 +913,7 @@
       L.marks += st.marks; s.stats.marks += st.marks; L.swings += st.swings; s.stats.swings += st.swings;
       L.items += st.items; L.distractions += st.distractions; L.droneMarks += st.droneMarks; L.glowing += st.glowing;
       L.rescues += st.rescues; L.floods = (L.floods || 0) + (st.floods || 0);
+      if (st.crystals) { L.crystals = (L.crystals || 0) + st.crystals; L.bestCascade = Math.max(L.bestCascade || 0, st.bestCascade || 0); }
       if (ep.miceOn) { L.mice = (L.mice || 0) + (st.mice || 0); L.nests = (L.nests || 0) + (st.nests || 0); L.bites = (L.bites || 0) + (st.bites || 0); }
       if (st.allLoaf) L.allLoaf++;
       if (st.bestChain > L.bestChain) L.bestChain = st.bestChain;

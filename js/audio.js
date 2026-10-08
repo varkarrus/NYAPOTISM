@@ -12,6 +12,7 @@
     dairy: [[0, 'M7'], [5, 'M7'], [2, 'm7'], [7, 'sus']],
     sushi: [[0, 'M7'], [9, 'm7'], [5, 'M7'], [7, '7']],   // breezy seaside city pop
     maze: [[9, 'm7'], [5, 'M7'], [7, '7'], [4, '7']],     // sneaky minor-key chase
+    crystal: [[0, 'M7'], [4, 'm7'], [9, 'm7'], [2, 'sus']],  // glassy, floating, a little eerie
   };
   const CHORD = { M7: [0, 4, 7, 11], m7: [0, 3, 7, 10], '7': [0, 4, 7, 10], sus: [0, 5, 7, 10] };
 
@@ -242,6 +243,20 @@
           if (a === 1) this.osc('sine', base * 1.15, t + 0.09, 0.06, 0.04, null, { slide: base * 1.5 });
           break;
         }
+        case 'chime': { // a crystal ringing; a picks the note so a cascade plays a little arpeggio
+          const scale = [79, 83, 86, 88, 91, 95, 98];
+          const n = scale[(a || 0) % scale.length];
+          this.osc('sine', NOTE(n), t, 0.5, 0.05, null, { a: 0.002 });
+          this.osc('sine', NOTE(n + 19), t, 0.25, 0.015, null, { a: 0.002 });
+          break;
+        }
+        case 'shatter': { // a crystal breaking: glassy noise plus a bright falling chord
+          this.noiseHit(t, 0.18, 0.18, 'highpass', 4000, null, 1, 7000);
+          const n0 = 84 + ((a || 0) % 5) * 2;
+          [0, 4, 7].forEach((d, k) => this.osc('triangle', NOTE(n0 + d), t + k * 0.03, 0.35, 0.05, null, { a: 0.002, slide: NOTE(n0 + d - 5) }));
+          break;
+        }
+        case 'prism': [0, 4, 7, 11, 14].forEach((d, k) => this.osc('sine', NOTE(86 + d), t + k * 0.04, 0.3, 0.035, null, { a: 0.002 })); break;
         case 'pew': this.noiseHit(t, 0.05, 0.08, 'bandpass', 900, null, 2, 400); this.osc('triangle', 520, t, 0.08, 0.05, null, { slide: 260 }); break;
         case 'splash':
           this.noiseHit(t, 0.4, 0.16, 'lowpass', 1400, null, 0.6, 300);

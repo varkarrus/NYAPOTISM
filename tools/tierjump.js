@@ -14,7 +14,7 @@ function measure(json, tier, eps) {
   g.startEpisode();
   let guard = 0;
   while (n < eps && guard++ < 2e6) { g.tick(NYA.TICK); if (g.phase === 'await') g.nextEpisode(); }
-  return { cps: (earned - n * g.purrmitCost(tier)) / t, gross: earned / t, fc: fc + '/' + n };
+  return { cps: (earned - n * (g.purrmitCur(tier) === 'catnip' ? g.purrmitCost(tier) : 0)) / t, gross: earned / t, fc: fc + '/' + n };
 }
 const g = new NYA.Game({ headless: true, seed: 'harness-' + seed });
 const bot = new NYA.Bot(g, { mode: 'active', unravel: 'never' });

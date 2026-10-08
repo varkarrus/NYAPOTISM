@@ -1,11 +1,11 @@
-# Handoff — state as of 2026-10-08
+# Handoff — state as of 2026-10-09
 
 This picks up development of NYAPOTISM! after the first build sessions. `CLAUDE.md` has the project rules and workflow. `README.md` lists what's built.
 
 ## Where things stand
 
 The vertical slice is playable and live on GitHub Pages. `main` is at https://varkarrus.github.io/NYAPOTISM/, and the newest other branch is at https://varkarrus.github.io/NYAPOTISM/dev/. The user is away from their computer for a few days and playtests on `/dev/`, so push playable work to the session branch and add a changelog entry (`js/ui/changelog.js`). The build includes:
-- Tiers 1–6, with grooved chains, tangles + Schrödinger's Box, Dairy Depths pumping, Sushi Grotto flooding, and Mousehole Maze mice and turrets.
+- Tiers 1–7, with grooved chains, tangles + Schrödinger's Box, Dairy Depths pumping, Sushi Grotto flooding, Mousehole Maze mice and turrets, and Crystal Catacombs refraction and resonance.
 - Seven OVA challenge tapes.
 - Traits, the R&D tree and MEWCLEAR, eight actives, standing orders, and Banked Time.
 - Skein prestige into the Quantum Loom.
@@ -83,6 +83,9 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | The bot's unravel rule reads the unrounded yarn rate | In a fast run it hit 1 yarn early, saw the whole-yarn steps as a falling rate and unravelled Season 2 at 21 min for 1 yarn |
 | Fax board: mine-gimmick faxes (milk, sushi, floods, mice, cheese…) carry `tier` and show "?" until that mine is reached (any run). R&D's Defense section is hidden until cheese or Tier 6 | Playtest: the Defense teaser spoiled the mice |
 | Fax `longrun` ("Longer Than The Pirates"): `episodeNum` above `NYA.longRunnerEps()`, a certain pirate anime's count (1180 on 2026-09-27, +26 a year, Toei's new cap) | User fax idea; it shouldn't name the show, and the count should keep up on its own. Recalibrate the anchor if the schedule changes |
+| **Tier 7 Crystal Catacombs** (`quirk: 'crystal'`, 36×24, `nipTier: 6`, `diffTier: 6.5`, darkness 3). Minegen grows crystal catnip clusters (`M.crystal`, ORE tiles, 4–8 each, ~1 tile in 16, quality +1, HP ×`NYA.CRYSTAL_HP` 1.5) on their own RNG stream. **Refraction:** a player mark on a seen crystal also marks its whole connected cluster (`refract: src` marks, free of the mark cap, removed with their source). **Resonance:** a swing at a crystal splashes `RES_HIT` 35% of its damage onto touching crystals; a crystal that breaks pulses `RES_SHATTER` 50% of its max HP into its neighbours after `RES_DELAY` 0.12 s (`resQ`), so chains cascade (`st.bestCascade`). Crystals glow through the darkness overlay. Purrmit costs 10 **sushi** (`purrmitCur`, the GDD's sushi sink for T7–T9). Tuning Forks (R&D Excavation, +15% resonance/level). Traits Perfect Pitch / Magpie (`tier: 7`). Bunk 11 at 5e16. Survey 1e13 + 2 T6 perfect clears. Faxes Crystal Clear, Glass Harmonica. `tools/test_crystal.js` | User: "time to start making tiers 7 and up". Opens at 3.7–4.4h (Seasons 5–10), 0.2–0.7h after Tier 6, as the next wall: stone 32–73 swings on arrival, 0–0.15× Tier 6 catnip/s. Workable around Seasons 11–12; 2h after first arrival it pays 17–23× Tier 6 with 51–55 crystals shattered per shift (best cascades 4–7). Lasering crystals is a small help on arrival and neutral later |
+| Yarn divisor past the Sushi Grotto follows base pay (`NYA.yarnDiv`, `YARN_TIER_CAP` 5): ÷100 per nip tier through Tier 5/6, then only ÷10 per tier (Tier 7 ÷1000) | At ÷100 per tier, Tier 7 ore (×13 the pay of Tier 6) counted a fifth as much yarn per item, so reaching it cut yarn per season to 9–14K vs 27–95K without it. Now seasons with Tier 7 match the Tier 6 economy while it's a wall and pull ahead once it's workable (seed 1, S13–S16: 109–183K vs 102–140K). Lifetime yarn at 12h 2.0–2.3M |
+| Trait **"Funny Story…"** (neg, uncommon, `buried` flag): starts each shift sealed in a random diggable rock (`buryMiners`, own RNG stream, ≥4 tiles from the elevator). A rescue mark (`mk.rescue`, no laser cost, can't be removed, answered even by laser-ignorers) pulls the crew to dig her out; no stamina drain, mice can't bite her, Blunt/Hotbox skip her. Freed when her tile breaks (a bomb works); if nobody else is working she wriggles out after `NYA.BURIED_WRIGGLE` 4 s and turns up at the elevator | User trait idea. Crew digs her out in 5–55 s |
 
 ### Pacing targets vs current sims (active bot)
 
@@ -98,8 +101,9 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 | Stay-vs-jump income at a tier unlock | 1–2× through Tier 4; the deep mines are walls | T2 1.8, T3 4.5, T4 1.3; T5 0.14 and T6 0.12 on first unlock (walls). `node tools/tierjump.js <seed>` |
 | Tier 5 | opens in Season 1 as a wall; workable a few runs later | opens 1.25–1.3h (stone 15–100 swings on arrival); workable by Seasons 4–6 |
 | Tier 6 | after Tier 5, also a wall at first | first visited 3.1–3.9h (stone 13–29 swings, nothing clears; `tools/test_mice.js` at first arrival: 0 clears, 0.1× T5); workable by Seasons 7–8 |
+| Tier 7 | after Tier 6, a wall at first | first reached 3.7–4.4h, Seasons 5–10 (stone 32–73 swings; `tools/test_crystal.js 4` at first arrival: 0 clears, 0.15× T6); workable by Seasons 11–12, outgrown by Seasons 13–14 (~6h): **Tier 8 should open around 5.5–6h** |
 | Yarn per season | ~×3 growth | S1 ~20, S2 40–80, S4 ~40–160, ~0.6–4K by Seasons 8–9; lifetime 217–319K at 7h. `node tools/seasons.js <seed> <hours>` |
-| Frontier rule | next mine opens while the current one is chewy | `node tools/frontier.js <seed>`: when the next mine opens, the median miner still needs 1.3–4 swings for stone and ~3 s+ to cross (Seasons 1–4); arrivals 7–18 swings (T2–T4). Long late-game Tier 6 stays are still outgrown (no Tier 7 yet) |
+| Frontier rule | next mine opens while the current one is chewy | `node tools/frontier.js <seed>`: when the next mine opens, the median miner still needs 1.3–4 swings for stone and ~3 s+ to cross (Seasons 1–4); arrivals 7–18 swings (T2–T4). Tier 6 is still chewy (1.1–1.5 swings, or a wall) when Tier 7 opens. Tier 7 is outgrown from Seasons 13–14 (~6h, stone 0.3–0.6 swings by season end) until Tier 8 exists |
 
 ## Known issues / watch list
 
@@ -111,8 +115,9 @@ The user has played through Tier 2 and an event mine. They called it "super addi
 - **The test scripts are slower now.** `test_pump.js` and `test_events.js` build crews by buying bunks, which are now progress-gated, so their crews are small. They still pass. Set `g.s.maxTierReached` and full clears in the setup for faster runs.
 - **Darkness is subtle at darkness 1.** The overlay alpha is `0.24 × darkness`, capped at 0.6. Tiers 5–6 are darkness 2.
 - **Tier 6 difficulty at arrival swings with the crew.** Rock HP is fixed per tier, so a crew just past the one-swing threshold breezes it (seed 4: perfect clears, ~1× Tier 5) while others can't clear it (0.14–0.3×). Mice are a moderate pressure; turrets are a bonus, not required (the GDD calls them required; the "bonus, not tax" rule won).
-- **Tier 7+ will need its own `nipTier`/`diffTier` thinking.** With Tier 6 at nipTier 5, a default Tier 7 would pay ×100 over Tier 6.
-- **Mice not built yet:** Sapper, Medic, Cheese Golem, Commandos, the Four Cheesenals. **Turrets not built yet:** Squeaky Decoy, Yarn Launcher, Mousetrap Mortar, Tesla Scratching Post, Laser Turret. Sushi's second sink (GDD: purrmits for Tiers 7–9) is still open.
+- **Tier 8+ needs its own `nipTier`/`diffTier`.** Tier 7 is nipTier 6 / diffTier 6.5. Keep each new mine roughly ×10 pay over the last and check the yarn divisor (`NYA.yarnDiv`) still makes it a better yarn farm once it's workable.
+- **Late-game yarn plateaus** around 100–200K per season from ~Season 13 on (with or without Tier 7). New mines lift it a little; Loom Pattern 2 or new yarn multipliers are the real fix.
+- **Mice not built yet:** Sapper, Medic, Cheese Golem, Commandos, the Four Cheesenals. **Turrets not built yet:** Squeaky Decoy, Yarn Launcher, Mousetrap Mortar, Tesla Scratching Post, Laser Turret. Sushi's second sink is now the Tier 7 purrmit.
 - **OVA goals stop at Tier 4.** Director's Cut releases could ask for Sushi Grotto now, but reaching Tier 5 inside an OVA run takes 30+ min. Nine to Five's Director's Cut is the hardest and swingy for the bot (24–68 min, sometimes not cleared in 90 min).
 - **In the narrow (phone-width) layout the trait-roll card covers much of the mine.**
 - **Content thins out around Season 5.** OVAs and Tiers 5–6 now fill it; Loom Pattern 2 is next.
@@ -129,6 +134,8 @@ The user has played through Tier 2 and an event mine. They called it "super addi
    - **Tabled mine quirk ideas from the user (not built):**
      - *Icy:* very high Grit, but lots of open space, and much of it is ice that behaves like a sliding-ice puzzle (a catgirl slides until something stops her). Pathfinding has to plan around slides, so expect wonderfully elaborate routes.
      - *Portal maze:* a massive mine split into many subsections by bedrock walls, linked by two-way portals.
+4b. **Tiers 8+.** Crystal Catacombs (T7) is built. **The GDD's mine order isn't sacred (user):** reorder, or add new mines in between, as needed. The user has new quirk ideas since the GDD (ask for them), and wants **old quirks to come back** in later mines, remixed or combined (e.g. flooded crystal caves, mice in the catacombs, grooves that ring), not appear once and vanish. That means letting a tier carry several quirks (today `def.quirk` is one string, checked in `minegen.js`, `episode.js`, `mice.js` and `mineview.js`; a `NYA.hasQuirk(def, q)` helper over a `quirks` list would do it). GDD candidates: Greeble Crash Site (mobile Greebles), Fort Knocks, Onsen Abyss, Lunar Litter Site, The Cat's Cradle, plus the tabled Icy and Portal maze ideas above.
+4c. **Trait-fishing automation (user, keep tracking).** Find the point where a player starts wanting to hire and transfer catgirls on repeat to fish for good traits/aptitudes: likely once the roster is full, a hire costs a trivial share of income (`hireCost()` 10 × 1.15^hires vs catnip/min), and Résumé Reader shows aptitudes. That's when to introduce hire/transfer automation as Purrmit Office standing orders (today `auto_hire` only fills empty slots). Measure it with the bot (hire cost / income, roster full, traits per hire) before building.
 5. **Focus vs "Fool's Nip".** Shiny worthless decoy tiles in deeper mines that fool low-Focus miners.
 6. **Workshop (Hagane): equipment slots** (Tool / Outfit / Trinket). This is the sink for special resources such as milk and cheese.
 7. **Rubble and Robovacs.** Gives dirt and stone a purpose, and feeds the Farm later.

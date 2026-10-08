@@ -99,6 +99,7 @@
     { cost: 6e8, tier: 4 },
     { cost: 2e11, tier: 5 },
     { cost: 2e14, tier: 6 },
+    { cost: 5e16, tier: 7 },
   ];
   NYA.bunkReq = function (g) {
     const b = NYA.BUNKS[g.lvl('bunk')];
@@ -280,6 +281,15 @@
     req: g => NYA.surveyReq(g, 6, 5, 2),
     desc: 'Unlocks Tier 6 — Mousehole Maze. Mouse nests, mice, turrets… and a new resource: CHEESE.', flavor: 'Doc Boom’s survey drone came back covered in tiny bite marks.',
     unlock: 'mine:6' });
+  def({ id: 'mine7', bld: 'lab', branch: 'Exploration', name: 'Survey: Crystal Catacombs', max: 1, base: 1e13, timer: 60,
+    show: g => g.s.maxTierReached >= 6,
+    req: g => NYA.surveyReq(g, 7, 6, 2),
+    desc: 'Unlocks Tier 7 — Crystal Catacombs. Crystal catnip that refracts lasers and rings when struck. The purrmit costs SUSHI.', flavor: 'Doc Boom tapped the survey core with a spoon. It sang for twenty minutes.',
+    unlock: 'mine:7' });
+  def({ id: 'fork', bld: 'lab', branch: 'Excavation', name: 'Tuning Forks', max: 10, base: 2e14, growth: 3,
+    show: g => g.s.maxTierReached >= 7,
+    desc: '+15% resonance: hits on crystals ring harder into their neighbours, and shattering crystals pulse harder.', flavor: 'A-flat. Always A-flat. Crystals hate A-flat.',
+    fx: l => 'Resonance ×' + (1 + 0.15 * l).toFixed(2) });
   def({ id: 'junctions', bld: 'lab', branch: 'Logistics', name: 'Pipe Junctions', max: 1, base: 6e7, timer: 20,
     show: g => g.s.maxTierReached >= 4,
     desc: 'New pipes connect to an existing line instead of running all the way back. Clustered milk nodes get much cheaper.', flavor: 'It\u2019s a T-shaped bit of pipe. Doc Boom wants a Nobel.' });

@@ -6,6 +6,17 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Tier 7: Crystal Catacombs',
+      date: '2026-10-09',
+      items: [
+        'New mine below the Mousehole Maze: the Crystal Catacombs. Survey it in the R&D Lab after two perfect clears of the Maze. Like the mines before it, you’ll probably get there a little too early.',
+        'Crystal catnip grows in clusters and glows in the dark. Refraction: laser one crystal and its whole cluster lights up, and it doesn’t use up your laser marks. Resonance: every swing at a crystal rings into the crystals touching it, and a crystal that shatters pulses through its neighbours, so one good hit can set off a chain.',
+        'Purrmits for the Catacombs cost sushi, not catnip. Keep a Sushi Grotto habit going.',
+        'Also new: Tuning Forks in R&D (stronger resonance), two new traits, a new Bunk Bed, two new faxes and a new tune.',
+        'New negative trait, “Funny Story…”: she starts every shift stuck inside a random rock, and the crew has to dig her out before she can mine. At least she doesn’t get tired in there. A Hairball Bomb works too.',
+      ],
+    },
+    {
       title: 'Mines open sooner, take longer',
       date: '2026-10-09',
       items: [
@@ -287,9 +298,10 @@
       'Tier 4, Dairy Depths (milk pumping), at about 1 hour.',
       'Tanuki’s limited-time event mines, R&D and MEWCLEAR, standing orders, swing techniques.',
       'Tier 5, Sushi Grotto (floods and sushi): it opens early, but you’ll arrive too soon. Making it yours takes around 3 hours.',
-      'Tier 6, Mousehole Maze (mice, turrets and cheese): opens around 4 hours in, and it’s just as tough at first.',
+      'Tier 6, Mousehole Maze (mice, turrets and cheese): opens around 3–4 hours in, and it’s just as tough at first.',
+      'Tier 7, Crystal Catacombs (refraction, resonance and sushi purrmits): opens around 4 hours in. Another wall at first.',
       'Late game: seven OVA challenge episodes, 21 releases in all, each with a permanent perk.',
-      'Not built yet: Tiers 7+, equipment, and more late-game content.',
+      'Not built yet: Tiers 8+, equipment, and more late-game content.',
     ],
   };
 })(globalThis.NYA = globalThis.NYA || {});

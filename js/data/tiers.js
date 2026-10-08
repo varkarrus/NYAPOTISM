@@ -55,6 +55,7 @@
   NYA.LONER_PENALTY = 3;
   // Phone a Psychic: every PSYCHIC_GAP s (±) she spends PSYCHIC_CALL s on the phone, then PSYCHIC_TIME s of
   // perfect focus that sees through fog (she heads for the best ore in the mine, seen or not)
+  NYA.BURIED_WRIGGLE = 4; // "Funny Story…": seconds before she wriggles out alone, once nobody else is left to dig her out
   NYA.PSYCHIC_GAP = [20, 35]; NYA.PSYCHIC_CALL = 3; NYA.PSYCHIC_TIME = 12;  // target-score penalty for a Loner on tiles near other miners or their targets
   // Pace <- footing: from Dairy Depths down the whole floor is slick (spilled milk, then standing water, then worse)
   // and walking speed is divided by this. Comfy Boots alone is ×1.1 a level, so without it crews crossed a Tier 4-6
@@ -170,7 +171,28 @@
     },
     music: { key: 4, bpm: 112, prog: 'maze' },
   };
-  NYA.MAX_TIER = 6;
+  NYA.TIERS[7] = {
+    tier: 7, key: 'crystal', name: 'Crystal Catacombs', w: 36, h: 24,
+    comp: { air: 0.12, bedrock: 0.1, ore: 0.04, hard: 0.2, stone: 0.54 }, // plus ~1 tile in 16 of crystal catnip (minegen)
+    purrmit: 10, purrmitCur: 'sushi', // GDD: sushi is the purrmit currency for Tiers 7-9 (the aliens have a sushi thing)
+    quirk: 'crystal', box: true,
+    nipTier: 6, diffTier: 6.5,
+    blurb: 'Glittering catacombs studded with CRYSTAL CATNIP. Quirk: REFRACTION, laser one crystal and its whole cluster lights up. RESONANCE, every hit on a crystal rings through its neighbours, and a shattering crystal can set off the rest. Purrmits cost SUSHI.',
+    pal: {
+      floor: '#2c2640', floor2: '#352e4d', fog: '#0c0a16', fog2: '#141024',
+      dirt: '#8a7aa8', dirt2: '#a090bf', dirt3: '#6b5d88',
+      stone: '#6d6a94', stone2: '#8582ad', stone3: '#535078',
+      hard: '#43406a', hard2: '#55527e', hard3: '#322f55',
+      bed: '#14111f', bed2: '#1d192c', bed3: '#2c2642',
+      accent: '#8ff2ff', sky: '#c9b6ff',
+    },
+    music: { key: 2, bpm: 96, prog: 'crystal' },
+  };
+  NYA.MAX_TIER = 7;
+  // Crystal Catacombs (GDD §9.2). Crystals are tougher than ore, but every hit on one rings RES_HIT of its damage
+  // into each neighbouring crystal, and a crystal that shatters sends RES_SHATTER of its max HP into its neighbours
+  // RES_DELAY s later, so a softened cluster cascades. Lasering one crystal refracts the mark across its cluster.
+  NYA.CRYSTAL_HP = 1.5; NYA.RES_HIT = 0.35; NYA.RES_SHATTER = 0.5; NYA.RES_DELAY = 0.12;
   // Catnip value per ore item. A tier can pay like a shallower one (nipTier) when it's a resource mine.
   NYA.tierNip = t => NYA.tierBase((NYA.TIERS[t] && NYA.TIERS[t].nipTier) || t) * NYA.tierRich(t); // value of one quality-1 item
 

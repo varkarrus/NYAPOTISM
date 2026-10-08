@@ -60,6 +60,7 @@
       this.milkMax = new Float32Array(n);
       this.water = new Uint8Array(n);     // Sushi Grotto: 1 = this open tile is flooded
       this.sushi = new Uint8Array(n);     // Sushi Grotto: this ORE tile is wild nigiri (drops sushi, not catnip)
+      this.crystal = new Uint8Array(n);   // Crystal Catacombs: this ORE tile is crystal catnip (refraction, resonance)
       this.elev = 0;
       this.motherlode = -1;
       this.box = -1;
@@ -294,6 +295,28 @@
         }
       }
 
+      // --- Crystal catnip clusters (T7 quirk): connected crystals refract laser marks and resonate when struck.
+      // Own RNG stream so other tiers' layouts don't change.
+      if (def.quirk === 'crystal') {
+        const cr = new NYA.RNG('crystal:' + this.seed);
+        const want = Math.max(5, Math.round(n / 95));
+        let made = 0; guard = 0;
+        while (made < want && guard++ < 400) {
+          const c = cr.int(0, n - 1);
+          if (!solidOK(c) || nearElev(c, 4)) continue;
+          const size = cr.int(4, 8), cells = [c], set = new Set([c]);
+          for (let tries = 0; cells.length < size && tries < 60; tries++) {
+            const nb = this.nbrs(cells[cr.int(0, cells.length - 1)]);
+            const t = nb[cr.int(0, nb.length - 1)];
+            if (!set.has(t) && solidOK(t) && !nearElev(t, 3)) { set.add(t); cells.push(t); }
+          }
+          if (cells.length < 3) continue;
+          const q = Math.min(9, rollQuality(cr) + 1); // crystal catnip is the good stuff
+          for (const t of cells) { type[t] = T.ORE; this.crystal[t] = 1; this.q[t] = q; this.dens[t] = rollDensity(cr, 0, this.tier); }
+          made++;
+        }
+      }
+
       // --- Mouse nests (T6 quirk), each set in the wall of a little warren so the mice have somewhere to come
       // out. Own RNG stream so other tiers' layouts don't change.
       if (def.quirk === 'mice') {
@@ -360,6 +383,7 @@
         let hp = 0;
         if (t === T.ORE) hp = NYA.ORE_LAYER_HP * tHP * NYA.tierCrumble(this.tier) * (this.sushi[i] ? this.dens[i] : this.dens[i] / NYA.tierDensityMult(this.tier));
         else if (NYA.BASE_HP[t]) hp = NYA.BASE_HP[t] * tHP;
+        if (this.crystal[i]) hp *= NYA.CRYSTAL_HP;
         this.hp[i] = this.maxHp[i] = hp;
       }
 

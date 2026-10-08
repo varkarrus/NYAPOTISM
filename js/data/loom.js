@@ -10,6 +10,16 @@
   // per episode, so entering a deeper mine never lowers the yarn preview.
   NYA.YARN_TIER_FROM = 4;
   NYA.YARN_TIER_DIV = 100;
+  // Past the Sushi Grotto's jump (YARN_TIER_CAP, the last one that brings a new pile of multipliers) a deeper mine's
+  // catnip only counts ÷ how much more its base pay is (×10 per tier), so it's never a worse yarn farm per item than
+  // the mine above it. At ÷100 the Crystal Catacombs earned a fifth of the Maze's yarn per item.
+  NYA.YARN_TIER_CAP = 5;
+  NYA.yarnDiv = (def, tier) => {
+    const nt = def.nipTier || tier;
+    let d = Math.pow(NYA.YARN_TIER_DIV, Math.max(0, Math.min(nt, NYA.YARN_TIER_CAP) - NYA.YARN_TIER_FROM));
+    if (nt > NYA.YARN_TIER_CAP) d *= NYA.tierBase(nt) / NYA.tierBase(NYA.YARN_TIER_CAP);
+    return d;
+  };
   NYA.YARN_EXP = 0.4;
 
   NYA.LOOM_ROWS = ['Head Start', 'Knit Multipliers', 'Timeline Anchors', 'New Mechanics', 'Skein Tuning'];
