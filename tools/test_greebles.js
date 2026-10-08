@@ -6,7 +6,7 @@
 // Tier 8 before measuring (0 = on arrival). Target: Tier 8 on arrival is a wall like the mines before it; a crew
 // catches a few greebles a shift on its own, and lasering helps without being mandatory.
 const path = require('path'); const root = path.join(__dirname, '..', 'js') + '/';
-['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js', 'data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/greebles.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
+['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js', 'data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/greebles.js','sim/ice.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
 const NYA = globalThis.NYA, T = NYA.T;
 const seed = process.argv[2] || '4', EPS = +(process.argv[3] || 6), LATER = +(process.argv[4] || 0);
 

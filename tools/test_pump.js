@@ -1,7 +1,7 @@
 // Headless check of the T4 pump state machine: build -> pipe -> pump -> dry
 const path = require('path');
 for (const f of ['core/util.js', 'data/tiers.js', 'data/traits.js', 'data/content.js', 'data/upgrades.js', 'data/faxes.js',
-  'data/loom.js', 'data/events.js', 'data/ovas.js', 'sim/minegen.js', 'sim/catgirl.js', 'sim/episode.js', 'sim/mice.js','sim/greebles.js', 'sim/game.js']) require(path.join(__dirname, '..', 'js', f));
+  'data/loom.js', 'data/events.js', 'data/ovas.js', 'sim/minegen.js', 'sim/catgirl.js', 'sim/episode.js', 'sim/mice.js','sim/greebles.js','sim/ice.js', 'sim/game.js']) require(path.join(__dirname, '..', 'js', f));
 const NYA = globalThis.NYA;
 const g = new NYA.Game({ headless: true, seed: 'pumptest' });
 g.newGame();

@@ -9,7 +9,7 @@
 // "TIER.<n>.<field>" for a mine (e.g. "TIER.8.diffTier"), and
 // "FC" to override the perfect clears each survey asks for (by tier). Targets: see docs/HANDOFF.md.
 const path = require('path'); const root = path.join(__dirname, '..', 'js') + '/';
-['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js','data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/greebles.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
+['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js','data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/greebles.js','sim/ice.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
 const NYA = globalThis.NYA, T = NYA.T;
 const args = process.argv.slice(2), quiet = args.includes('--quiet');
 const si = args.indexOf('--set'), set = si >= 0 ? JSON.parse(args.splice(si, 2)[1]) : {};

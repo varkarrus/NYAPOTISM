@@ -6,6 +6,16 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Tier 9: Purrmafrost Caverns',
+      date: '2026-10-09',
+      items: [
+        'New mine below the Greeble Crash Site: the Purrmafrost Caverns, big frozen caverns floored with ice. Survey it in the R&D Lab after two perfect clears of the Crash Site.',
+        'Ice: step onto it and you slide until something stops you. Your crew plans its routes around the slides, can only stop on ice against something, and digs new places to stop. Sliding is quick and costs no stamina; walking the frozen rock is slow. Sometimes someone slides somewhere with no way back, and the Rescue Claw comes for her.',
+        'The cold: every swing (and every step) costs ×3 stamina, so Grit matters. Thermal Undies in R&D soften it. New trait: Snow Leopard. Purrmits cost sushi. Plus a new Bunk Bed, faxes and a tune.',
+        'Changed: a catgirl the Rescue Claw fishes out now goes back to work if she still has stamina (she used to clock out for the shift).',
+      ],
+    },
+    {
       title: 'Tier 8: Greeble Crash Site, Project MEWCLEAR rework',
       date: '2026-10-09',
       items: [
@@ -304,7 +314,7 @@
 
   // What the current build actually contains, so a playtester knows where the content ends.
   NYA.FRONTIER = {
-    summary: 'Roughly 6 hours of new things, then the OVA challenges (several more hours). After that, the last mine keeps you busy a while, then just bigger numbers.',
+    summary: 'Roughly 9 hours of new things, with the OVA challenges along the way. After that, the last mine keeps you busy a while, then just bigger numbers.',
     items: [
       'Tiers 1–3 in your first run (Tier 3 at about 40 minutes).',
       'Something big around the 1 hour mark. No spoilers!',
@@ -313,9 +323,10 @@
       'Tier 5, Sushi Grotto (floods and sushi): it opens early, but you’ll arrive too soon. Making it yours takes around 3 hours.',
       'Tier 6, Mousehole Maze (mice, turrets and cheese): opens around 3–3.5 hours in, and it’s just as tough at first.',
       'Tier 7, Crystal Catacombs (refraction, resonance and sushi purrmits): opens around 4.5 hours in. Another wall at first.',
-      'Tier 8, Greeble Crash Site (greebles to corner, a crashed saucer): opens around 6 hours in, and takes a good while to conquer.',
+      'Tier 8, Greeble Crash Site (greebles to corner, a crashed saucer): opens around 6 hours in.',
+      'Tier 9, Purrmafrost Caverns (sliding ice and the cold): opens around 9 hours in, and takes a good while to conquer.',
       'Late game: seven OVA challenge episodes, 21 releases in all, each with a permanent perk.',
-      'Not built yet: Tiers 9+, equipment, and more late-game content.',
+      'Not built yet: Tiers 10+, equipment, and more late-game content.',
     ],
   };
 })(globalThis.NYA = globalThis.NYA || {});

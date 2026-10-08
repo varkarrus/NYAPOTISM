@@ -5,7 +5,7 @@
 // Usage: node tools/test_mice.js [seed] [episodes]. Target: Tier 6 pays less catnip/s than Tier 5 (GDD: it's
 // the cheese mine), mice cost real stamina, and smart turrets beat Turret-chan without being mandatory.
 const path = require('path'); const root = path.join(__dirname, '..', 'js') + '/';
-['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js', 'data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/greebles.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
+['core/util.js','data/tiers.js','data/traits.js','data/content.js','data/upgrades.js','data/faxes.js','data/loom.js','data/events.js', 'data/ovas.js','sim/minegen.js','sim/catgirl.js','sim/episode.js','sim/mice.js','sim/greebles.js','sim/ice.js','sim/game.js','sim/bot.js'].forEach(f => require(root + f));
 const NYA = globalThis.NYA;
 const seed = process.argv[2] || '4', EPS = +(process.argv[3] || 8);
 

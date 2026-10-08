@@ -53,7 +53,8 @@
       this.totalValue = rs.value; this.totalItems = rs.items;
       this.tierBase = NYA.tierNip(this.tier);
       this.densMult = NYA.tierDensityMult(this.tier); // more, lighter items per ore tile from Tier 3
-      this.resist = NYA.tierResist(this.tier);
+      // the cold (Purrmafrost): swings and walking cost def.cold× the stamina, softened by Thermal Undies
+      this.resist = NYA.tierResist(this.tier) * (this.def.cold ? 1 + (this.def.cold - 1) * (cfg.coldSoft == null ? 1 : cfg.coldSoft) : 1);
       this.motherlodeSeen = false; this.boxSeen = false;
       // Sight: how far miners notice ore on their own, and how far opened tiles reveal fog
       this.rubbleP = NYA.tierRubble(this.tier);
@@ -65,6 +66,7 @@
       this.revealR = Math.max(1, Math.min(NYA.MAX_REVEAL, 1 + (cfg.headlamp || 0) - this.darkness));
       if (cfg.lightsOut) { this.noticeRange = 1; this.revealR = 1; this.darkness = Math.max(this.darkness, 2); } // OVA: Lights Out
       this.droneT = 2;
+      this.initIce(); // js/sim/ice.js
       this.fieldDirty = true;
       this.recomputeField();
       this.crewCtx = { mineKey: this.def.key, tier: this.tier, crew: cfg.crew, sRankHere: game.hasSRank ? game.hasSRank(this.tier) : false };
@@ -168,6 +170,7 @@
 
     // ---------------------------------------------------------------- fields
     bfs(start) {
+      if (this.iceOn) return this.iceBfs(start); // slides (js/sim/ice.js)
       const M = this.mine, dist = this._dist, prev = this._prev, q = this._q;
       dist.fill(-1);
       let head = 0, tail = 0;
@@ -208,8 +211,10 @@
 
     recomputeField() {
       const M = this.mine;
+      if (this.iceOn) this.buildIceGraph();
       const dist = this.bfs(M.elev);
       this.homeDist.set(dist);
+      if (this.iceOn) this.iceAfterField();
       const hd = this.homeDist;
       for (let i = 0; i < this.n; i++) {
         if (hd[i] >= 0) {
@@ -318,6 +323,7 @@
       if (m.wetT > 0) c *= this.cfg.wetDrain || NYA.WET_DRAIN; // swings and walking both cost double while wet
       if (m.s.flags.caffeine) c *= 1.1; // Caffeine Addict: twice as fast, 2.2× the drain
       if (m.s.flags.nightOwl && m.stamina < 0.25 * m.maxSt) c *= 0.5;
+      if (m.s.flags.snowCat && this.def.cold) c *= 0.5; // Snow Leopard: the cold doesn't bother her
       return c;
     }
     hasteOf(m) {
@@ -527,7 +533,13 @@
             m.lifted = true;
             const e = M.elev; m.x = m.px = M.x(e); m.y = m.py = M.y(e); m.tile = e;
           }
-          if (m.timer <= 0) { m.lifted = false; this.deliver(m); m.state = 'out'; m.flopped = m.stamina <= 0; }
+          if (m.timer <= 0) {
+            m.lifted = false; this.deliver(m);
+            // she wasn't done, just stuck (the ice strands people all the time): back to work
+            if (m.stamina > 0 && !this.fullClear && !m.done && !m.clockOut) { this.toIdle(m, 0.4); return; }
+            m.state = 'out'; m.flopped = m.stamina <= 0;
+            if (m.clockOut) { m.clockOut = false; m.bored = true; }
+          }
           return;
         case 'hotbox': {
           if (!this.hotbox) { this.toIdle(m); return; }
@@ -571,27 +583,33 @@
 
     move(m, dt, speed, drain) {
       const M = this.mine, st0 = m.state;
-      let remaining = speed * dt;
-      while (remaining > 1e-6 && m.pathI < m.path.length) {
+      let time = dt, slid = 0;
+      m.sliding = false;
+      while (time > 1e-6 && m.pathI < m.path.length) {
         const nxt = m.path[m.pathI];
         const tx = M.x(nxt), ty = M.y(nxt);
         const dx = tx - m.x, dy = ty - m.y;
         const d = Math.abs(dx) + Math.abs(dy);
-        const slow = this.terrainSlow(m, nxt);
-        const step = remaining * slow;
+        // Purrmafrost ice: a move onto ice (or a run of several tiles) is a slide: quick, and it costs no stamina
+        const slide = this.iceOn && (M.ice[nxt] || d > 1.01);
+        if (slide && !m.slideT) { m.slideT = 1; this.onSlide(m, nxt, d); }
+        const v = slide ? speed * NYA.SLIDE_MULT * (m.s.flags.snowCat ? 1.5 : 1) : speed * this.terrainSlow(m, nxt);
         if (Math.abs(dx) > 0.01) m.face = dx > 0 ? 1 : -1;
-        if (d <= step) {
-          m.x = tx; m.y = ty; remaining -= d / slow; m.tile = nxt; m.pathI++;
+        if (d <= v * time) {
+          m.x = tx; m.y = ty; time -= d / v; m.tile = nxt; m.pathI++; m.slideT = 0;
+          if (slide) slid += d / v;
           this.onEnterTile(m, nxt);
           if (m.state !== st0) return false;
         } else {
-          m.x += (dx / d) * step; m.y += (dy / d) * step; remaining = 0;
+          m.x += (dx / d) * v * time; m.y += (dy / d) * v * time;
+          if (slide) { slid += time; m.sliding = true; }
+          time = 0;
         }
       }
       if (drain) {
         const full = m.bag.length >= m.s.carry && this.tier >= 3;
         // ÷ footing: slick floors cost time, not extra stamina per tile walked
-        m.stamina -= this.swingCost(m) * 0.125 * dt * (full ? 1.5 : 1) / this.footing;
+        m.stamina -= this.swingCost(m) * 0.125 * Math.max(0, dt - slid) * (full ? 1.5 : 1) / this.footing;
         if (m.stamina <= 0) { this.zeroStamina(m); return false; }
       }
       return m.pathI >= m.path.length;
@@ -648,12 +666,12 @@
       m.dkind = kind; m.state = 'distract'; m.path = []; m.pathI = 0;
       this.st.distractions++;
       if (kind === 'butterfly') {
-        const dist = this.bfs(m.tile);
+        const dist = this.bfs(this.navStart(m));
         const opts = [];
-        for (let i = 0; i < this.n; i++) if (dist[i] >= 2 && dist[i] <= 5) opts.push(i);
+        for (let i = 0; i < this.n; i++) if (dist[i] >= 2 && dist[i] <= 5 && !(this.iceOn && this.backDist[i] < 0)) opts.push(i);
         if (opts.length) {
           const goal = this.rng.pick(opts);
-          m.path = this.pathTo(goal, m.tile);
+          m.path = this.navPath(goal, m);
           m.pathI = 0;
         }
         m.timer = 3.5;
@@ -671,6 +689,21 @@
         this.st.allLoaf = 1;
         this.ev({ t: 'allloaf' });
       }
+    }
+
+    // Where a new route starts: her tile, or in an ice mine, if she's partway through a slide, the tile she's sliding
+    // to (no stopping or turning mid-slide), which then leads the new path (navPath).
+    navStart(m) {
+      const M = this.mine;
+      m._navFrom = m.tile;
+      if (this.iceOn && m.pathI < m.path.length && Math.abs(m.x - M.x(m.tile)) + Math.abs(m.y - M.y(m.tile)) > 0.01) m._navFrom = m.path[m.pathI];
+      return m._navFrom;
+    }
+    navPath(goal, m) {
+      const from = m._navFrom != null ? m._navFrom : m.tile;
+      const p = this.pathTo(goal, from);
+      if (from !== m.tile) p.unshift(from);
+      return p;
     }
 
     pathTo(goal, from) {
@@ -698,7 +731,7 @@
 
     chooseTarget(m) {
       const M = this.mine, rng = this.rng, f = m.s.flags;
-      const dist = this.bfs(m.tile);
+      const dist = this.bfs(this.navStart(m));
       const cands = [];
       const fr = this.frontier;
       const K = m.s.focus;
@@ -772,6 +805,7 @@
         for (const nb of M.nbrs(c)) if (dist[nb] >= 0 && dist[nb] < sd) { sd = dist[nb]; stand = nb; }
         if (stand < 0) continue;
         let score = this.valueOf(c, m) * 1.4 - sd * 0.18 + rng.next() * 0.8 - this.claims[c] * 1.5;
+        if (this.iceOn && this.backDist[stand] < 0) score -= NYA.ONE_WAY_PENALTY; // a slide with no way back: only if it's worth the Rescue Claw
         if (M.mochi[c] && this.claims[c] === 1) score += 4.5; // a lone pounder needs a partner
         if (crowd.length) for (const k of crowd) if (this.manhattan(c, k) <= 3) { score -= NYA.LONER_PENALTY; break; }
         if (c === psyStep) score = Math.max(score, 0.2) * 3 + 10;
@@ -806,7 +840,7 @@
         for (const it of this.loose) {
           if (it.claim || dist[it.idx] < 0) continue;
           if (n++ > 8 && !rng.chance(0.3)) continue;
-          const score = (it.q * 1.3 + 0.8) * 1.4 - dist[it.idx] * 0.18 + rng.next() * 0.8;
+          const score = (it.q * 1.3 + 0.8) * 1.4 - dist[it.idx] * 0.18 + rng.next() * 0.8 - (this.iceOn && this.backDist[it.idx] < 0 ? NYA.ONE_WAY_PENALTY : 0);
           if (score > bestScore) { bestScore = score; best = { kind: 'item', it }; }
         }
       }
@@ -820,7 +854,7 @@
           const p = this.pumps[node];
           (p.helpers || (p.helpers = [])).push(m.id);
           m.pumpNode = node; m.helping = true; m.target = -1;
-          m.path = this.pathTo(p.stand, m.tile); m.pathI = 0;
+          m.path = this.navPath(p.stand, m); m.pathI = 0;
           m.state = 'walk';
           this.emote(m, 'heart', 1);
           return;
@@ -838,17 +872,17 @@
       if (best.kind === 'pump') {
         const p = this.pumps[best.node] || (this.pumps[best.node] = { built: false, laid: false, op: 0, stand: best.stand });
         p.op = m.id; m.pumpNode = best.node; m.target = -1;
-        m.path = this.pathTo(p.stand, m.tile); m.pathI = 0;
+        m.path = this.navPath(p.stand, m); m.pathI = 0;
         m.state = 'walk';
         if (this.isMarked(best.node)) { const mk = this.marks.find(k => k.idx === best.node); if (mk && this.t - mk.t0 < 3) { m.zoom = 1 + 0.5 * (f.zoomMult || 1); m.zoomT = this.t + 8; this.st.zoomies++; } }
         return;
       }
       if (best.kind === 'item') {
         best.it.claim = m.id; m.item = best.it; m.target = -1;
-        m.path = this.pathTo(best.it.idx, m.tile); m.pathI = 0;
+        m.path = this.navPath(best.it.idx, m); m.pathI = 0;
       } else {
         m.target = best.c; this.claims[best.c]++;
-        m.path = this.pathTo(best.stand, m.tile); m.pathI = 0;
+        m.path = this.navPath(best.stand, m); m.pathI = 0;
         if (best.marked) {
           const mk = this.marks.find(k => k.idx === best.c);
           if (mk && this.t - mk.t0 < 3) {
@@ -913,20 +947,26 @@
 
     goHome(m, mode) {
       const M = this.mine, hd = this.homeDist;
+      const from = this.navStart(m); // (ice) a slide in progress finishes first
       m.path = []; m.pathI = 0;
-      if (hd[m.tile] < 0) {
+      if (this.iceOn ? this.backDist[from] < 0 : hd[m.tile] < 0) {
         // stranded: the Rescue Claw (GDD §9.5)
         m.state = 'rescue'; m.timer = 2.4; m.lifted = false;
         this.st.rescues++;
         this.ev({ t: 'rescue', m: m.id });
         return;
       }
-      let c = m.tile, guard = 0;
-      while (hd[c] > 0 && guard++ < 5000) {
-        let nxt = -1;
-        for (const nb of M.nbrs(c)) if (hd[nb] === hd[c] - 1) { nxt = nb; if (this.rng.chance(0.5)) break; }
-        if (nxt < 0) break;
-        m.path.push(nxt); c = nxt;
+      if (this.iceOn) { // follow the way home over the one-way slides (js/sim/ice.js)
+        if (from !== m.tile) m.path.push(from);
+        for (let c = from, guard = 0; c !== M.elev && guard++ < 5000;) { c = this.backNext[c]; if (c < 0) break; m.path.push(c); }
+      } else {
+        let c = m.tile, guard = 0;
+        while (hd[c] > 0 && guard++ < 5000) {
+          let nxt = -1;
+          for (const nb of M.nbrs(c)) if (hd[nb] === hd[c] - 1) { nxt = nb; if (this.rng.chance(0.5)) break; }
+          if (nxt < 0) break;
+          m.path.push(nxt); c = nxt;
+        }
       }
       m.state = mode;
       if (mode === 'return' && m.s.flags.butterfingers && m.bag.length && m.path.length) {
@@ -1032,6 +1072,7 @@
     }
 
     dropLoose(idx, it) {
+      if (this.iceOn && this.mine.ice[idx] && this.homeDist[idx] < 0) idx = this.mine.elev; // skitters across the ice to the elevator
       it.idx = idx; it.claim = 0; it.gone = false;
       if (!it.id) it.id = this.itemId++;
       this.loose.push(it);
@@ -1447,10 +1488,10 @@
       this.hotbox = { idx, until: this.t + 30 };
       for (const m of this.miners) {
         if (m.state === 'rescue' || m.state === 'buried') continue;
-        this.bfs(m.tile);
+        this.bfs(this.navStart(m));
         if (this._dist[idx] < 0) continue;
         this.release(m);
-        m.path = this.pathTo(idx, m.tile); m.pathI = 0;
+        m.path = this.navPath(idx, m); m.pathI = 0;
         m.state = 'hotbox'; m.zoom = 1.5; m.zoomT = this.t + 30;
         // wakes sleepers like a Blunt does: no longer flopped, clocked out or showing Zs
         m.flopped = false; m.bored = false; m.clockOut = false;

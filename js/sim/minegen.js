@@ -62,6 +62,7 @@
       this.sushi = new Uint8Array(n);     // Sushi Grotto: this ORE tile is wild nigiri (drops sushi, not catnip)
       this.crystal = new Uint8Array(n);   // Crystal Catacombs: this ORE tile is crystal catnip (refraction, resonance)
       this.hull = new Uint8Array(n);      // Greeble Crash Site: this HARD tile is the crashed saucer's hull
+      this.ice = new Uint8Array(n);       // Purrmafrost Caverns: this open tile is ice (you slide across it)
       this.greebleSpawns = [];            // Greeble Crash Site: open tiles where a greeble starts
       this.elev = 0;
       this.motherlode = -1;
@@ -121,7 +122,7 @@
       // --- Air pockets (blobs + drunkard's walk tunnels)
       const airTarget = Math.round(n * (comp.air + (opts.airAdd || 0)));
       let air = 0, guard = 0;
-      const tunnelBias = NYA.hasQuirk(def, 'tangles') ? 0.55 : NYA.hasQuirk(def, 'mice') ? 0.75 : NYA.hasQuirk(def, 'greebles') ? 0.5 : 0.2;
+      const tunnelBias = NYA.hasQuirk(def, 'tangles') ? 0.55 : NYA.hasQuirk(def, 'mice') ? 0.75 : NYA.hasQuirk(def, 'greebles') ? 0.5 : NYA.hasQuirk(def, 'ice') ? 0.1 : 0.2;
       while (air < airTarget && guard++ < 500) {
         let c = rng.int(0, n - 1);
         if (nearElev(c, 3)) continue;
@@ -274,6 +275,17 @@
         for (let i = 0; i < n; i++) if (type[i] === T.OPEN && rng.chance(0.45)) this.tangle[i] = 2;
       }
 
+      // --- Ice (T9 quirk): most of the open cavern floor, never right by the elevator, with a few frozen boulders
+      // standing alone in the open (places for a slide to stop). Own RNG stream.
+      if (NYA.hasQuirk(def, 'ice')) {
+        const ir = new NYA.RNG('ice:' + this.seed);
+        for (let i = 0; i < n; i++) if (type[i] === T.OPEN && !nearElev(i, 2) && ir.chance(0.85)) this.ice[i] = 1;
+        for (let i = 0; i < n; i++) {
+          if (!this.ice[i] || !ir.chance(0.05)) continue;
+          if (this.nbrs(i).filter(nb => type[nb] === T.OPEN).length >= 3) { type[i] = T.STONE; this.ice[i] = 0; }
+        }
+      }
+
       // --- Mud patches (rough ground, Tier 2+). Own RNG so adding mud doesn't reshuffle the rest of the mine.
       const mudShare = NYA.tierMud(def.tier);
       if (mudShare > 0) {
@@ -284,7 +296,7 @@
           let c = mr.int(0, n - 1);
           const len = mr.int(3, 8);
           for (let s = 0; s < len && muddy < target; s++) {
-            if (!nearElev(c, 1) && !this.mud[c] && type[c] !== T.BEDROCK && type[c] !== T.ELEV) { this.mud[c] = 1; muddy++; }
+            if (!nearElev(c, 1) && !this.mud[c] && !this.ice[c] && type[c] !== T.BEDROCK && type[c] !== T.ELEV) { this.mud[c] = 1; muddy++; }
             const d = mr.int(0, 3), cx = this.x(c) + (d === 0 ? 1 : d === 1 ? -1 : 0), cy = this.y(c) + (d === 2 ? 1 : d === 3 ? -1 : 0);
             if (this.inb(cx, cy)) c = this.idx(cx, cy);
           }

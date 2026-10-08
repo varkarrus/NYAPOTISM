@@ -167,6 +167,13 @@
         combatMult: Math.pow(1.5, this.lvl('combat')), chanLvl: this.lvl('chan'), turretChan: true };
     }
     // Greeble Crash Site: Greeble Treats slow them down
+    // Purrmafrost Caverns: Thermal Undies soften the cold
+    iceCfg() { return { coldSoft: Math.pow(0.85, this.lvl('thermals')) }; }
+    onSlide(ep, len) {
+      if (this.novel('slide', 'ICE! Step onto it and you slide until something stops you. The crew plans around it, and the cold makes every swing cost more', 'mine'))
+        this.emit('toast', { text: 'Doc Boom: \u201cIt\u2019s not a bug, it\u2019s PHYSICS! Wheeeee! \u2026Someone get the Rescue Claw.\u201d', kind: 'doc' });
+      if (len >= 12) this.novel('icecapade', 'ICECAPADE! A ' + Math.round(len) + '-tile slide', 'mine');
+    }
     greebleCfg() { return { greebleSlow: Math.pow(0.92, this.lvl('treats')) * (this.mew(8) ? 0.85 : 1) }; }
     onGreeble() {
       if (this.novel('greeble', 'GREEBLES! Alien doodads that scoot away from your crew. Corner one in a dead end, or close in from both sides. Laser one to set the crew on it', 'mine'))
@@ -780,7 +787,7 @@
         junctions: this.lvl('junctions') > 0,
         purrmit: cost, purrmitCur: cur,
       };
-      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg(), this.greebleCfg());
+      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg(), this.greebleCfg(), this.iceCfg());
       cfg.headlamp += this.ovaPerk('lights');
       if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
@@ -851,7 +858,7 @@
         pumpRate: NYA.PUMP_RATE * Math.pow(1.3, this.lvl('pistons')), resonanceMult: (1 + 0.15 * this.lvl('fork')) * (this.mew(7) ? 1.5 : 1), junctions: this.lvl('junctions') > 0,
         event: q.ev, ghosts: ev.ghosts || 0,
       };
-      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg(), this.greebleCfg());
+      Object.assign(cfg, this.ovaCfg(), this.waterCfg(), this.miceCfg(), this.greebleCfg(), this.iceCfg());
       cfg.headlamp += this.ovaPerk('lights');
       if (this.ovaIs('budget')) cfg.centrifuge = 0;
       this.episode = new NYA.Episode(this, cfg);
@@ -938,6 +945,8 @@
       L.items += st.items; L.distractions += st.distractions; L.droneMarks += st.droneMarks; L.glowing += st.glowing;
       L.rescues += st.rescues; L.floods = (L.floods || 0) + (st.floods || 0);
       if (st.crystals) { L.crystals = (L.crystals || 0) + st.crystals; L.bestCascade = Math.max(L.bestCascade || 0, st.bestCascade || 0); }
+      if (st.slides) { L.slides = (L.slides || 0) + st.slides; L.longSlide = Math.max(L.longSlide || 0, st.longSlide || 0); }
+      if (st.rescues && ep.iceOn) L.iceRescues = (L.iceRescues || 0) + st.rescues;
       if (ep.miceOn) { L.mice = (L.mice || 0) + (st.mice || 0); L.nests = (L.nests || 0) + (st.nests || 0); L.bites = (L.bites || 0) + (st.bites || 0); }
       if (st.allLoaf) L.allLoaf++;
       if (st.bestChain > L.bestChain) L.bestChain = st.bestChain;

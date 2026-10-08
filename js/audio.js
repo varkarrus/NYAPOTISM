@@ -14,6 +14,7 @@
     maze: [[9, 'm7'], [5, 'M7'], [7, '7'], [4, '7']],     // sneaky minor-key chase
     crystal: [[0, 'M7'], [4, 'm7'], [9, 'm7'], [2, 'sus']],  // glassy, floating, a little eerie
     greeble: [[0, 'M7'], [6, '7'], [3, 'M7'], [8, 'M7']],   // spacey tritone wobble: 80s sci-fi anime
+    ice: [[0, 'M7'], [7, 'sus'], [9, 'm7'], [5, 'M7']],      // slow, crystalline, a little lonely: snowfall city pop
   };
   const CHORD = { M7: [0, 4, 7, 11], m7: [0, 3, 7, 10], '7': [0, 4, 7, 10], sus: [0, 5, 7, 10] };
 
@@ -262,6 +263,12 @@
           if (a === 1) [0, 4, 7, 12].forEach((d, k) => this.osc('square', NOTE(84 + d), t + k * 0.05, 0.06, 0.03, null, { filter: 'lowpass', ff: 3000 }));
           else if (a === 2) this.osc('sine', NOTE(72), t, 0.7, 0.05, null, { slide: NOTE(96), slideT: 0.6 });
           else { this.osc('square', NOTE(88), t, 0.05, 0.025, null, { filter: 'lowpass', ff: 3000 }); this.osc('square', NOTE(93), t + 0.08, 0.05, 0.025, null, { filter: 'lowpass', ff: 3000 }); }
+          break;
+        }
+        case 'slide': { // a whoosh across the ice, longer for a longer slide
+          const len = Math.min(1, 0.15 + 0.04 * (a || 1));
+          this.noiseHit(t, len, 0.07, 'bandpass', 3000, null, 3, 6000);
+          this.osc('sine', NOTE(91), t, 0.12, 0.02, null, { slide: NOTE(98) });
           break;
         }
         case 'pew': this.noiseHit(t, 0.05, 0.08, 'bandpass', 900, null, 2, 400); this.osc('triangle', 520, t, 0.08, 0.05, null, { slide: 260 }); break;

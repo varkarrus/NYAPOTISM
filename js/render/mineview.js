@@ -274,6 +274,11 @@
             this.rings.push({ i: e.i, life: 0.6, max: 0.6, col: '#e7d6ff', r0: 0.3, r1: 1.8 });
             this.sfx('prism');
             break;
+          case 'slide': // Purrmafrost: whoosh, and a "wheee!" now and then on the long ones
+            if (Math.random() < 0.5) this.sfx('slide', e.n);
+            if (m && e.n >= 5 && Math.random() < 0.25) this.pop(m.x + 0.5, m.y - 0.4, e.n >= 10 ? 'WHEEEEE!' : 'wheee!', '#dff6ff', false);
+            if (m) this.burstAt(m.x, m.y + 0.2, '#ffffff', 3, 1.2, 0.06);
+            break;
           case 'gwake': this.rings.push({ i: e.i, life: 0.6, max: 0.6, col: '#9dff7a', r0: 0.2, r1: 1.2 }); this.sfx('beep', 0); break;
           case 'grab':
             this.burstAt(e.x, e.y, '#9dff7a', 10, 2.6, 0.09); this.burstAt(e.x, e.y, '#c3ccd6', 6, 2, 0.07);
@@ -413,6 +418,7 @@
             }
             if (M.rubble[i]) ctx.drawImage((M.rubble[i] > 1 ? tex.rubble : tex.rubbleLite)[v], X, Y, ts, ts);
             if (y > 0 && !M.isOpen(i - M.w) && M.type[i - M.w] !== T.BOX) { ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(X, Y, ts, ts * 0.22); }
+            if (M.ice[i]) this.drawIce(ctx, X, Y, ts, i, t, M);
             if (M.tangle[i]) this.drawTangle(ctx, X, Y, ts, i, M.tangle[i]);
             if (M.water[i]) this.drawWater(ctx, X, Y, ts, i, t, y === 0 || !M.water[i - M.w]);
             if (ty === T.BOX) {
@@ -894,6 +900,22 @@
     }
 
     // Sushi Grotto water: translucent blue with a wavy, brighter surface line
+    // Purrmafrost ice: a glossy pale-blue sheet with a diagonal shine, cracks here and there, and a glint now and then
+    drawIce(ctx, X, Y, ts, i, t, M) {
+      ctx.fillStyle = 'rgba(200,242,255,0.78)'; ctx.fillRect(X, Y, ts, ts);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.beginPath(); ctx.moveTo(X + ts * 0.15, Y + ts); ctx.lineTo(X + ts * 0.45, Y + ts); ctx.lineTo(X + ts, Y + ts * 0.45); ctx.lineTo(X + ts, Y + ts * 0.15); ctx.closePath(); ctx.fill();
+      if ((i * 13) % 7 === 0) {
+        ctx.strokeStyle = 'rgba(120,170,210,0.7)'; ctx.lineWidth = Math.max(1, ts * 0.03);
+        ctx.beginPath(); ctx.moveTo(X + ts * 0.2, Y + ts * 0.3); ctx.lineTo(X + ts * 0.45, Y + ts * 0.5); ctx.lineTo(X + ts * 0.4, Y + ts * 0.75); ctx.stroke();
+      }
+      if (!M.ice[i - M.w] || i < M.w) { ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(X, Y, ts, Math.max(1, ts * 0.06)); } // frosty rim
+      if (Math.sin(t * 1.7 + i * 2.3) > 0.97) {
+        ctx.fillStyle = '#ffffff';
+        const sx = X + ts * 0.7, sy = Y + ts * 0.3;
+        ctx.fillRect(sx - ts * 0.08, sy, ts * 0.16, ts * 0.03); ctx.fillRect(sx - ts * 0.015, sy - ts * 0.065, ts * 0.03, ts * 0.16);
+      }
+    }
     drawWater(ctx, X, Y, ts, i, t, surface) {
       ctx.fillStyle = 'rgba(70,170,230,0.42)';
       if (surface) {
@@ -1073,7 +1095,7 @@
         x += (k % 2 ? -1 : 1) * (0.32 + 0.16 * Math.floor(k / 2)); y -= 0.06 * (k + 1);
       }
       switch (m.state) {
-        case 'walk': case 'return': case 'hotbox': anim = (m.zoomT > ep.t || m.boost3am > 0) ? 'zoom' : 'walk'; break;
+        case 'walk': case 'return': case 'hotbox': anim = m.sliding ? 'cheer' : (m.zoomT > ep.t || m.boost3am > 0) ? 'zoom' : 'walk'; if (m.sliding) { eyes = 'happy'; } break;
         case 'mine': case 'pbuild': case 'pump': anim = 'mine'; swing = Math.max(0, m.swingAnim / 0.25); break;
         case 'pipe': anim = 'walk'; break;
         case 'flop': anim = 'walk'; droop = 1; eyes = 'half'; mouth = 'flat'; break;

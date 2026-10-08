@@ -205,7 +205,25 @@
     },
     music: { key: 11, bpm: 100, prog: 'greeble' },
   };
-  NYA.MAX_TIER = 8;
+  NYA.TIERS[9] = {
+    tier: 9, key: 'ice', name: 'Purrmafrost Caverns', w: 44, h: 28,
+    comp: { air: 0.3, bedrock: 0.07, ore: 0.07, hard: 0.18, stone: 0.5 }, // big caverns, most of their floor ice (minegen)
+    purrmit: 40, purrmitCur: 'sushi',
+    quirk: 'ice', box: true,
+    cold: 3, // swings (and walking) cost ×3 stamina: Grit and Thermal Undies matter here
+    nipTier: 8, diffTier: 7.8,
+    blurb: 'Frozen caverns, mostly open space, floored with ice. Quirk: SLIDING, step onto ice and you slide until something stops you, so the crew plans routes around it (and sometimes slides somewhere with no way back). The COLD makes every swing cost ×3 stamina. Purrmits cost SUSHI.',
+    pal: {
+      floor: '#2e3442', floor2: '#363d4d', fog: '#0b1018', fog2: '#121a26',
+      dirt: '#8a8078', dirt2: '#a1978e', dirt3: '#6b625b',
+      stone: '#7a7f8c', stone2: '#90959f', stone3: '#5f6470',
+      hard: '#4c5060', hard2: '#5e6273', hard3: '#3a3d4a',
+      bed: '#131b26', bed2: '#1b2533', bed3: '#29384b',
+      accent: '#bfefff', sky: '#dff6ff',
+    },
+    music: { key: 6, bpm: 88, prog: 'ice' },
+  };
+  NYA.MAX_TIER = 9;
   // A tier has one headline quirk (`quirk`) and may bring back older ones too (`quirks`, user: old quirks should return).
   NYA.hasQuirk = (def, q) => !!def && (def.quirk === q || (!!def.quirks && def.quirks.indexOf(q) >= 0));
   // Crystal Catacombs (GDD §9.2). Crystals are tougher than ore, but every hit on one rings RES_HIT of its damage
@@ -219,6 +237,8 @@
   NYA.GREEBLE_SPEED = 1.3; NYA.GREEBLE_WANDER = 0.35; NYA.GREEBLE_SCARE = 3.5; NYA.GREEBLE_PATIENCE = 7;
   NYA.GREEBLE_VALUE = 6; // how keen a catgirl is to chase one (a tile of ore scores its items × quality)
   NYA.HULL_HP = 2; // saucer plating vs hard stone
+  NYA.SLIDE_MULT = 3; // Purrmafrost: sliding is this many times her walking speed (and costs no stamina)
+  NYA.ONE_WAY_PENALTY = 6; // target score lost for a spot she could slide to but not back from (the Rescue Claw's busy enough)
   NYA.MEWCLEAR_R = 7; NYA.MEWCLEAR_GLOW = 10; // THE MEWCLEAR OPTION: blast radius, and how far out ore starts Glowing
   NYA.GREEBLE_MARK = 12; // seconds a lasered greeble stays everyone's business
   // Once spotted, a greeble hangs around GREEBLE_STAY s (random in the range) and then beams back to the mothership,

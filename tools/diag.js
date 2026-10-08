@@ -4,7 +4,7 @@
 const path = require('path');
 const root = path.join(__dirname, '..', 'js');
 for (const f of ['core/util.js', 'data/tiers.js', 'data/traits.js', 'data/content.js', 'data/upgrades.js', 'data/faxes.js',
-  'data/loom.js', 'data/events.js', 'data/ovas.js', 'sim/minegen.js', 'sim/catgirl.js', 'sim/episode.js', 'sim/mice.js','sim/greebles.js', 'sim/game.js', 'sim/bot.js']) require(path.join(root, f));
+  'data/loom.js', 'data/events.js', 'data/ovas.js', 'sim/minegen.js', 'sim/catgirl.js', 'sim/episode.js', 'sim/mice.js','sim/greebles.js','sim/ice.js', 'sim/game.js', 'sim/bot.js']) require(path.join(root, f));
 const NYA = globalThis.NYA;
 const args = process.argv.slice(2);
 const arg = (k, d) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : d; };

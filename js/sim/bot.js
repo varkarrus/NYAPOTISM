@@ -9,7 +9,7 @@
     refinery: 3.2, pick: 2.2, snacks: 2.0, bunk: 12, bags: 1.1, boots: 1.0, grip: 1.6, drills: 0.9, focus: 1.3,
     grit: 1.4, claws: 0.8, blunt: 6, spray: 3, batteries: 0.9, bomb: 6, bombdmg: 0.7, tuna: 5, sonar: 3, treat: 3, catterall: 4, blend: 3,
     hotbox: 5, pouch: 0.9, mine2: 25, mine3: 25, montage: 2.6, perfection: 1.3, radar: 0.5, headlamp: 0.6,
-    enrich: 1.3, mine4: 25, mine5: 25, mine6: 25, mine7: 25, mine8: 25, fork: 1.5, salvage: 3, treats: 1.5, coproc: 0.6, wetsuit: 2.5, drain: 1.2, wasabi: 2, otoro: 3, gouda: 3, cannons: 3, caliber: 1.5, combat: 1.5, chan: 1, junctions: 1.2, milkbath: 3, pistons: 2, cream: 1.5, calcium: 1.5, polisher: 2.2, centrifuge: 1.0, resonance: 1.0, resume: 0.15, lockers: 0.2, mewclear: 0.45, cabinet: 0.6,
+    enrich: 1.3, mine4: 25, mine5: 25, mine6: 25, mine7: 25, mine8: 25, mine9: 25, thermals: 1.5, fork: 1.5, salvage: 3, treats: 1.5, coproc: 0.6, wetsuit: 2.5, drain: 1.2, wasabi: 2, otoro: 3, gouda: 3, cannons: 3, caliber: 1.5, combat: 1.5, chan: 1, junctions: 1.2, milkbath: 3, pistons: 2, cream: 1.5, calcium: 1.5, polisher: 2.2, centrifuge: 1.0, resonance: 1.0, resume: 0.15, lockers: 0.2, mewclear: 0.45, cabinet: 0.6,
   };
 
   class Bot {
@@ -131,7 +131,7 @@
       const goal = g.ovaGoal && g.ovaGoal();
       if (goal && goal.tier && s.tierUnlocked[goal.tier]) pick = goal.tier;
       // sushi purrmits (Tiers 7+): go top up at the Sushi Grotto when running low
-      if (g.purrmitCur(pick) === 'sushi' && s.sushi < g.purrmitCost(pick) * 3 && s.tierUnlocked[5]) pick = 5;
+      if (g.purrmitCur(pick) === 'sushi' && s.sushi < g.purrmitCost(pick) * 1.5 && s.tierUnlocked[5]) pick = 5;
       if (g.purrmitCur(pick) === 'catnip' && g.s.catnip < g.purrmitCost(pick) * 2 && pick > 1) pick = Math.max(1, pick - 1);
       g.selectTier(pick);
     }

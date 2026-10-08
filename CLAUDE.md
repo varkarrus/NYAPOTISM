@@ -12,6 +12,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - Upgrades: `def({...})` in `js/data/upgrades.js`, using `show`, `req`, `costs` or `base`/`growth`, `cur` (currency) and `fx`.
   - Traits: `mods` keys in `js/data/traits.js`. New flag keys must also be added to the flag list in `NYA.buildStats` (`js/sim/catgirl.js`). Give a trait `tier: N` if its text names a mine-specific system, so it can't roll before the player has seen that mine. `req(cg)` limits who can roll it, `onGain(cg)` runs once when she gets it, and `ova: 'id'` marks an OVA-only trait that never rolls normally. A trait that applies everywhere but mentions a later system gets a `descMice`-style second description, shown through `NYA.traitDesc(t, g)` once that system has been seen (lifetime).
   - Also data-driven: faxes (`check` functions), the Loom grid, Tanuki events, and tiers.
+- **Pathfinding goes through `ep.bfs()` / `pathTo()`.** In an ice mine `bfs` walks a one-way slide graph, so never assume consecutive path tiles are neighbours or that `homeDist` is the way back (use `goHome`); start new routes with `navStart(m)` / `navPath(goal, m)` so a slide in progress finishes first.
 - **Per-tier scaling lives in `js/data/tiers.js`:** `tierBase`, `tierHP`, `tierResist`, `tierXP`, `tierDensityP`, `tierCrumble`, `tierDarkness`, `tierFooting`, `tierRich`. New tiers get these for free.
   - Past Tier 4, HP and resist grow an extra `DEEP_HP`/`DEEP_RESIST` per tier, because players only arrive after a few prestiges' worth of multipliers.
   - A tier can override `nipTier` (what its ore pays, read with `NYA.tierNip`) and `diffTier` (how tough it is, may be fractional). The Mousehole Maze uses both to be a cheese sidegrade.
@@ -53,6 +54,7 @@ A browser incremental game built from the design doc `NYAPOTISM! — Catnip Mini
   - `node tools/test_mice.js 4` measures the Mousehole Maze at first arrival: Tier 5 vs Tier 6 with no turrets, Turret-chan, and smart turrets.
   - `node tools/test_crystal.js 4` measures the Crystal Catacombs at first arrival: Tier 6 vs Tier 7 left alone and with a player lasering crystal clusters.
   - `node tools/test_greebles.js 4` does the same for the Greeble Crash Site: Tier 7 vs Tier 8 left alone and with a player lasering greebles (greebles seen, caught and lost per shift). Both take an `[hours]` argument to measure later instead of on arrival.
+  - `node tools/test_ice.js 4` does it for the Purrmafrost Caverns: Tier 8 vs Tier 9, with slides, the longest slide and Rescue Claw trips per shift.
   - `node tools/seasons.js 4 8` prints catnip, yarn and tier times per season. Add `--max-tier 4` to compare against the economy without newer mines.
   - `node tools/test_events.js` and `node tools/test_pump.js` cover the event mines and the Tier 4 pumps.
   - `node tools/diag.js --minutes 30` shows where miner time goes.

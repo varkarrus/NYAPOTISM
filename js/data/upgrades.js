@@ -110,6 +110,7 @@
     { cost: 2e14, tier: 6 },
     { cost: 5e16, tier: 7 },
     { cost: 2e18, tier: 8 },
+    { cost: 5e19, tier: 9 },
   ];
   NYA.bunkReq = function (g) {
     const b = NYA.BUNKS[g.lvl('bunk')];
@@ -317,6 +318,15 @@
     req: g => NYA.surveyReq(g, 8, 7, 2),
     desc: 'Unlocks Tier 8 — Greeble Crash Site. A crashed saucer full of greebles, little alien doodads that run away. The purrmit costs SUSHI.', flavor: 'Doc Boom’s survey drone came back with a greeble stuck to it. It would not stop beeping.',
     unlock: 'mine:8' });
+  def({ id: 'mine9', bld: 'lab', branch: 'Exploration', name: 'Survey: Purrmafrost Caverns', max: 1, base: 1e18, timer: 60,
+    show: g => g.s.maxTierReached >= 8,
+    req: g => NYA.surveyReq(g, 9, 8, 2),
+    desc: 'Unlocks Tier 9 — Purrmafrost Caverns. Icy caverns where you slide until something stops you, and the cold makes every swing cost more. The purrmit costs SUSHI.', flavor: 'Doc Boom came back from the survey with icicles in her goggles and a new favourite word: “wheee”.',
+    unlock: 'mine:9' });
+  def({ id: 'thermals', bld: 'lab', branch: 'Excavation', name: 'Thermal Undies', max: 10, base: 3e18, growth: 3,
+    show: g => g.s.maxTierReached >= 9,
+    desc: 'The cold’s extra stamina cost −15% (compounding). Thermal, fleece-lined, cat-ear compatible.', flavor: 'Pink. Of course they’re pink.',
+    fx: l => 'Cold ×' + (1 + 2 * Math.pow(0.85, l)).toFixed(2) + ' stamina per swing' });
   def({ id: 'fork', bld: 'lab', branch: 'Excavation', name: 'Tuning Forks', max: 10, base: 2e14, growth: 3,
     show: g => g.s.maxTierReached >= 7,
     desc: '+15% resonance: hits on crystals ring harder into their neighbours, and shattering crystals pulse harder.', flavor: 'A-flat. Always A-flat. Crystals hate A-flat.',
