@@ -24,6 +24,8 @@
   // ~250), so the rock was easier than Dairy Depths. Deep tiers toughen faster to make up for it.
   NYA.DEEP_HP = 15; // 10 → 15 with the pacing rebalance: Sushi Grotto opens in Season 1 as the first prestige wall
   NYA.DEEP_RESIST = 5;
+  NYA.WALK_DRAIN = 1 / 16; // walking drains this share of a miner's mining stamina per second (1/16 × base Haste 2 = the old flat ⅛)
+  NYA.WALK_FOOTING = 0.5;  // walking drain per second ÷ footing^this: slick floors stretch a walk, and it costs √ of that in stamina
   NYA.tierResist = t => { const d = NYA.tierDiff(t); return Math.pow(2.0, d - 1) * Math.pow(NYA.DEEP_RESIST, Math.max(0, d - 4)); }; // stamina per swing
   // Richness: ore is worth an extra RICH_STEP per tier on top of tierBase's ×10. Mines are paced so the next one or two
   // open before a crew outgrows the current one (CLAUDE.md), which means shifts run longer with weaker crews; richer

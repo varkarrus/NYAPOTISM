@@ -137,7 +137,7 @@
     { name: 'Head Start Stripe II', desc: 'Start every season with 1 more Bunk and a second free recruit. Not during OVAs.' },
     { name: 'Multiplier Stripe II', desc: 'Catnip ×5.' },
     { name: 'Anchor Stripe II', desc: 'Anchored catgirls get +25% Power, Haste, Pace and Stamina (stacks with the first Anchor Stripe).' },
-    { name: 'Mechanics Stripe II', desc: 'Every standing order costs 1 less RP (minimum 1).' },
+    { name: 'Mechanics Stripe II', desc: '+3 Requisition Points.' },
     { name: 'Skein Stripe II', desc: 'Yarn ×2.' },
   ];
   NYA.LOOM2_COL_STRIPES = [

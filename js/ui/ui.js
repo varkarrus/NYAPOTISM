@@ -97,7 +97,6 @@
         }
         case 'mine': if (g.selectTier(+v)) { this.audio.sfx('click'); this.renderPanel(true); this.toast(`Next episode: ${NYA.TIERS[+v].name}`); } break;
         case 'order': g.toggleOrder(v); this.audio.sfx('stamp'); this.renderPanel(true); this.renderTools(); break;
-        case 'auto': if (g.autoToggle(v)) { this.audio.sfx('stamp'); this.renderPanel(true); } break;
         case 'defrag': this.audio.sfx('stamp'); this.toast('Pochi looks deeply satisfied.'); break;
         case 'unravel': this.confirmUnravel(); break;
         case 'ova': if (v === 'abandon') this.confirmAbandonOva(); else this.confirmOva(a.split(':')[2]); break;

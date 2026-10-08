@@ -337,11 +337,12 @@
 
   // ---------------- Purrmit Office: Standing Orders ----------------
   def({ id: 'coproc', bld: 'pochi', cur: 'greebles', name: 'Greeble Co-processors', max: 10, base: 4, growth: 1.8, show: g => g.s.greebles > 0 || g.s.maxTierReached >= 8,
-    desc: '+2 Requisition Points for standing orders.', flavor: 'Doc Boom wired a greeble into Pochi’s fax machine. It files things now. Pochi is furious and impressed.',
-    fx: l => '+' + (2 * l) + ' RP' });
-  def({ id: 'cabinet', bld: 'pochi', name: 'Filing Cabinets', max: 10, base: 500, growth: 3.4,
-    desc: '+2 Requisition Points for standing orders.', flavor: 'Pochi alphabetizes them. Then re-alphabetizes them.',
-    fx: l => '+' + (2 * l) + ' RP' });
+    desc: '+1 Requisition Point for standing orders.', flavor: 'Doc Boom wired a greeble into Pochi’s fax machine. It files things now. Pochi is furious and impressed.',
+    fx: l => '+' + l + ' RP' });
+  // +1 RP each over 20 levels (was +2 over 10, all bought by Tier 4): the user never ran short of RP
+  def({ id: 'cabinet', bld: 'pochi', name: 'Filing Cabinets', max: 20, base: 500, growth: 3.4,
+    desc: '+1 Requisition Point for standing orders.', flavor: 'Pochi alphabetizes them. Then re-alphabetizes them.',
+    fx: l => '+' + l + ' RP' });
 
   NYA.UPGRADES = U;
   NYA.UPG = {};
@@ -411,21 +412,27 @@
   // ---------------- Autopilot (user idea) ----------------
   // Autobuyers that play a new season's opening for you. Earned once Loom Pattern II opens (the first right away,
   // then one more per unravel), in this order. `ids` maps upgrade id -> level cap ('max' = the upgrade's own max);
-  // `mk2` is the raised cap once Autopilot Mk II is earned. Research (upgrades with a timer) goes one at a time, in
-  // list order, so the Survey Stamp gets Doc Boom before the Lab Notebook. Everything else is bought cheapest-first.
+  // `mk2` is the raised cap while Autopilot Mk II runs. Each is a standing order (`ap_<id>` in NYA.ORDERS) and costs
+  // `rp` like one (user: RP should be a real budget). The In-Tray is free so Filing Cabinets, and with them RP,
+  // come back in a new season's first seconds. Research (upgrades with a timer) goes one at a time, in list order,
+  // so the Survey Stamp gets Doc Boom before the Lab Notebook. Everything else is bought cheapest-first.
   // Caps stay low on purpose: they cover the click-heavy first minutes, not the long tail.
   NYA.AUTOPILOT = [
-    { id: 'montage', name: 'Montage Mixtape', desc: 'Pochi presses play on the training tape so you don’t have to.', ids: { montage: 'max' } },
-    { id: 'perfect', name: 'Perfectionist’s Clipboard', desc: 'A checklist with exactly two boxes. Both get ticked.', ids: { perfection: 'max', radar: 'max' } },
-    { id: 'gym', name: 'Gym Membership', desc: 'The crew’s gym membership auto-renews. Nobody remembers signing up.', ids: { pick: 15, snacks: 15, grip: 10 }, mk2: { pick: 25, snacks: 25, grip: 15 } },
-    { id: 'survey', name: 'Survey Stamp', desc: 'Surveys get stamped the moment Doc Boom is free and the paperwork checks out.', ids: { mine2: 1, mine3: 1, mine4: 1, mine5: 1, mine6: 1 } },
-    { id: 'mule', name: 'Pack Mule Contract', desc: 'Bags, boots and batteries, delivered weekly.', ids: { bags: 10, boots: 10, batteries: 'max', lockers: 'max' }, mk2: { bags: 15, boots: 15 } },
-    { id: 'drill', name: 'Sgt. Paws’ Drill Schedule', desc: 'Sgt. Paws books the training sessions. Attendance is mandatory and loud.', ids: { grit: 20, claws: 15, focus: 'max' }, mk2: { grit: 30, claws: 20 } },
-    { id: 'tora', name: 'Tora’s Order Pad', desc: 'Tora orders her own parts now. Pochi is nervous about it.', ids: { refinery: 10, polisher: 'max', centrifuge: 'max' }, mk2: { refinery: 12 } },
-    { id: 'bunks', name: 'Bunk Bed Wrench', desc: 'A new bunk goes up the moment the Barracks has room.', ids: { bunk: 'max' } },
-    { id: 'lab', name: 'Doc’s Lab Notebook', desc: 'Doc Boom researches the one-off items herself (after the surveys).', ids: { blunt: 1, bomb: 1, spray: 1, tuna: 1, sonar: 1, treat: 1, hotbox: 1, catterall: 1, resume: 1, resonance: 1, junctions: 1, pouch: 'max', enrich: 10 } },
-    { id: 'mk2', name: 'Autopilot Mk II', desc: 'Pochi files a form to raise every stat cap.', ids: {} },
+    { id: 'intray', name: 'Pochi’s In-Tray', rp: 0, desc: 'Pochi buys her own Filing Cabinets. No RP: it’s her own paperwork.', ids: { cabinet: 'max' } },
+    { id: 'montage', name: 'Montage Mixtape', rp: 1, desc: 'Pochi presses play on the training tape so you don’t have to.', ids: { montage: 'max' } },
+    { id: 'perfect', name: 'Perfectionist’s Clipboard', rp: 2, desc: 'A checklist with exactly two boxes. Both get ticked.', ids: { perfection: 'max', radar: 'max' } },
+    { id: 'gym', name: 'Gym Membership', rp: 3, desc: 'The crew’s gym membership auto-renews. Nobody remembers signing up.', ids: { pick: 15, snacks: 15, grip: 10 }, mk2: { pick: 25, snacks: 25, grip: 15 } },
+    { id: 'survey', name: 'Survey Stamp', rp: 3, desc: 'Surveys get stamped the moment Doc Boom is free and the paperwork checks out.', ids: { mine2: 1, mine3: 1, mine4: 1, mine5: 1, mine6: 1 } },
+    { id: 'mule', name: 'Pack Mule Contract', rp: 2, desc: 'Bags, boots and batteries, delivered weekly.', ids: { bags: 10, boots: 10, batteries: 'max', lockers: 'max' }, mk2: { bags: 15, boots: 15 } },
+    { id: 'drill', name: 'Sgt. Paws’ Drill Schedule', rp: 3, desc: 'Sgt. Paws books the training sessions. Attendance is mandatory and loud.', ids: { grit: 20, claws: 15, focus: 'max' }, mk2: { grit: 30, claws: 20 } },
+    { id: 'tora', name: 'Tora’s Order Pad', rp: 2, desc: 'Tora orders her own parts now. Pochi is nervous about it.', ids: { refinery: 10, polisher: 'max', centrifuge: 'max' }, mk2: { refinery: 12 } },
+    { id: 'bunks', name: 'Bunk Bed Wrench', rp: 1, desc: 'A new bunk goes up the moment the Barracks has room.', ids: { bunk: 'max' } },
+    { id: 'lab', name: 'Doc’s Lab Notebook', rp: 3, desc: 'Doc Boom researches the one-off items herself (after the surveys).', ids: { blunt: 1, bomb: 1, spray: 1, tuna: 1, sonar: 1, treat: 1, hotbox: 1, catterall: 1, resume: 1, resonance: 1, junctions: 1, pouch: 'max', enrich: 10 } },
+    { id: 'mk2', name: 'Autopilot Mk II', rp: 4, desc: 'Pochi files a form to raise every stat cap.', ids: {} },
   ];
   NYA.AUTO = {};
-  for (const a of NYA.AUTOPILOT) NYA.AUTO[a.id] = a;
+  for (const a of NYA.AUTOPILOT) {
+    NYA.AUTO[a.id] = a;
+    NYA.ORDERS['ap_' + a.id] = { name: a.name, rp: a.rp, autopilot: a.id, desc: a.desc };
+  }
 })(globalThis.NYA = globalThis.NYA || {});

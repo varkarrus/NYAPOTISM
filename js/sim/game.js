@@ -26,7 +26,7 @@
       catnip: 0, seasonCatnip: 0, lifetimeCatnip: 0, seasonYarnNip: 0, yarnNipInit: 0, milk: 0, sushi: 0, cheese: 0, greebles: 0,
       yarn: 0,
       upg: {}, loom: {},
-      auto: { n: 0, off: {} }, // Autopilot: how many autobuyers are earned, and which are switched off (lifetime, survives unravels and OVAs)
+      auto: { n: 0, v: 2 }, // Autopilot: how many autobuyers are earned (lifetime). Each runs as a standing order, ap_<id>
       research: null,
       buildings: { office: 1, refinery: 1 },
       tierUnlocked: { 1: 1 }, selectedTier: 1, maxTierReached: 1,
@@ -290,7 +290,7 @@
     bombDamage(tier) { return 50 * NYA.tierHP(tier) * (1 + 0.6 * this.lvl('bombdmg')) * (this.mew(1) ? 1.5 : 1); }
     sonarRadius() { return 3 + (this.mew(2) ? 1 : 0); }
     activeCd(id) { return NYA.ACTIVES[id].cd * (id === 'bomb' && this.mew(3) ? 0.75 : 1); }
-    rpMax() { return 5 + 2 * this.lvl('cabinet') + 2 * this.lvl('coproc') + (this.loom('nm_desk') ? 4 : 0); }
+    rpMax() { return 5 + this.lvl('cabinet') + this.lvl('coproc') + (this.loom('nm_desk') ? 4 : 0) + (this.loomRowDone(3, 2) ? 3 : 0); } // + Mechanics Stripe II
     ffSpeed() { return this.loom('m2_ff') ? 8 : this.loomRowDone(3) ? 5 : this.loom('nm_ff') ? 3 : 2; }
     bankEff() { return this.loom('m2_bank') ? 0.75 : this.loom('nm_bank') ? 0.5 : 0.33; }
     purrmitCost(t) { return NYA.TIERS[t].purrmit; }
@@ -405,9 +405,10 @@
       if (o.active) return this.activeUnlocked(o.active);
       if (o.minBlunts) return this.activeUnlocked('blunt') && this.activeMaxCharges('blunt') >= o.minBlunts;
       if (o.tanuki) return !!this.s.buildings.tanuki;
+      if (o.autopilot) return this.autoHas(o.autopilot);
       return true;
     }
-    orderRp(id) { return Math.max(1, NYA.ORDERS[id].rp - (this.loomRowDone(3, 2) ? 1 : 0)); } // Mechanics Stripe II
+    orderRp(id) { return NYA.ORDERS[id].rp; }
     rpUsed() { return this.runningOrders().reduce((a, id) => a + this.orderRp(id), 0); }
     runningOrders() {
       if (!this.s.buildings.pochi) return [];
@@ -1108,6 +1109,12 @@
       }
       if (!B.loom && (s.skein.have || s.season > 1)) B.loom = 1;
       if (B.loom && (!s.novel['loom:pattern2'] || !s.auto.n) && this.loomComplete(1)) this.loomPatternNews();
+      if (s.auto.v !== 2) { // saves from the first Autopilot build: the In-Tray was added in front, and autobuyers became orders
+        const off = s.auto.off || {};
+        if (s.auto.n) s.auto.n++;
+        delete s.auto.off; s.auto.v = 2;
+        NYA.AUTOPILOT.slice(0, this.autoEarned()).forEach(a => { if (!off[a.id] && s.orders.indexOf('ap_' + a.id) < 0) s.orders.push('ap_' + a.id); });
+      }
       if (!B.tanuki && (s.maxTierReached >= 2 || s.season > 1)) {
         B.tanuki = 1; s.tanuki.nextAt = s.simTime;
         this.novel('bld:tanuki', 'Tanuki\u2019s Emporium! A travelling merchant sells limited-time event mines', 'building');
@@ -1261,16 +1268,11 @@
     // ------------------------------------------------------------ Autopilot (NYA.AUTOPILOT, user idea)
     autoEarned() { return Math.min(this.s.auto.n || 0, NYA.AUTOPILOT.length); }
     autoHas(id) { const k = NYA.AUTOPILOT.indexOf(NYA.AUTO[id]); return k >= 0 && k < this.autoEarned(); }
-    autoOn(id) { return this.autoHas(id) && !this.s.auto.off[id]; }
-    autoToggle(id) {
-      if (!this.autoHas(id)) return false;
-      const off = this.s.auto.off;
-      if (off[id]) delete off[id]; else off[id] = 1;
-      this.emit('auto', { id, on: !off[id] });
-      return true;
-    }
-    autoCap(a, id) {
-      const c = this.autoHas('mk2') && a.mk2 && a.mk2[id] != null ? a.mk2[id] : a.ids[id];
+    autoOn(id, run) { return (run || this.runningOrders()).indexOf('ap_' + id) >= 0; } // filed, and the RP covers it
+    // caps: Mk II raises them while it runs; the UI shows the raised caps once it's earned
+    autoCap(a, id, run) {
+      const mk2 = run ? this.autoOn('mk2', run) : this.autoHas('mk2');
+      const c = mk2 && a.mk2 && a.mk2[id] != null ? a.mk2[id] : a.ids[id];
       return c === 'max' ? NYA.UPG[id].max : c;
     }
     earnAutopilot() {
@@ -1278,6 +1280,7 @@
       if (k >= NYA.AUTOPILOT.length) return;
       const a = NYA.AUTOPILOT[k];
       A.n = k + 1;
+      if (this.s.orders.indexOf('ap_' + a.id) < 0) this.s.orders.push('ap_' + a.id); // filed straight away (RP permitting)
       this.novel('auto:' + a.id, 'Autopilot: ' + a.name + '! ' + (a.id === 'mk2' ? 'Every stat cap goes up' : 'Pochi buys ' + this.autoSummary(a)), 'auto');
       if (k === 0) this.emit('toast', { text: 'Pochi: \u201cYou keep filling out the same forms every time. I made you a rubber stamp. Find it in the Purrmit Office.\u201d', kind: 'pochi' });
     }
@@ -1291,7 +1294,8 @@
     // Runs once a second: research first (one at a time, in list order), then everything else cheapest-first.
     tickAutopilot() {
       if (!this.autoEarned()) return;
-      const want = (a, id) => this.autoOn(a.id) && this.lvl(id) < this.autoCap(a, id) && this.upgVisible(NYA.UPG[id]);
+      const run = this.runningOrders();
+      const want = (a, id) => this.autoOn(a.id, run) && this.lvl(id) < this.autoCap(a, id, run) && this.upgVisible(NYA.UPG[id]);
       if (!this.s.research) {
         outer: for (const a of NYA.AUTOPILOT) for (const id in a.ids) if (NYA.UPG[id].timer && want(a, id) && this.buy(id, true)) break outer;
       }

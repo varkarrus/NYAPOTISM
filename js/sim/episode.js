@@ -608,8 +608,10 @@
       }
       if (drain) {
         const full = m.bag.length >= m.s.carry && this.tier >= 3;
-        // ÷ footing: slick floors cost time, not extra stamina per tile walked
-        m.stamina -= this.swingCost(m) * 0.125 * Math.max(0, dt - slid) * (full ? 1.5 : 1) / this.footing;
+        // Walking tires her at NYA.WALK_DRAIN of her mining rate (unfolded Haste × swing cost per second), so it stays a real
+        // cost as Haste grows (at a flat ⅛ swing per second it fell to ~0.1% of a shift's stamina past Tier 4).
+        // ÷ footing^WALK_FOOTING: slick floors stretch the walk, and only partly the stamina it costs.
+        m.stamina -= this.swingCost(m) * m.s.haste * (m.s.swingMult || 1) * NYA.WALK_DRAIN * Math.max(0, dt - slid) * (full ? 1.5 : 1) / Math.pow(this.footing, NYA.WALK_FOOTING);
         if (m.stamina <= 0) { this.zeroStamina(m); return false; }
       }
       return m.pathI >= m.path.length;

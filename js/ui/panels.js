@@ -285,18 +285,19 @@
         <div class="stampz">${filed ? (run ? 'FILED' : 'PENDING') : 'click to file'}</div></div>`;
     }
     h += `</div>`;
-    // Autopilot (earned once Loom Pattern II opens): autobuyers for a season's opening purchases
+    // Autopilot (earned once Loom Pattern II opens): autobuyers for a season's opening, filed like standing orders
     const nAuto = g.autoEarned();
     if (nAuto) {
-      h += `<h3 class="sec">Autopilot <small>${nAuto}/${NYA.AUTOPILOT.length} · no RP needed · click to switch on or off</small></h3><div class="orders">`;
+      h += `<h3 class="sec">Autopilot <small>${nAuto}/${NYA.AUTOPILOT.length} · they share your RP with the standing orders · click to file or pull</small></h3><div class="orders">`;
       NYA.AUTOPILOT.forEach((a, k) => {
+        const id = 'ap_' + a.id;
         if (k < nAuto) {
-          const on = g.autoOn(a.id);
-          h += `<div class="order ${on ? 'run' : 'pending'}" data-act="auto:${a.id}">
-        <div class="oname">${esc(a.name)}</div>
-        <div class="desc">${a.id === 'mk2' ? 'Raises the caps of every autobuyer above.' : 'Buys ' + esc(g.autoSummary(a)) + '.'}</div>
+          const filed = s.orders.indexOf(id) >= 0, run = running.indexOf(id) >= 0;
+          h += `<div class="order ${filed ? (run ? 'run' : 'pending') : ''}" data-act="order:${id}">
+        <div class="oname">${esc(a.name)} <span class="rp">${a.rp} RP</span></div>
+        <div class="desc">${a.id === 'mk2' ? 'Raises the caps of every autobuyer above while it runs.' : 'Buys ' + esc(g.autoSummary(a)) + '.'}</div>
         <div class="desc"><i>${esc(a.desc)}</i></div>
-        <div class="stampz">${on ? 'ON' : 'OFF'}</div></div>`;
+        <div class="stampz">${filed ? (run ? 'FILED' : 'PENDING') : 'click to file'}</div></div>`;
         } else if (k === nAuto) h += `<div class="order locked"><b>???</b> <small>Pochi files the next one when you unravel.</small></div>`;
       });
       h += `</div>`;

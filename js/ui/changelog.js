@@ -6,10 +6,13 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
-      title: 'Autopilot',
+      title: 'Autopilot, an RP budget, walking costs stamina again',
       date: '2026-10-09',
       items: [
-        'Late game: once the second big upgrade set opens, Pochi starts handing out Autopilot autobuyers, one at a time, that play the opening minutes of a fresh start for you: Training Montage, Perfectionism and Meowtherlode Radar, the first surveys, stat upgrades up to set levels, Bunk Beds, the Refinery, and Doc Boom’s one-off research. A last one raises their caps. Switch each on or off in the Purrmit Office.',
+        'Late game: once the second big upgrade set opens, Pochi starts handing out Autopilot autobuyers, one at a time, that play the opening minutes of a fresh start for you: Filing Cabinets, Training Montage, Perfectionism and Meowtherlode Radar, the first surveys, stat upgrades up to set levels, Bunk Beds, the Refinery, and Doc Boom’s one-off research. A last one raises their caps.',
+        'Autobuyers are filed in the Purrmit Office and cost Requisition Points like standing orders (Pochi’s In-Tray, which buys Filing Cabinets, is free). Orders filed first get RP first.',
+        'RP is now something to budget: Filing Cabinets and Greeble Co-processors give +1 RP each (was +2), and Filing Cabinets go to 20 levels.',
+        'Walking costs stamina again. It tires a catgirl at 1/16 of her mining rate, so it keeps up as she gets faster; it had become almost free past Tier 4. Slick floors still mostly cost time.',
       ],
     },
     {
