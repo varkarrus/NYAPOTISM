@@ -6,6 +6,13 @@
   // Keep this spoiler-free: no Skein, yarn, Loom, unravelling or seasons. Players read it before finding them.
   NYA.CHANGELOG = [
     {
+      title: 'Laser Drone fix',
+      date: '2026-10-09',
+      items: [
+        'Fixed: once a mine was dug out, the Laser Drone kept pointing at plain rock, and the crew mined that instead of picking up the catnip still lying on the floor. It now stops marking when there’s nothing left to find.',
+      ],
+    },
+    {
       title: 'Tier 9: Purrmafrost Caverns',
       date: '2026-10-09',
       items: [

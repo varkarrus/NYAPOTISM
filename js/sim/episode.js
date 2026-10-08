@@ -1553,7 +1553,12 @@
       const pool = [];
       for (let i = 0; i < this.n; i++) if (M.revealed[i] && (M.type[i] === T.ORE || M.type[i] === T.BOX || M.type[i] === T.MILK) && !M.forbid[i] && !this.isMarked(i)) pool.push(i);
       if (!pool.length) {
-        // no visible ore: point at the fog edge
+        // no visible ore: point at the fog edge, but only while there's something left to find. Playtest: once the mine
+        // was dug out it kept marking plain rock, and the crew mined that instead of fetching the catnip on the floor.
+        if (this.resLeft <= 0) {
+          for (let k = this.marks.length - 1; k >= 0; k--) if (this.marks[k].drone) { this.ev({ t: 'unmark', i: this.marks[k].idx }); this.marks.splice(k, 1); }
+          return;
+        }
         for (const i of this.frontier) if (!this.isMarked(i)) pool.push(i);
         if (!pool.length) return;
       }
